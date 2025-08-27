@@ -1,3 +1,12 @@
-import { type RouteConfig, index, route } from '@react-router/dev/routes'
+import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
-export default [index('routes/home.tsx'), route('about', 'routes/about.tsx')] satisfies RouteConfig
+export default [
+  // Route có layout chung
+  route("", "layouts/MainLayout.tsx", [
+    index("routes/home.tsx"),
+    route("about", "routes/about.tsx"),
+  ]),
+
+  // Route không có layout (ví dụ login)
+//   route("login", "routes/login.tsx"),
+] satisfies RouteConfig;
