@@ -1,3 +1,4 @@
+import type { promises } from "dns";
 import axiosClient from "../../services/axiosClient";
 
 export type LoginResponse = {
@@ -27,5 +28,8 @@ const authAPI = {
     };
   },
 };
-
+// Api login with google
+export const loginWithGoogleApi = (data:any)=>axiosClient.post("/api/loginWithGoogle",data)
+export const refreshTokenApi = <T>(token:string):Promise<T>=>
+  axiosClient.post("/api/refreshToken", { refreshToken: token });
 export default authAPI;

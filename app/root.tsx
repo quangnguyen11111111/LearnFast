@@ -2,8 +2,13 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 
 import type { Route } from './+types/root'
 import './app.css'
-import { Provider } from 'react-redux'
+import { Provider, useDispatch } from 'react-redux'
 import { store } from './store/store'
+import { GoogleOAuthProvider } from '@react-oauth/google'
+import { useEffect } from 'react'
+import { refreshToken } from './features/auth/authSlice'
+import { useAppDispatch } from './store/hook'
+import RefreshToken from './layouts/RefreshToken'
 
 export const links: Route.LinksFunction = () => [
   {
@@ -31,9 +36,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return ( <Provider store={store}>
+
+  return (
+     <GoogleOAuthProvider clientId="428261725591-09ei2o0r3gp4rijospe96atjq0uhogle.apps.googleusercontent.com">
+    <Provider store={store}>
       <Outlet />
-    </Provider>)
+      <RefreshToken/>
+    </Provider>
+    </GoogleOAuthProvider>
+    )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

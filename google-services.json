@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "428261725591",
+    "project_id": "lnvapp",
+    "storage_bucket": "lnvapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:428261725591:android:ddc32fc9c48ad25636e0d2",
+        "android_client_info": {
+          "package_name": "com.quangboongg.LNVApp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "428261725591-3vjn95f39oc991undt2p7rpftfdht1rn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.quangboongg.LNVApp",
+            "certificate_hash": "29c191a74028c619f209eb0b59d54c73eab8d23c"
+          }
+        },
+        {
+          "client_id": "428261725591-qqu2bc2bo9dtftf63pceij8r3r29pp8t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.quangboongg.LNVApp",
+            "certificate_hash": "15b749ebe8fd84f8a5326cc52fd27cceda2e3794"
+          }
+        },
+        {
+          "client_id": "428261725591-09ei2o0r3gp4rijospe96atjq0uhogle.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNx2YF20xaXvm38w4kNRAtoPeSWKg9AWA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "428261725591-09ei2o0r3gp4rijospe96atjq0uhogle.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
