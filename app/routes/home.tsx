@@ -1,5 +1,5 @@
 
-import type { Route } from './+types/home'
+import type { Route } from './+types/homePage'
 import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
 import { useNavigate } from 'react-router';
 import { loginWithGoogleAccount } from '~/features/auth/authSlice';

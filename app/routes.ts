@@ -3,7 +3,7 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 export default [
   // Route có layout chung
   route("", "layouts/MainLayout.tsx", [
-    index("routes/home.tsx"),
+    index("routes/homePage.tsx"),
     route("about", "routes/about.tsx"),
   ]),
 

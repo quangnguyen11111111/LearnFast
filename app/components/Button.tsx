@@ -1,15 +1,41 @@
+// Button.tsx
+import React from "react";
+
 type ButtonProps = {
   children: React.ReactNode;
   onClick?: () => void;
+  variant?: "primary" | "secondary" | "danger";
+  disabled?: boolean;
+  className?:string
 };
 
-export default function Button({ children, onClick }: ButtonProps) {
+const Button: React.FC<ButtonProps> = ({
+  children,
+  onClick,
+  variant = "primary",
+  disabled = false,
+  className=""
+}) => {
+  const baseStyle =
+    "rounded-lg transition-all duration-200 focus:outline-none cursor-pointer select-none";
+
+  const variants = {
+    primary: "bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300",
+    secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300 disabled:bg-gray-100",
+    danger: "bg-red-500 text-white hover:bg-red-600 disabled:bg-red-300",
+  };
+
   return (
     <button
+      className={`${baseStyle} ${variants[variant]} ${
+        disabled ? "cursor-not-allowed" : ""
+      } ${className}`}
       onClick={onClick}
-      className="bg-green-500 px-4 py-2 rounded text-white hover:bg-green-600"
+      disabled={disabled}
     >
       {children}
     </button>
   );
-}
+};
+
+export default Button;

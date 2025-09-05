@@ -13,7 +13,7 @@ export default function Home() {
       {loading && <p>Đang xử lý...</p>}
       {user ? (
         <div>
-          <p>Xin chào {user.email}</p>
+          <p>Xin chào {user.userGmail}</p>
           <button
             className="bg-red-500 text-white px-4 py-2 rounded"
             onClick={() => dispatch(logout())}
