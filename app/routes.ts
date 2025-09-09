@@ -8,5 +8,5 @@ export default [
   ]),
 
   // Route không có layout (ví dụ login)
-//   route("login", "routes/login.tsx"),
+  route("login", "routes/auth/loginPage.tsx"),
 ] satisfies RouteConfig;

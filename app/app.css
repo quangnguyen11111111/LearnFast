@@ -4,13 +4,13 @@
   --font-sans:
     'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
-  --color-background: #ffffff;
+  --color-background: #fefefe;
   --font-Montserrat: "Montserrat", sans-serif;
 }
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950 text-black;
+  @apply bg-white dark:bg-gray-950 text-black select-none;
 
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
