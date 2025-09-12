@@ -1,10 +1,13 @@
 import { Link } from "react-router";
 import logo from "../assets/logo.png"
 import { Bars3Icon } from "@heroicons/react/24/outline";
-
-export default function Header() {
+interface HeaderProps {
+  display: "sticky" | "static";
+  shadow: boolean;
+}
+export default function Header({display,shadow}: HeaderProps) {
   return (
-<header className="bg-background text-black sticky top-0 shadow z-10">
+<header className={`bg-background text-black ${display} ${shadow?'shadow':''} top-0 z-10`}>
   <div className="w-full 2xl:w-[80rem] mx-auto max-md:pr-5">
    <div className="container w-full mx-auto item-center flex justify-between items-center ">
     <Link to={'/'} className=" flex items-center">

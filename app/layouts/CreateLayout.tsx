@@ -1,15 +1,13 @@
 import { Outlet } from "react-router";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
 
-export default function MainLayout() {
+export default function CreateLayout() {
   return (
     <div className="min-h-screen flex flex-col">
-      <Header display="sticky" shadow={true} />
-      <main className="flex-1 ">
+      <Header display="static" shadow={false} />
+      <main className="flex-1 bg-background ">
         <Outlet /> {/* nơi render các route con */}
       </main>
-      <Footer />
     </div>
   );
 }

@@ -6,7 +6,8 @@ type ButtonProps = {
   onClick?: () => void;
   variant?: "primary" | "secondary" | "danger";
   disabled?: boolean;
-  className?:string
+  className?:string;
+  rounded?:string;
 };
 
 const Button: React.FC<ButtonProps> = ({
@@ -14,10 +15,11 @@ const Button: React.FC<ButtonProps> = ({
   onClick,
   variant = "primary",
   disabled = false,
-  className=""
+  className="",
+  rounded
 }) => {
   const baseStyle =
-    "rounded-lg transition-all duration-200 focus:outline-none cursor-pointer";
+    `transition-all duration-200 focus:outline-none cursor-pointer ${rounded?rounded:"rounded-lg"}`;
 
   const variants = {
     primary: "bg-blue-500 text-white hover:bg-blue-700 disabled:bg-blue-300",
@@ -27,9 +29,9 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      className={`${baseStyle} ${variants[variant]} ${
+      className={`${className} ${baseStyle} ${variants[variant]} ${
         disabled ? "cursor-not-allowed" : ""
-      } ${className}`}
+      } `}
       onClick={onClick}
       disabled={disabled}
     >

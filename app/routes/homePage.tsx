@@ -15,7 +15,7 @@ const HomePage = () => {
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4 items-center justify-center '>
           <div className='max-md:order-2 px-6'>
             <p className='text-gray-800 text-6xl font-bold mb-3 leading-18'>Ghi nhớ kiến thức nhanh chóng, lâu dài</p>
-            <Button variant='primary' className='p-4 font-bold'>
+            <Button variant='primary' className='p-4 font-bold '>
               Bắt đầu học ngay
             </Button>
           </div>
