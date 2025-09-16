@@ -53,6 +53,7 @@ const HomePage = () => {
               <NewspaperIcon className='size-10 text-blue-700' />
               <div className=''>
                 <p className='font-bold text-lg'>Tạo bộ thẻ riêng</p>
+
                 <p>Tự tạo và tùy chỉnh thẻ đọc</p>
               </div>
             </div>
@@ -88,8 +89,8 @@ const HomePage = () => {
             </Button>
           </div>
           {/* item */}
-          <div className="flex justify-between shadow-md border-[0.125rem] border-[#edeff4]  p-5 items-center after:h-[0.25rem] after:w-0 hover:after:w-full after:bg-blue-500 after:absolute after:bottom-0 after:left-0 relative  after:transition-all after:duration-300">
-            <div className="">
+          <div className='flex justify-between shadow-md border-[0.125rem] border-[#edeff4]  p-5 items-center after:h-[0.25rem] after:w-0 hover:after:w-full after:bg-blue-500 after:absolute after:bottom-0 after:left-0 relative  after:transition-all after:duration-300'>
+            <div className=''>
               <p className='text-xl font-bold'>TOIEC vocabulary</p>
               <p className='inline text-gray-500'>
                 50 từ <span> - Ngoc Huyen</span>{' '}
@@ -137,7 +138,6 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-
     </div>
   )
 }

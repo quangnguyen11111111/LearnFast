@@ -82,7 +82,12 @@ const RegisterPage = () => {
           type='text'
         />
         <Button children='Đăng kí' className='w-full p-4' />
-        <p>Bạn đã có tài khoản? <Link to={"/login"} className='text-blue-500 cursor-pointer '>Đăng nhập</Link></p>
+        <p>
+          Bạn đã có tài khoản?{' '}
+          <Link to={'/login'} className='text-blue-500 cursor-pointer '>
+            Đăng nhập
+          </Link>
+        </p>
         <div className='flex items-center w-full'>
           <div className='flex-1 border-t border-gray-300'></div>
           <span className='px-3 text-gray-600'>hoặc tiếp tục bằng google</span>
