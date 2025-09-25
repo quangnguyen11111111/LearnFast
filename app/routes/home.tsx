@@ -1,9 +1,9 @@
 
-import type { Route } from './+types/homePage'
 import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
 import { useNavigate } from 'react-router';
 import { loginWithGoogleAccount } from '~/features/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '~/store/hook';
+import type { Route } from '../+types/root';
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: 'New React Router App' }, { name: 'description', content: 'Welcome to React Router!' }]
