@@ -24,7 +24,7 @@ export default function HeaderUser({ display, shadow }: HeaderProps) {
   const dispatch = useAppDispatch()
   return (
     <header className={`bg-background text-black ${display} ${shadow ? 'shadow' : ''} top-0 z-10`}>
-      <div className=' w-full  mx-auto px-5 flex items-center justify-between gap-10 py-2 '>
+      <div className=' w-full  mx-auto px-5 grid grid-cols-[auto_1fr_auto] items-center gap-10 max-sm:gap-1 py-2'>
         <div className='flex items-center cursor-pointer'>
            <Button icon={Bars3Icon} variant={"secondary"} size={7} onClick={() => {dispatch(toggle())}} />
           <Link to={'/latest'} className=' flex items-center'>
@@ -32,10 +32,10 @@ export default function HeaderUser({ display, shadow }: HeaderProps) {
           </Link>
         </div>
 
-        <div className='flex-1 max-w-[55rem]'>
+        <div className='max-w-[55rem] w-full mx-auto max-sm:col-span-3 max-sm:order-1'>
           <SearchInput />
         </div>
-        <div className='flex items-center'>
+        <div className='flex items-center  max-sm:col-span-2 justify-end'>
           <Button icon={PlusIcon} onClick={() => {}} />
           <img src={logo} alt='avatar' className='size-16 rounded-2xl' />
         </div>

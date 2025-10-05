@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import imgLogin from '~/assets/imgLogin2.jpg'
 import Button from '~/components/Button'
 import Input from '~/components/Input'
@@ -15,7 +15,7 @@ const LoginPage = () => {
     account: '',
     password: ''
   })
-
+  const navigate=useNavigate()
   // cập nhật state
   const handleChange = (key: keyof LoginForm, value: string) => {
     setFormData((prev) => ({
@@ -27,6 +27,7 @@ const LoginPage = () => {
   // submit form
   const handleSubmit = () => {
     console.log('Login form:', formData)
+    navigate("/latest")
     // TODO: gọi API login ở đây
   }
 

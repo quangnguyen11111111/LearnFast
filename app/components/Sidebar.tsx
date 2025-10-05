@@ -55,94 +55,70 @@ const Sidebar = ({ children }: SideBarProps) => {
     {
       id: 2,
       title: 'Thư mục 2'
-    },
+    }
   ])
   return (
-<div className="grid grid-cols-[auto_1fr] px-5 h-[calc(100vh-80px)] ">
-  {/* Sidebar */}
-  <div
-    className={` transition-all duration-300 ease-in-out
-    ${toggleValue ? 'w-45' : 'w-12'}
-    overflow-x-hidden overflow-y-auto scrollbar-none
-    sticky top-0 left-0 overscroll-contain pb-5`}
-  >
-    {/* chuyển hướng Trang chủ */}
-    <div className="mt-5 flex flex-col gap-3">
+    <div className='grid grid-cols-[auto_1fr] px-5 h-[calc(100vh-80px)] '>
+      {/* Sidebar */}
       <div
-        className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
-          toggleValue ? '' : 'w-fit'
-        }`}
+        className={` transition-all duration-300 ease-in-out ${toggleValue ? 'w-45' : ' max-md:w-0 w-12'} overflow-x-hidden overflow-y-auto
+          scrollbar-none sticky top-0 left-0 overscroll-contain pb-5 `}
       >
-        <HomeIcon className="size-7 flex-shrink-0 text-gray-500 font-semibold" />
-        <p
-          className={`${
-            !toggleValue && 'hidden'
-          } text-gray-500 text-base font-semibold`}
-        >
-          Trang chủ
-        </p>
-      </div>
-      <div
-        className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
-          toggleValue ? '' : 'w-fit'
-        }`}
-      >
-        <FolderIcon className="size-7 flex-shrink-0 text-gray-500 font-semibold" />
-        <p
-          className={`${
-            !toggleValue && 'hidden'
-          } text-gray-500 text-base font-semibold`}
-        >
-          Thư viện của bạn
-        </p>
-      </div>
-      <div className="w-full h-2 border-b-3 border-gray-200"></div>
-    </div>
-
-    {/* Thư mục của bạn */}
-    <div className="mt-5 flex flex-col gap-3">
-      {listFolders &&
-        listFolders.map((item) => (
+        {/* chuyển hướng Trang chủ */}
+        <div className='mt-5 flex flex-col gap-3'>
           <div
-            key={item.id}
             className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
               toggleValue ? '' : 'w-fit'
             }`}
           >
-            <FolderMinusIcon className="size-7 flex-shrink-0 text-gray-500 font-semibold" />
-            <p
-              className={`${
-                !toggleValue && 'hidden'
-              } text-gray-500 text-base font-semibold`}
-            >
-              {item.title}
-            </p>
+            <HomeIcon className='size-6 flex-shrink-0 text-gray-500 font-semibold' />
+            <p className={`${!toggleValue && 'hidden'} text-gray-500  font-semibold text-sm`}>Trang chủ</p>
           </div>
-        ))}
+          <div
+            className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
+              toggleValue ? '' : 'w-fit'
+            }`}
+          >
+            <FolderIcon className='size-6 flex-shrink-0 text-gray-500 font-semibold' />
+            <p className={`${!toggleValue && 'hidden'} text-gray-500  font-semibold text-sm`}>Thư viện của bạn</p>
+          </div>
+          <div className='w-full h-2 border-b-3 border-gray-200'></div>
+        </div>
 
+        {/* Thư mục của bạn */}
+        <div className='mt-5 flex flex-col gap-3'>
+          {listFolders &&
+            listFolders.map((item) => (
+              <div
+                key={item.id}
+                className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
+                  toggleValue ? '' : 'w-fit'
+                }`}
+              >
+                <FolderMinusIcon className='size-6 flex-shrink-0 text-gray-500 font-semibold' />
+                <p className={`${!toggleValue && 'hidden'} text-gray-500  font-semibold text-sm`}>{item.title}</p>
+              </div>
+            ))}
+
+          <div
+            className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
+              toggleValue ? '' : 'w-fit'
+            }`}
+          >
+            <FolderPlusIcon className='size-6 flex-shrink-0 text-gray-500 font-semibold' />
+            <p className={`${!toggleValue && 'hidden'} text-gray-500  font-semibold`}>Thư mục mới</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
       <div
-        className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
-          toggleValue ? '' : 'w-fit'
-        }`}
+        className=' w-full scrollbar-none overflow-y-auto
+    sticky top-0 right-0'
       >
-        <FolderPlusIcon className="size-7 flex-shrink-0 text-gray-500 font-semibold" />
-        <p
-          className={`${
-            !toggleValue && 'hidden'
-          } text-gray-500 text-base font-semibold`}
-        >
-          Thư mục mới
-        </p>
+        {children}
       </div>
     </div>
-  </div>
-
-  {/* Content */}
-  <div className=" w-full scrollbar-none overflow-y-auto
-    sticky top-0 right-0">{children}
-    </div>
-</div>
-
   )
 }
 export default Sidebar
