@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import logo from '../assets/logo.png'
+import logo from '../../assets/logo.png'
 import { Bars3Icon } from '@heroicons/react/24/outline'
 interface HeaderProps {
   display: 'sticky' | 'static'

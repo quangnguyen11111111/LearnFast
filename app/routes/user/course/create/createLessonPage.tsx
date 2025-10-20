@@ -1,10 +1,10 @@
 import { Cog8ToothIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
-import Button from '~/components/Button'
-import IconButton from '~/components/ButtonIcon'
-import Input from '~/components/Input'
-import TextArea from '~/components/TextArea'
+import Button from '~/components/button/Button'
+import IconButton from '~/components/button/ButtonIcon'
+import Input from '~/components/input/Input'
+import TextArea from '~/components/input/TextArea'
 import trueFalseScrollY from '~/utils/trueFalseScrollY'
 
 /* ------------------ LessonItem ------------------ */

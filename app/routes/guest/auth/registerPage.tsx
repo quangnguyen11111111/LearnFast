@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import imgLogin from '~/assets/imgLogin2.jpg'
-import Button from '~/components/Button'
-import GoogleButton from '~/components/ButtonLoginGoogle'
-import Input from '~/components/Input'
+import Button from '~/components/button/Button'
+import GoogleButton from '~/components/button/ButtonLoginGoogle'
+import Input from '~/components/input/Input'
 
 // type cho form đăng ký
 type RegisterForm = {

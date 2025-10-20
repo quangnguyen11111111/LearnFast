@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
-import logo from '../assets/logo.png'
+import logo from '../../assets/logo.png'
 import { Bars3Icon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline'
-import Button from './ButtonIcon'
+import Button from '../button/ButtonIcon'
 import { useAppDispatch } from '~/store/hook'
 import { toggle } from '~/features/actionPage/toggleSlice'
 interface HeaderProps {
@@ -26,7 +26,14 @@ export default function HeaderUser({ display, shadow }: HeaderProps) {
     <header className={`bg-background text-black ${display} ${shadow ? 'shadow' : ''} top-0 z-10`}>
       <div className=' w-full  mx-auto px-5 grid grid-cols-[auto_1fr_auto] items-center gap-10 max-sm:gap-1 py-2'>
         <div className='flex items-center cursor-pointer'>
-           <Button icon={Bars3Icon} variant={"secondary"} size={7} onClick={() => {dispatch(toggle())}} />
+          <Button
+            icon={Bars3Icon}
+            variant={'secondary'}
+            size={7}
+            onClick={() => {
+              dispatch(toggle())
+            }}
+          />
           <Link to={'/latest'} className=' flex items-center'>
             <img src={logo} alt='logo' className='size-15' />
           </Link>

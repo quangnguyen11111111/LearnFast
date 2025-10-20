@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import imgLogin from '~/assets/imgLogin2.jpg'
-import Button from '~/components/Button'
-import Input from '~/components/Input'
-import GoogleButton from '~/components/ButtonLoginGoogle'
+import Button from '~/components/button/Button'
+import Input from '~/components/input/Input'
+import GoogleButton from '~/components/button/ButtonLoginGoogle'
 
 type LoginForm = {
   account: string
@@ -15,7 +15,7 @@ const LoginPage = () => {
     account: '',
     password: ''
   })
-  const navigate=useNavigate()
+  const navigate = useNavigate()
   // cập nhật state
   const handleChange = (key: keyof LoginForm, value: string) => {
     setFormData((prev) => ({
@@ -27,7 +27,7 @@ const LoginPage = () => {
   // submit form
   const handleSubmit = () => {
     console.log('Login form:', formData)
-    navigate("/latest")
+    navigate('/latest')
     // TODO: gọi API login ở đây
   }
 
@@ -83,7 +83,7 @@ const LoginPage = () => {
           <div className='flex-1 border-t border-gray-300'></div>
         </div>
 
-        <GoogleButton/>
+        <GoogleButton />
       </div>
     </div>
   )

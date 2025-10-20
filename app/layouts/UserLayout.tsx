@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router'
-import Header from '../components/HeaderUser'
+import Header from '../components/header/HeaderUser'
 import Footer from '../components/Footer'
 import { FolderIcon, HomeIcon } from '@heroicons/react/24/outline'
 import { useAppSelector } from '~/store/hook'
@@ -11,7 +11,7 @@ export default function UserLayout() {
       <Header display='sticky' shadow={true} />
       <main className='flex-1 '>
         <Sidebar>
-          <Outlet/> {/* nơi render các route con */}
+          <Outlet /> {/* nơi render các route con */}
         </Sidebar>
       </main>
     </div>

@@ -49,7 +49,6 @@ const HomeUserPage = () => {
       nameUser: 'người dùng 1'
     }
   ])
-  const navigate=useNavigate()
   return (
     <div className='md:px-25 px-5'>
       {/* Gần đây */}
@@ -78,9 +77,9 @@ const HomeUserPage = () => {
           {ListItemPopular &&
             ListItemPopular.map((item, index) => {
               return (
-                <ListItem key={index}>
+                <ListItem key={index} navigatevalue={'/learn-lesson'}>
                   {' '}
-                  <div className='flex flex-col gap-5 items-start' onClick={()=>{navigate("/learn-lesson")}}>
+                  <div className='flex flex-col gap-5 items-start' >
                     <p className='text-lg font-bold text-gray-600'>{item.title}</p>
                     <p className='text-sm rounded-2xl bg-gray-200 text-gray-600 inline-block px-2 py-1 font-sans font-semibold'>
                       {item.numberTerms} thuật ngữ
