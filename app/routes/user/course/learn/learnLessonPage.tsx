@@ -6,10 +6,12 @@ import logo from '~/assets/logo.png'
 import Button from '~/components/button/Button'
 import { useMemo, useState } from 'react'
 import { index } from '@react-router/dev/routes'
+import { AnimatePresence, motion } from 'framer-motion'
+import MultipleChoise from '~/components/learnComponent/MultipleChoice'
 const LearnLessonPage = () => {
   // các chức năng
   const features = [
-    { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: '' },
+    { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: 'flash-card' },
     { icon: BookOpenIcon, title: 'Học', links: '' },
     { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: '' },
     { icon: NewspaperIcon, title: 'Blocks', links: '' },
@@ -32,7 +34,7 @@ const LearnLessonPage = () => {
     { id: '12', source: 'River', target: 'Dòng sông' },
     { id: '13', source: 'Mountain', target: 'Núi' }
   ]
-  const [indexMulti,setIndexMulti]=useState<number>(0)
+  const [indexMulti, setIndexMulti] = useState<number>(0)
   // Hàm trỗn dữ liệu ngẫu nhiên cho trắc nghiệm
   const getRandomOptions = (correct: string, allTargets: string[]): string[] => {
     const options = [correct]
@@ -44,9 +46,17 @@ const LearnLessonPage = () => {
     }
     return options.sort(() => Math.random() - 0.5)
   }
+  const handleNextQuestion = () => {
+    setIndexMulti((prevIndex) => {
+      // Dùng % (modulo) để quay lại 0 khi đến cuối mảng
+      return (prevIndex + 1) % ORIGINAL_DATA.length
+    })
+  }
   // mảng chứa Đích
   const allTargets = ORIGINAL_DATA.map((item) => item.target)
-  const option = useMemo(()=>{return getRandomOptions(ORIGINAL_DATA[indexMulti].target,allTargets)},[indexMulti])
+  const option = useMemo(() => {
+    return getRandomOptions(ORIGINAL_DATA[indexMulti].target, allTargets)
+  }, [indexMulti])
   return (
     <div className='mx-30 mb-10 max-md:mx-2'>
       <div className='flex justify-between mt-5 '>
@@ -66,7 +76,7 @@ const LearnLessonPage = () => {
           features.map((item, index) => {
             const Icon = item.icon
             return (
-              <ListItem key={index} background='bg-gray-50'>
+              <ListItem key={index} background='bg-gray-50' navigatevalue={item.links}>
                 <div className='flex items-center gap-1'>
                   <Icon className='size-6 flex-shrink-0 text-blue-500' />
                   <span className='font-semibold'>{item.title}</span>
@@ -77,7 +87,7 @@ const LearnLessonPage = () => {
       </div>
       {/* flash card */}
       <div className=''>
-        <Flashcard />
+        <Flashcard cards={ORIGINAL_DATA} />
       </div>
       {/* tác giả */}
       <div className='border-t-2 border-gray-300 flex justify-start mt-5 '>
@@ -109,64 +119,28 @@ const LearnLessonPage = () => {
             </Button>
           </div>
           {/* content */}
-          <div className='bg-white rounded-b-2xl py-5 px-10  shadow-lg'>
-            <p className='mt-10 text-xl'>{ORIGINAL_DATA[indexMulti].source}</p>
-            <div className='mt-25'>
-              <p className='font-semibold text-gray-500 text-sm mb-5'>Chọn đáp án đúng</p>
-              <div className='grid grid-cols-2 gap-4'>
-                {
-                  option&&option.map((item,index)=>{
-                    return(<div className='flex gap-2 border-2 border-gray-200 p-3 rounded-lg hover:border-gray-700' onClick={()=>{setIndexMulti(indexMulti+1)}}>
-                  <span className='p-2 size-7 flex items-center justify-center font-bold text-gray-600 bg-gray-200 rounded-[50%]'>
-                    {index+1}
-                  </span>
-                  <p className='text-gray-500 text-lg'>{item}</p>
-                </div>)
-                  })
-                }
-                {/* <div className='flex gap-2 border-2 border-gray-200 p-3 rounded-lg hover:border-gray-700'>
-                  <span className='p-2 size-7 flex items-center justify-center font-bold text-gray-600 bg-gray-200 rounded-[50%]'>
-                    1
-                  </span>
-                  <p className='text-gray-500 text-lg'>hello</p>
-                </div>
-                <div className='flex gap-2 border-2 border-gray-200 p-3 rounded-lg hover:border-gray-700'>
-                  <span className='p-2 size-7 flex items-center justify-center font-bold text-gray-600 bg-gray-200 rounded-[50%]'>
-                    2
-                  </span>
-                  <p className='text-gray-500 text-lg'>hello</p>
-                </div>
-                <div className='flex gap-2 border-2 border-gray-200 p-3 rounded-lg hover:border-gray-700'>
-                  <span className='p-2 size-7 flex items-center justify-center font-bold text-gray-600 bg-gray-200 rounded-[50%]'>
-                    3
-                  </span>
-                  <p className='text-gray-500 text-lg'>hello</p>
-                </div>
-                <div className='flex gap-2 border-2 border-gray-200 p-3 rounded-lg hover:border-gray-700'>
-                  <span className='p-2 size-7 flex items-center justify-center font-bold text-gray-600 bg-gray-200 rounded-[50%]'>
-                    4
-                  </span>
-                  <p className='text-gray-500 text-lg'>hello</p>
-                </div> */}
-              </div>
-            </div>
-            <div className='mt-5 flex justify-center'>
-              <span className='text-blue-600 font-semibold text-sm hover:bg-blue-50 px-3 py-2 rounded-2xl'>
-                Bạn không biết?
-              </span>
-            </div>
-          </div>
+          <MultipleChoise
+            indexMulti={indexMulti}
+            ORIGINAL_DATA={ORIGINAL_DATA}
+            handleNextQuestion={handleNextQuestion}
+            option={option}
+          />
         </div>
       </div>
       {/* Thuật ngữ trong học phần này */}
-      <div className=''>
-        <p>Thuật ngữ trong học phần này</p>
-        <div className='bg-gray-100 p-3 rounded-2xl'>
-          <div className='bg-white rounded-lg flex gap-20 p-3 '>
-            <p>Pile up</p>
-            <span className='w-[1px] bg-gray-300'></span>
-            <p>chất đống</p>
-          </div>
+      <div className='mt-5'>
+        <p className='font-bold text-2xl mt-8 mb-5'>Thuật ngữ trong học phần này</p>
+        <div className='bg-gray-100 p-3 rounded-2xl flex flex-col gap-3'>
+          {ORIGINAL_DATA &&
+            ORIGINAL_DATA.map((item, index) => {
+              return (
+                <div className='bg-white rounded-lg grid grid-cols-[1fr_auto_1fr] p-3 justify-items-center' key={index}>
+                  <p className=''>{item.source}</p>
+                  <span className='w-[1px] bg-gray-300'></span>
+                  <p className=''>{item.target}</p>
+                </div>
+              )
+            })}
         </div>
       </div>
     </div>

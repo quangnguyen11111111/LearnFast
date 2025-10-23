@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const cards = [
-  { front: "stand near", back: "đứng gần" },
-  { front: "run away", back: "chạy trốn" },
-  { front: "look for", back: "tìm kiếm" },
-];
-
-const Flashcard = () => {
+interface FlashcardProps {
+  cards: {id:string;source:string;target:string}[];
+  height?:string;
+}
+const Flashcard = ({cards,height = "h-100"}:FlashcardProps) => {
   const [index, setIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [direction, setDirection] = useState(0);
@@ -29,7 +27,7 @@ const Flashcard = () => {
   return (
     <div className="flex flex-col items-center mt-10 ">
       {/* Thẻ hiển thị */}
-      <div className="relative w-full h-100 perspective outline rounded-2xl outline-gray-100">
+      <div className={`relative w-full ${height} perspective outline rounded-2xl outline-gray-100`}>
         <AnimatePresence mode="popLayout" custom={direction}>
           <motion.div
             key={index}
@@ -48,12 +46,12 @@ const Flashcard = () => {
             >
               {/* Mặt trước */}
               <div className="absolute backface-hidden text-2xl font-semibold">
-                {cards[index].front}
+                {cards[index].source}
               </div>
 
               {/* Mặt sau */}
               <div className="absolute rotate-y-180 backface-hidden text-2xl font-semibold bg-yellow-100 w-full h-full flex items-center justify-center rounded-2xl">
-                {cards[index].back}
+                {cards[index].target}
               </div>
             </motion.div>
           </motion.div>
@@ -78,6 +76,7 @@ const Flashcard = () => {
           Tiếp ▶
         </button>
       </div>
+      
     </div>
   );
 };
