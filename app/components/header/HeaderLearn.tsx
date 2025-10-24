@@ -9,6 +9,7 @@ import {
 import { useState } from 'react'
 import Button from '../button/Button'
 import IconButton from '../button/ButtonIcon'
+import { useNavigate } from 'react-router'
 
 const HeaderLearn = () => {
   // các chức năng
@@ -21,6 +22,7 @@ const HeaderLearn = () => {
   ]
   const localhost = document.location.origin
   const [isDropDown, setIsDropDown] = useState<boolean>(false)
+    const navigate=useNavigate()// hàm điều hướng
   return (
     <div className='flex justify-between items-center px-15 py-3'>
       <div className='flex items-center justify-center gap-2 cursor-pointer hover:bg-gray-200 px-5 py-3 rounded-2xl relative' onClick={()=>{setIsDropDown(!isDropDown)}}>
@@ -40,7 +42,7 @@ const HeaderLearn = () => {
       </div>
       {/* Kết thúc danh mục lựa chọn */}
       <div className="font-semibold">Thư mục 1</div>
-      <IconButton icon={XMarkIcon} onClick={()=>{}} size={8} variant='secondary'/>
+      <IconButton icon={XMarkIcon} onClick={()=>{navigate(-1)}} size={8} variant='secondary'/>
     </div>
   )
 }
