@@ -5,14 +5,12 @@ import Flashcard from '~/components/learnComponent/Flashcard'
 import logo from '~/assets/logo.png'
 import Button from '~/components/button/Button'
 import { useMemo, useState } from 'react'
-import { index } from '@react-router/dev/routes'
-import { AnimatePresence, motion } from 'framer-motion'
 import MultipleChoise from '~/components/learnComponent/MultipleChoice'
 const LearnLessonPage = () => {
   // các chức năng
   const features = [
     { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: 'flash-card' },
-    { icon: BookOpenIcon, title: 'Học', links: '' },
+    { icon: BookOpenIcon, title: 'Học', links: 'multiple-choice' },
     { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: '' },
     { icon: NewspaperIcon, title: 'Blocks', links: '' },
     { icon: NewspaperIcon, title: 'Blast', links: '' },
@@ -20,21 +18,24 @@ const LearnLessonPage = () => {
   ]
   // Dữ liệu mẫu
   const ORIGINAL_DATA = [
-    { id: '1', source: 'Dog', target: 'Chó' },
-    { id: '2', source: 'Sun', target: 'Mặt trời' },
-    { id: '3', source: 'Water', target: 'Nước' },
-    { id: '4', source: 'Cat', target: 'Mèo' },
-    { id: '5', source: 'Moon', target: 'Mặt trăng' },
-    { id: '6', source: 'Fire', target: 'Lửa' },
-    { id: '7', source: 'Tree', target: 'Cây' },
-    { id: '8', source: 'Book', target: 'Sách' },
-    { id: '9', source: 'Pen', target: 'Bút' },
-    { id: '10', source: 'Car', target: 'Xe hơi' },
-    { id: '11', source: 'Cloud', target: 'Đám mây' },
-    { id: '12', source: 'River', target: 'Dòng sông' },
-    { id: '13', source: 'Mountain', target: 'Núi' }
+    { id: '1', source: 'Dog', target: 'Chó', status: 0 },
+    { id: '2', source: 'Sun', target: 'Mặt trời', status: 0 },
+    { id: '3', source: 'Water', target: 'Nước', status: 0 },
+    { id: '4', source: 'Cat', target: 'Mèo', status: 0 },
+    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 0 },
+    { id: '6', source: 'Fire', target: 'Lửa', status: 0 },
+    { id: '7', source: 'Tree', target: 'Cây', status: 0 },
+    { id: '8', source: 'Book', target: 'Sách', status: 0 },
+    { id: '9', source: 'Pen', target: 'Bút', status: 0 },
+    { id: '10', source: 'Car', target: 'Xe hơi', status: 0 },
+    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0 },
+    { id: '12', source: 'River', target: 'Dòng sông', status: 0 },
+    { id: '13', source: 'Mountain', target: 'Núi', status: 0 }
   ]
   const [indexMulti, setIndexMulti] = useState<number>(0)
+  const [selected, setSelected] = useState<string | null>(null) // Trạng thái lựa chọn của người dùng
+  const [isAnswered, setIsAnswered] = useState(false) // Trạng thái đã trả lời hay chưa
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null) // Trạng thái đúng sai
   // Hàm trỗn dữ liệu ngẫu nhiên cho trắc nghiệm
   const getRandomOptions = (correct: string, allTargets: string[]): string[] => {
     const options = [correct]
@@ -120,10 +121,17 @@ const LearnLessonPage = () => {
           </div>
           {/* content */}
           <MultipleChoise
-            indexMulti={indexMulti}
             ORIGINAL_DATA={ORIGINAL_DATA}
             handleNextQuestion={handleNextQuestion}
+            indexMulti={indexMulti}
             option={option}
+            isAnswered={isAnswered}
+            setIsAnswered={setIsAnswered}
+            isCorrect={isCorrect}
+            setIsCorrect={setIsCorrect}
+            selected={selected}
+            setSelected={setSelected}
+            showButtonNext={true}
           />
         </div>
       </div>
