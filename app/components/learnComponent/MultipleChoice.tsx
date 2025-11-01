@@ -1,10 +1,11 @@
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from 'react'
 interface MultipleChoiseProps {
   indexMulti: number
-  ORIGINAL_DATA: { id: string; source: string; target: string }[]
+  ORIGINAL_DATA: { id: string; source: string; target: string; status: number; statusMode: number }[]
   option: string[]
-  handleNextQuestion: () => void
+  handleNextQuestion: (value: boolean) => void
   isAnswered: boolean
   setIsAnswered: (value: boolean) => void
   isCorrect: boolean | null
@@ -26,7 +27,9 @@ const MultipleChoise = ({
   setSelected,
   showButtonNext
 }: MultipleChoiseProps) => {
-  const correctAnswer = ORIGINAL_DATA[indexMulti].target // Đáp án đúng
+  if (!ORIGINAL_DATA[indexMulti]) return
+  const correctAnswer = ORIGINAL_DATA[indexMulti].target
+  const [isSkip, setIsSkip] = useState<boolean>(false)
   // Xử lý khi người dùng chọn một đáp án
   const handleSelect = (item: string) => {
     if (isAnswered) return
@@ -34,14 +37,16 @@ const MultipleChoise = ({
     setIsAnswered(true)
     const correct = item === correctAnswer
     setIsCorrect(correct)
-
+    if (item === '') {
+      setIsSkip(true)
+    }
     if (correct) {
       // Nếu đúng, tự chuyển câu sau 0.8 giây
       setTimeout(() => {
         setSelected(null)
         setIsAnswered(false)
         setIsCorrect(null)
-        handleNextQuestion()
+        handleNextQuestion(true)
       }, 800)
     }
   }
@@ -54,12 +59,14 @@ const MultipleChoise = ({
     return 'border-gray-200'
   }
   return (
-    <div className={`bg-white rounded-2xl relative overflow-hidden py-10 border border-gray-200 ${isAnswered?'':'shadow-lg '}`}>
+    <div
+      className={`bg-white rounded-2xl relative overflow-hidden py-10 border border-gray-200 ${isAnswered ? '' : 'shadow-lg '}`}
+    >
       <AnimatePresence mode='wait'>
         {' '}
         {/* 'wait' đảm bảo cái cũ đi ra xong cái mới mới đi vào */}
         <motion.div
-          key={indexMulti} //  Key này báo cho AnimatePresence biết component đã thay đổi
+          key={ORIGINAL_DATA[indexMulti]?.id || indexMulti} //  Key này báo cho AnimatePresence biết component đã thay đổi
           className='py-5 px-10 max-md:px-3' // Di chuyển padding vào đây
           initial={{ x: '10%', opacity: 0 }} // Trạng thái bắt đầu (bên phải, vô hình)
           animate={{ x: 0, opacity: 1 }} // Trạng thái hoạt động (ở giữa, hiện hình)
@@ -68,8 +75,18 @@ const MultipleChoise = ({
         >
           <p className='mt-10 text-xl'>{ORIGINAL_DATA[indexMulti].source}</p>
           <div className='mt-25'>
-            <p className='font-semibold text-gray-500 text-sm mb-5'>Chọn đáp án đúng</p>
-            <div className='grid grid-cols-2 gap-4'>
+            <p
+              className={`font-semibold  text-sm mb-5 ${isCorrect === true ? 'text-green-500' : !isSkip && isCorrect === false ? 'text-red-500' : 'text-gray-500'}`}
+            >
+              {isCorrect == null
+                ? 'Chọn đáp án đúng'
+                : isCorrect === true
+                  ? 'Làm tốt lắm!'
+                  : !isSkip && isCorrect === false
+                    ? 'Đừng nản chí học là một quá trình'
+                    : 'Thử câu hỏi này lại sau'}
+            </p>
+            <div className='grid grid-cols-2 gap-4 max-md:grid-cols-1'>
               {option &&
                 option.map((item, index) => {
                   return (
@@ -111,6 +128,7 @@ const MultipleChoise = ({
           </div>
         </motion.div>
       </AnimatePresence>
+      {/* Hiển thị nút tiếp tục khi người dùng chọn đáp án sai */}
       <AnimatePresence>
         {isAnswered && !isCorrect && showButtonNext && (
           <motion.div
@@ -128,7 +146,7 @@ const MultipleChoise = ({
                 setSelected(null)
                 setIsAnswered(false)
                 setIsCorrect(null)
-                handleNextQuestion()
+                handleNextQuestion(false)
               }}
             >
               Tiếp tục
@@ -138,7 +156,12 @@ const MultipleChoise = ({
       </AnimatePresence>
 
       <div className='mt-5 flex justify-center'>
-        <span className={` font-semibold text-sm px-3 py-2 rounded-2xl ${isAnswered?' text-gray-400':'hover:bg-blue-50 text-blue-600 cursor-pointer'}`}>
+        <span
+          onClick={() => {
+            handleSelect('')
+          }}
+          className={` font-semibold text-sm px-3 py-2 rounded-2xl ${isAnswered ? ' text-gray-400' : 'hover:bg-blue-50 text-blue-600 cursor-pointer'}`}
+        >
           Bạn không biết?
         </span>
       </div>

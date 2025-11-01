@@ -18,19 +18,19 @@ const LearnLessonPage = () => {
   ]
   // Dữ liệu mẫu
   const ORIGINAL_DATA = [
-    { id: '1', source: 'Dog', target: 'Chó', status: 0 },
-    { id: '2', source: 'Sun', target: 'Mặt trời', status: 0 },
-    { id: '3', source: 'Water', target: 'Nước', status: 0 },
-    { id: '4', source: 'Cat', target: 'Mèo', status: 0 },
-    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 0 },
-    { id: '6', source: 'Fire', target: 'Lửa', status: 0 },
-    { id: '7', source: 'Tree', target: 'Cây', status: 0 },
-    { id: '8', source: 'Book', target: 'Sách', status: 0 },
-    { id: '9', source: 'Pen', target: 'Bút', status: 0 },
-    { id: '10', source: 'Car', target: 'Xe hơi', status: 0 },
-    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0 },
-    { id: '12', source: 'River', target: 'Dòng sông', status: 0 },
-    { id: '13', source: 'Mountain', target: 'Núi', status: 0 }
+    { id: '1', source: 'Dog dog', target: 'Chó', status: 3, statusMode: 1 },
+    { id: '2', source: 'Sun', target: 'Mặt trời', status: 3, statusMode: 1 },
+    { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 1 },
+    { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 1 },
+    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 1 },
+    { id: '6', source: 'Fire', target: 'Lửa', status: 3, statusMode: 1 },
+    { id: '7', source: 'Tree', target: 'Cây', status: 3, statusMode: 0 },
+    { id: '8', source: 'Book', target: 'Sách', status: 3, statusMode: 0 },
+    { id: '9', source: 'Pen', target: 'Bút', status: 0, statusMode: 0 },
+    { id: '10', source: 'Car', target: 'Xe hơi', status: 0, statusMode: 0 },
+    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0, statusMode: 0 },
+    { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 0 },
+    { id: '13', source: 'Mountain', target: 'Núi', status: 0, statusMode: 0 }
   ]
   const [indexMulti, setIndexMulti] = useState<number>(0)
   const [selected, setSelected] = useState<string | null>(null) // Trạng thái lựa chọn của người dùng
@@ -48,9 +48,12 @@ const LearnLessonPage = () => {
     return options.sort(() => Math.random() - 0.5)
   }
   const handleNextQuestion = () => {
+    if(indexMulti == ORIGINAL_DATA.length -1){
+      alert('Bạn đã hoàn thành tất cả các câu hỏi!')
+      return
+    }
     setIndexMulti((prevIndex) => {
-      // Dùng % (modulo) để quay lại 0 khi đến cuối mảng
-      return (prevIndex + 1) % ORIGINAL_DATA.length
+      return (prevIndex + 1)
     })
   }
   // mảng chứa Đích
