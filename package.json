@@ -14,6 +14,7 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
     "@react-oauth/google": "^0.12.2",
     "@react-router/node": "^7.5.3",

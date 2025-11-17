@@ -11,7 +11,7 @@ const LearnLessonPage = () => {
   const features = [
     { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: 'flash-card' },
     { icon: BookOpenIcon, title: 'Học', links: 'multiple-choice' },
-    { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: '' },
+    { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: 'test' },
     { icon: NewspaperIcon, title: 'Blocks', links: '' },
     { icon: NewspaperIcon, title: 'Blast', links: '' },
     { icon: NewspaperIcon, title: 'Ghép thẻ', links: '' }

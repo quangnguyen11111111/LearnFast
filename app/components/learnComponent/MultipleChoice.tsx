@@ -1,11 +1,12 @@
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
+
 interface MultipleChoiseProps {
   indexMulti: number
   ORIGINAL_DATA: { id: string; source: string; target: string; status: number; statusMode: number }[]
   option: string[]
-  handleNextQuestion: (value: boolean) => void
+  handleNextQuestion: (isCorrect: boolean) => void
   isAnswered: boolean
   setIsAnswered: (value: boolean) => void
   isCorrect: boolean | null
@@ -14,6 +15,7 @@ interface MultipleChoiseProps {
   setSelected: (value: string | null) => void
   showButtonNext?: boolean
 }
+
 const MultipleChoise = ({
   indexMulti,
   ORIGINAL_DATA,
@@ -27,108 +29,125 @@ const MultipleChoise = ({
   setSelected,
   showButtonNext
 }: MultipleChoiseProps) => {
-  if (!ORIGINAL_DATA[indexMulti]) return
-  const correctAnswer = ORIGINAL_DATA[indexMulti].target
-  const [isSkip, setIsSkip] = useState<boolean>(false)
-  // Xử lý khi người dùng chọn một đáp án
-  const handleSelect = (item: string) => {
+  const [isSkip, setIsSkip] = useState(false)
+  const currentQuestion = ORIGINAL_DATA[indexMulti]
+  if (!currentQuestion) return null
+
+  const { source, target: correctAnswer } = currentQuestion
+
+  // ------------------------------
+  // Handlers
+  // ------------------------------
+  const resetState = () => {
+    setSelected(null)
+    setIsAnswered(false)
+    setIsCorrect(null)
+  }
+
+  const handleSelect = (choice: string) => {
     if (isAnswered) return
-    setSelected(item)
+    const skipped = choice === ''
+    const correct = choice === correctAnswer
+
+    setSelected(choice)
+    setIsSkip(skipped)
     setIsAnswered(true)
-    const correct = item === correctAnswer
     setIsCorrect(correct)
-    if (item === '') {
-      setIsSkip(true)
-    }
+
     if (correct) {
-      // Nếu đúng, tự chuyển câu sau 0.8 giây
       setTimeout(() => {
-        setSelected(null)
-        setIsAnswered(false)
-        setIsCorrect(null)
+        resetState()
         handleNextQuestion(true)
       }, 800)
     }
   }
-  // Hàm để lấy màu viền dựa trên trạng thái
-  const getBorderColor = (item: string) => {
+
+  const handleContinue = () => {
+    resetState()
+    handleNextQuestion(false)
+  }
+
+  // ------------------------------
+  // Helpers
+  // ------------------------------
+  const getBorderColor = (choice: string) => {
     if (!isAnswered) return 'border-gray-200'
-    if (item === correctAnswer && isCorrect) return 'border-green-500'
-    if (item === selected && !isCorrect) return 'border-red-500'
-    if (item === correctAnswer && !isCorrect) return 'border-green-500'
+    if (choice === correctAnswer) return 'border-green-500'
+    if (choice === selected && !isCorrect) return 'border-red-500'
     return 'border-gray-200'
   }
+
+  const getMessage = () => {
+    if (isCorrect == null) return 'Chọn đáp án đúng'
+    if (isCorrect) return 'Làm tốt lắm!'
+    return isSkip ? 'Thử câu hỏi này lại sau' : 'Đừng nản chí học là một quá trình'
+  }
+
+  const getOptionBg = (choice: string) => {
+    if (!isAnswered) return ''
+    if (choice === correctAnswer && isCorrect) return 'bg-green-50'
+    if (choice === selected && !isCorrect && choice !== correctAnswer) return 'bg-red-50'
+    return ''
+  }
+
+  const getIcon = (choice: string, index: number) => {
+    if (!isAnswered) return index + 1
+    if (choice === correctAnswer) return <CheckIcon className='size-7 text-green-600' />
+    if (choice === selected && !isCorrect && choice !== correctAnswer)
+      return <XMarkIcon className='size-7 text-red-600' />
+    return index + 1
+  }
+
+  // ------------------------------
+  // Render
+  // ------------------------------
   return (
     <div
-      className={`bg-white rounded-2xl relative overflow-hidden py-10 border border-gray-200 ${isAnswered ? '' : 'shadow-lg '}`}
+      className={`bg-white rounded-2xl relative overflow-hidden py-10 border ${isAnswered ? 'border-gray-200' : 'shadow-lg border-gray-200'}`}
     >
       <AnimatePresence mode='wait'>
-        {' '}
-        {/* 'wait' đảm bảo cái cũ đi ra xong cái mới mới đi vào */}
         <motion.div
-          key={ORIGINAL_DATA[indexMulti]?.id || indexMulti} //  Key này báo cho AnimatePresence biết component đã thay đổi
-          className='py-5 px-10 max-md:px-3' // Di chuyển padding vào đây
-          initial={{ x: '10%', opacity: 0 }} // Trạng thái bắt đầu (bên phải, vô hình)
-          animate={{ x: 0, opacity: 1 }} // Trạng thái hoạt động (ở giữa, hiện hình)
-          exit={{ x: '-10%', opacity: 0 }} // Trạng thái thoát (sang trái, vô hình)
-          transition={{ duration: 0.3, ease: 'linear' }} // Tốc độ và kiểu hiệu ứng
+          key={currentQuestion.id || indexMulti}
+          className='py-5 px-10 max-md:px-3'
+          initial={{ x: '10%', opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: '-10%', opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'linear' }}
         >
-          <p className='mt-10 text-xl'>{ORIGINAL_DATA[indexMulti].source}</p>
-          <div className='mt-25'>
-            <p
-              className={`font-semibold  text-sm mb-5 ${isCorrect === true ? 'text-green-500' : !isSkip && isCorrect === false ? 'text-red-500' : 'text-gray-500'}`}
-            >
-              {isCorrect == null
-                ? 'Chọn đáp án đúng'
-                : isCorrect === true
-                  ? 'Làm tốt lắm!'
-                  : !isSkip && isCorrect === false
-                    ? 'Đừng nản chí học là một quá trình'
-                    : 'Thử câu hỏi này lại sau'}
-            </p>
-            <div className='grid grid-cols-2 gap-4 max-md:grid-cols-1'>
-              {option &&
-                option.map((item, index) => {
-                  return (
-                    <div
-                      key={item}
-                      className={`flex gap-2 border-2 p-3 rounded-lg cursor-pointer transition-all duration-200 ${getBorderColor(
-                        item
-                      )} 
-                      ${
-                        isAnswered
-                          ? 'cursor-default opacity-80' // vô hiệu hóa hover và click
-                          : 'cursor-pointer hover:border-gray-700'
-                      }
-                      ${
-                        isAnswered && item === correctAnswer && isCorrect
-                          ? 'bg-green-50'
-                          : isAnswered && item === selected && !isCorrect && item !== correctAnswer
-                            ? 'bg-red-50'
-                            : ''
-                      }`}
-                      onClick={() => handleSelect(item)}
-                    >
-                      <span
-                        className={`${isAnswered ? '' : 'p-2 bg-gray-200'} size-7 flex items-center justify-center font-bold text-gray-600  rounded-[50%]`}
-                      >
-                        {isAnswered && item === correctAnswer ? (
-                          <CheckIcon className='size-7 text-green-600' />
-                        ) : isAnswered && item === selected && !isCorrect && item !== correctAnswer ? (
-                          <XMarkIcon className='size-7 text-red-600' />
-                        ) : (
-                          index + 1
-                        )}
-                      </span>
-                      <p className='text-gray-500 text-lg'>{item}</p>
-                    </div>
-                  )
-                })}
-            </div>
+          <p className='mt-10 text-xl'>{source}</p>
+          <p
+            className={`mt-5 font-semibold text-sm ${
+              isCorrect === true ? 'text-green-500' : !isSkip && isCorrect === false ? 'text-red-500' : 'text-gray-500'
+            }`}
+          >
+            {getMessage()}
+          </p>
+
+          <div className='grid grid-cols-2 gap-4 mt-5 max-md:grid-cols-1'>
+            {option.map((choice, index) => (
+              <div
+                key={choice}
+                onClick={() => handleSelect(choice)}
+                className={`flex gap-2 border-2 p-3 rounded-lg transition-all duration-200 
+                  ${getBorderColor(choice)} ${getOptionBg(choice)} 
+                  ${isAnswered ? 'cursor-default opacity-80' : 'cursor-pointer hover:border-gray-700'}
+                `}
+              >
+                <span
+                  className={`size-7 flex items-center justify-center font-bold rounded-full text-gray-600 ${
+                    isAnswered ? '' : 'p-2 bg-gray-200'
+                  }`}
+                >
+                  {getIcon(choice, index)}
+                </span>
+                <p className='text-gray-500 text-lg'>{choice}</p>
+              </div>
+            ))}
           </div>
         </motion.div>
       </AnimatePresence>
-      {/* Hiển thị nút tiếp tục khi người dùng chọn đáp án sai */}
+
+      {/* Nút tiếp tục */}
       <AnimatePresence>
         {isAnswered && !isCorrect && showButtonNext && (
           <motion.div
@@ -136,18 +155,12 @@ const MultipleChoise = ({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 40, opacity: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
-            className='absolute bottom-7 flex justify-between w-full bg-white px-10  items-center'
+            className='absolute bottom-7 flex justify-between w-full bg-white px-10 items-center'
           >
-            {' '}
             <p className='text-gray-500 font-semibold max-md:hidden'>Ấn nút tiếp tục để sang câu tiếp theo</p>
             <button
-              className='bg-blue-600 text-white font-semibold px-6 py-2 max-md:w-full rounded-full shadow-lg hover:bg-blue-700 transition'
-              onClick={() => {
-                setSelected(null)
-                setIsAnswered(false)
-                setIsCorrect(null)
-                handleNextQuestion(false)
-              }}
+              onClick={handleContinue}
+              className='bg-blue-600 text-white font-semibold px-6 py-2 rounded-full shadow-lg hover:bg-blue-700 transition max-md:w-full'
             >
               Tiếp tục
             </button>
@@ -155,12 +168,13 @@ const MultipleChoise = ({
         )}
       </AnimatePresence>
 
+      {/* Nút bỏ qua */}
       <div className='mt-5 flex justify-center'>
         <span
-          onClick={() => {
-            handleSelect('')
-          }}
-          className={` font-semibold text-sm px-3 py-2 rounded-2xl ${isAnswered ? ' text-gray-400' : 'hover:bg-blue-50 text-blue-600 cursor-pointer'}`}
+          onClick={() => handleSelect('')}
+          className={`font-semibold text-sm px-3 py-2 rounded-2xl ${
+            isAnswered ? 'text-gray-400' : 'text-blue-600 hover:bg-blue-50 cursor-pointer'
+          }`}
         >
           Bạn không biết?
         </span>
@@ -168,4 +182,5 @@ const MultipleChoise = ({
     </div>
   )
 }
+
 export default MultipleChoise

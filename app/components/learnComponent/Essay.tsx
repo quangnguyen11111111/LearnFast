@@ -26,6 +26,7 @@ const Essay = ({
   // State để theo dõi người dùng chọn "hiển thị gợi ý"
   const [isShowHint, setIsShowHint] = useState<boolean>(false)
   const refInput = useRef<HTMLInputElement>(null)
+  // Hàm chuyển tiếp
   const handleNextQuestion = () => {
     const normalizedInput = valueInput.trim().toLowerCase()
     const normalizedAnswer = correctAnswer.source.trim().toLowerCase()
@@ -38,9 +39,6 @@ const Essay = ({
         handleNextQuestionEssay(true)
       }, 1000)
     } else {
-      // setValueInput('')
-      // handleNextQuestionEssay(false)
-      // setIsCorrect(null)
       setIsCorrect(false)
       setIsShowHint(false)
     }
@@ -51,7 +49,83 @@ const Essay = ({
     }, 350)
     return () => clearTimeout(timer)
   }, [indexMulti, isCorrect])
+  // Hàm hiển thị theo trạng thái câu trả lời
+  const renderFeedBack = () => {
+    if (isCorrect === false) {
+      return (
+        <>
+          {/* Nếu false Hiển thị đáp án người dùng nhập sai */}
+          <p className={` font-semibold mb-4 ${isIdontKnow ? 'text-gray-700' : 'text-red-700'}`}>
+            {isIdontKnow ? 'Thử lại câu hỏi này sau!' : 'Đừng lo bạn vẫn đang học mà!'}
+          </p>
+          <p
+            className={`w-full outline-2 rounded-md px-2 py-3 ${isIdontKnow ? 'outline-gray-400 text-gray-500 text-lg' : 'outline-red-400 '}`}
+          >
+            {isIdontKnow ? 'Đã bỏ qua' : valueInput}
+          </p>
+        </>
+      )
+    } else if (isCorrect === true) {
+      return (
+        <>
+          {/* Nếu đúng hiển thị đáp án người dùng đã nhập */}
+          <p className='text-green-700 font-semibold mb-4'>Rất tốt bạn đã trả lời đúng</p>
+          <p className='w-full outline-2 outline-green-400 px-2 py-3 rounded-md'>{valueInput}</p>
+        </>
+      )
+    } else
+      return (
+        <>
+          {/* Nếu null hiển thị input cho người dùng nhập */}
+          <p className='text-sm font-semibold text-gray-600 mb-4 '>Đáp án của bạn</p>
+          <input
+            ref={refInput}
+            type='text'
+            placeholder='Nhập đáp án của bạn'
+            value={valueInput}
+            onChange={(e) => setValueInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                if (valueInput.trim() !== '') {
+                  handleNextQuestion()
+                }
+              }
+            }}
+            className={`w-full font-semibold  bg-gray-100 rounded-md px-2 py-3 placeholder-gray-400 placeholder:font-semibold mt-2 focus:outline-blue-300 focus:bg-white border-none}`}
+          />
+        </>
+      )
+  }
+  // Hàm xử lí phong cách hiển thị gợi Ý
+  const displayProcessingSuggest = (correctAnswer: { id: string; source: string; target: string }) => {
+    const phrase = correctAnswer.source.trim() // toàn bộ cụm, giữ space
+    const total = phrase.length
+    const hintCount = Math.max(1, Math.ceil(total * 0.2)) // ít nhất 1 ký tự
+    const shownSegment = phrase.slice(0, hintCount)
 
+    // tìm ký tự chữ cái đầu tiên trong phần shown để viết hoa (nếu có)
+    let shownArr = shownSegment.split('')
+    const firstAlphaIndex = shownArr.findIndex((ch) => /[A-Za-zÀ-ỹ0-9]/u.test(ch))
+    if (firstAlphaIndex !== -1) {
+      shownArr[firstAlphaIndex] = shownArr[firstAlphaIndex].toUpperCase()
+    }
+
+    // xây dựng output: duyệt toàn chuỗi, nếu index < hintCount => show ký tự (từ shownArr),
+    // nếu là space => giữ space, else show '_'
+    const out = Array.from(phrase).map((ch, i) => {
+      if (i < hintCount) {
+        // hiển thị ký tự (đã xử lý viết hoa ở shownArr)
+        const c = shownArr[i] ?? ch
+        // nếu ký tự là space thì render một khoảng cách rõ ràng
+        return c === ' ' ? '\u00A0' : c
+      } else {
+        // giữ space nguyên, ẩn ký tự khác bằng '_ ' để có khoảng cách đều
+        return ch === ' ' ? '\u00A0' : '_'
+      }
+    })
+    return out
+  }
   return (
     <div className={`bg-white rounded-2xl relative overflow-hidden border-2 border-gray-200`}>
       <AnimatePresence mode='wait'>
@@ -71,46 +145,7 @@ const Essay = ({
           </div>
           <div className=''>
             {/* HIển thị phản hồi dụa trên trạng thái isCorrect */}
-            {isCorrect === false ? (
-              <>
-                {/* Nếu false Hiển thị đáp án người dùng nhập sai */}
-                <p className={` font-semibold mb-4 ${isIdontKnow ? 'text-gray-700' : 'text-red-700'}`}>
-                  {isIdontKnow ? 'Thử lại câu hỏi này sau!' : 'Đừng lo bạn vẫn đang học mà!'}
-                </p>
-                <p
-                  className={`w-full outline-2 rounded-md px-2 py-3 ${isIdontKnow ? 'outline-gray-400 text-gray-500 text-lg' : 'outline-red-400 '}`}
-                >
-                  {isIdontKnow ? 'Đã bỏ qua' : valueInput}
-                </p>
-              </>
-            ) : isCorrect === true ? (
-              <>
-                {/* Nếu đúng hiển thị đáp án người dùng đã nhập */}
-                <p className='text-green-700 font-semibold mb-4'>Rất tốt bạn đã trả lời đúng</p>
-                <p className='w-full outline-2 outline-green-400 px-2 py-3 rounded-md'>{valueInput}</p>
-              </>
-            ) : (
-              <>
-                {/* Nếu null hiển thị input cho người dùng nhập */}
-                <p className='text-sm font-semibold text-gray-600 mb-4 '>Đáp án của bạn</p>
-                <input
-                  ref={refInput}
-                  type='text'
-                  placeholder='Nhập đáp án của bạn'
-                  value={valueInput}
-                  onChange={(e) => setValueInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      if (valueInput.trim() !== '') {
-                        handleNextQuestion()
-                      }
-                    }
-                  }}
-                  className={`w-full font-semibold  bg-gray-100 rounded-md px-2 py-3 placeholder-gray-400 placeholder:font-semibold mt-2 focus:outline-blue-300 focus:bg-white border-none}`}
-                />
-              </>
-            )}
+            {renderFeedBack()}
             {/* Hiển thị nút tương tác khi người dùng chưa xác nhận */}
             {isCorrect !== false && (
               <div className=' mt-6 flex justify-between items-center'>
@@ -152,32 +187,7 @@ const Essay = ({
                           }}
                         >
                           {(() => {
-                            const phrase = correctAnswer.source.trim() // toàn bộ cụm, giữ space
-                            const total = phrase.length
-                            const hintCount = Math.max(1, Math.ceil(total * 0.2)) // ít nhất 1 ký tự
-                            const shownSegment = phrase.slice(0, hintCount)
-
-                            // tìm ký tự chữ cái đầu tiên trong phần shown để viết hoa (nếu có)
-                            let shownArr = shownSegment.split('')
-                            const firstAlphaIndex = shownArr.findIndex((ch) => /[A-Za-zÀ-ỹ0-9]/u.test(ch))
-                            if (firstAlphaIndex !== -1) {
-                              shownArr[firstAlphaIndex] = shownArr[firstAlphaIndex].toUpperCase()
-                            }
-
-                            // xây dựng output: duyệt toàn chuỗi, nếu index < hintCount => show ký tự (từ shownArr),
-                            // nếu là space => giữ space, else show '_'
-                            const out = Array.from(phrase).map((ch, i) => {
-                              if (i < hintCount) {
-                                // hiển thị ký tự (đã xử lý viết hoa ở shownArr)
-                                const c = shownArr[i] ?? ch
-                                // nếu ký tự là space thì render một khoảng cách rõ ràng
-                                return c === ' ' ? '\u00A0' : c
-                              } else {
-                                // giữ space nguyên, ẩn ký tự khác bằng '_ ' để có khoảng cách đều
-                                return ch === ' ' ? '\u00A0' : '_'
-                              }
-                            })
-
+                            const out = displayProcessingSuggest(correctAnswer)
                             return out.map((ch, i) => (
                               <motion.span
                                 key={i}

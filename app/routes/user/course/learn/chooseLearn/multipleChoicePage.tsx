@@ -15,21 +15,22 @@ const MultipleChoicePage = () => {
     status: number
     statusMode: number
   }
-  const ORIGINAL_DATA = [
-    { id: '1', source: 'Dog dog', target: 'Chó', status: 3, statusMode: 2 },
-    { id: '2', source: 'Sun', target: 'Mặt trời', status: 3, statusMode: 2 },
-    { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 2 },
-    { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 2 },
-    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 2 },
-    { id: '6', source: 'Fire', target: 'Lửa', status: 3, statusMode: 2 },
-    { id: '7', source: 'Tree', target: 'Cây', status: 3, statusMode: 2 },
-    { id: '8', source: 'Book', target: 'Sách', status: 3, statusMode: 2 },
-    { id: '9', source: 'Pen', target: 'Bút', status: 0, statusMode: 2 },
-    { id: '10', source: 'Car', target: 'Xe hơi', status: 0, statusMode: 2 },
-    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0, statusMode: 2 },
-    { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 2 },
-    { id: '13', source: 'Mountain', target: 'Núi', status: 0, statusMode: 0 }
-  ]
+  const [ORIGINAL_DATA, setORIGINAL_DATA] = useState<Question[]>([
+    { id: '1', source: 'Dog dog', target: 'Chó', status: 3, statusMode: 1 },
+    { id: '0', source: 'Sun', target: 'Mặt trời', status: 3, statusMode: 1 },
+    { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 1 },
+    { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 1 },
+    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 1 },
+    { id: '6', source: 'Fire', target: 'Lửa', status: 3, statusMode: 1 },
+    { id: '7', source: 'Tree', target: 'Cây', status: 3, statusMode: 0 },
+    { id: '8', source: 'Book', target: 'Sách', status: 3, statusMode: 0 },
+    { id: '9', source: 'Pen', target: 'Bút', status: 0, statusMode: 0 },
+    { id: '10', source: 'Car', target: 'Xe hơi', status: 0, statusMode: 0 },
+    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0, statusMode: 0 },
+    { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 0 }
+    
+
+  ])
   // Hàm lấy dữ liệu câu hỏi ( 6 câu 1 lần )
   const fetchQuestions = (data: Question[], round: number): Question[] => {
     const shuffled = [...data] // copy mảng để không thay đổi gốc
@@ -117,6 +118,11 @@ const MultipleChoicePage = () => {
       setDataCorrect([...dataCorrect, dataMulti[indexQuestion]])
       setDataMulti(dataMulti.filter((_, index) => index !== indexQuestion))
       setIndexQuestion(indexQuestion)
+      const currentQuestion = dataMulti[indexQuestion]
+      // cập nhật statusMode sang 1 trong originalData
+      setORIGINAL_DATA((prev) =>
+        prev.map((item) => (item.id === currentQuestion.id ? { ...item, statusMode: 1 } : item))
+      )
       if (dataMulti.length === 1) {
         alert('Bạn đã hoàn thành tất cả các câu hỏi!')
         // setRound(round + 1)
@@ -136,6 +142,12 @@ const MultipleChoicePage = () => {
   // Hàm xử lý chuyển câu hỏi tiếp theo cho tự luận
   const handleNextQuestionEssay = (value: boolean) => {
     if (value) {
+      const currentQuestion = dataEssay[indexQuestion]
+      //  cập nhật statusMode sang 2 trong originalData
+      setORIGINAL_DATA((prev) =>
+        prev.map((item) => (item.id === currentQuestion.id ? { ...item, statusMode: 2 } : item))
+      )
+
       setIndexEssay(indexEssay + 1)
       setNumberQuestion(numberQuestion + 1)
       setDataEssay(dataEssay.filter((_, index) => index !== indexQuestion))
@@ -158,13 +170,6 @@ const MultipleChoicePage = () => {
     if (!dataMulti[indexQuestion]) return []
     return getRandomOptions(dataMulti[indexQuestion].target, allTargets)
   }, [indexQuestion, dataMulti])
-
-  console.log('check data Chính xác dataCorrect', dataCorrect)
-  console.log('check data essay', dataEssay)
-  console.log('check round', round)
-  console.log('check mode', status)
-  console.log('check data Multiple', dataMulti)
-
   return (
     <div className='px-25 max-md:px-10 pb-5 flex flex-col justify-start relative'>
       {/* Học trắc nghiệm */}
@@ -286,13 +291,13 @@ const MultipleChoicePage = () => {
                   ref={buttonRef}
                   className='bg-blue-600 text-white font-semibold px-6 py-2 max-md:w-full rounded-full shadow-md hover:bg-blue-700 transition'
                   onClick={() => {
-                    if (dataEssay.length === 0 && dataMulti.length === 0) {
-                      setStatus('EndLesson')
-                    } else if (
-                      fetchQuestions(ORIGINAL_DATA, round - 1).filter((item) => item.statusMode == 1).length == 6 ||
-                      dataCorrect.length < 6
+                    if (
+                      fetchQuestions(ORIGINAL_DATA, round - 1).filter((item) => item.statusMode == 1).length >0 ||
+                      fetchQuestions(ORIGINAL_DATA, round).filter((item) => item.statusMode == 1).length >0
                     ) {
                       setStatus('Essay')
+                    } else if (dataEssay.length === 0 && dataMulti.length === 0) {
+                      setStatus('EndLesson')
                     } else {
                       setStatus('Multiple')
                       setDataCorrect([])
@@ -311,12 +316,16 @@ const MultipleChoicePage = () => {
       {/* Hoàn thành khóa học */}
       {status === 'EndLesson' && (
         <div className='flex flex-col items-center justify-center'>
-          <img src={imgEndLesson} alt="ảnh cúp hoàn thành" className='size-30 mt-15' />
-          <div className="mt-20">Chúc mừng bạn đã hoàn thành học phần này</div>
+          <img src={imgEndLesson} alt='ảnh cúp hoàn thành' className='size-30 mt-15' />
+          <div className='mt-20'>Chúc mừng bạn đã hoàn thành học phần này</div>
           <p>Hãy thử thêm một vòng nữa để bạn có thể tập luyện thêm học phần</p>
-          <div className="grid grid-cols-2 max-md:grid-cols-1 gap-5 mt-10">
-            <Button rounded='rounded-3xl' className='px-10 py-3 font-semibold'variant='secondary'>Làm bài kiểm tra</Button>
-            <Button rounded='rounded-3xl' className='px-10 py-3 font-semibold'>Tiếp tục ôn luyện</Button>
+          <div className='grid grid-cols-2 max-md:grid-cols-1 gap-5 mt-10'>
+            <Button rounded='rounded-3xl' className='px-10 py-3 font-semibold' variant='secondary'>
+              Làm bài kiểm tra
+            </Button>
+            <Button rounded='rounded-3xl' className='px-10 py-3 font-semibold'>
+              Tiếp tục ôn luyện
+            </Button>
           </div>
         </div>
       )}

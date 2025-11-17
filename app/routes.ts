@@ -16,6 +16,7 @@ export default [
   route('learn-lesson','layouts/LearnLayout.tsx',[
     route('flash-card','routes/user/course/learn/chooseLearn/flashCardPage.tsx'),
     route('multiple-choice','routes/user/course/learn/chooseLearn/multipleChoicePage.tsx'),
+    route('test','routes/user/course/learn/chooseLearn/testPage.tsx'),
   ]),
   // Route không có layout (ví dụ login)
   route('login', 'routes/guest/auth/loginPage.tsx'),
