@@ -5,9 +5,7 @@ import './app.css'
 import { Provider, useDispatch } from 'react-redux'
 import { store } from './store/store'
 import { GoogleOAuthProvider } from '@react-oauth/google'
-import { useEffect } from 'react'
-import { refreshToken } from './features/auth/authSlice'
-import { useAppDispatch } from './store/hook'
+
 import RefreshToken from './layouts/RefreshToken'
 
 export const links: Route.LinksFunction = () => [

@@ -4,6 +4,7 @@ import { Bars3Icon } from '@heroicons/react/24/outline'
 interface HeaderProps {
   display: 'sticky' | 'static'
   shadow: boolean
+  
 }
 export default function HeaderGuest({ display, shadow }: HeaderProps) {
   return (

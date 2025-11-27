@@ -8,38 +8,47 @@ import { Cog8ToothIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { CheckBadgeIcon, CheckIcon, ClipboardDocumentCheckIcon, NumberedListIcon } from '@heroicons/react/24/solid'
 import Toggle from '~/components/Toggle'
 import { AnimatePresence, motion } from 'framer-motion'
-const TestPage = () => {
-  interface Question {
-    id: string
-    source: string
-    target: string
-    status: number
-    statusMode: number
-  }
-  // I khung cho việc lưu trữ đáp án người dùng
-  interface UserAnswer {
-    id: string
-    mode: 'trueFalse' | 'multiple' | 'essay'
-    userAnswer: string | boolean // tùy loại câu
-    isCorrect: boolean
-    refDivMain: React.RefObject<HTMLDivElement | null> | HTMLDivElement | null
-  }
+// Types used in this module
+interface Question {
+  id: string
+  source: string
+  target: string
+  status: number
+  statusMode: number
+}
 
-  const defaultData = [
-    { id: '1', source: 'Dog dog', target: 'Chó', status: 3, statusMode: 1 },
-    { id: '0', source: 'Sun', target: 'Mặt trời', status: 3, statusMode: 1 },
-    { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 1 },
-    { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 1 },
-    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 1 },
-    { id: '6', source: 'Fire', target: 'Lửa', status: 3, statusMode: 1 },
-    { id: '7', source: 'Tree', target: 'Cây', status: 3, statusMode: 0 },
-    { id: '8', source: 'Book', target: 'Sách', status: 3, statusMode: 0 },
-    { id: '9', source: 'Pen', target: 'Bút', status: 0, statusMode: 0 },
-    { id: '10', source: 'Car', target: 'Xe hơi', status: 0, statusMode: 0 },
-    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0, statusMode: 0 },
-    { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 0 }
-  ]
+// Structure to hold a user's answer and basic metadata
+interface UserAnswer {
+  id: string
+  mode: 'trueFalse' | 'multiple' | 'essay'
+  userAnswer: string | boolean
+  isCorrect: boolean
+  refDivMain: React.RefObject<HTMLDivElement | null> | HTMLDivElement | null
+}
+
+// Example dataset (kept outside component to avoid re-creation on each render)
+const defaultData: Question[] = [
+  { id: '1', source: 'Dog dog', target: 'Chó', status: 3, statusMode: 1 },
+  { id: '0', source: 'Sun', target: 'Mặt trời', status: 3, statusMode: 1 },
+  { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 1 },
+  { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 1 },
+  { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 1 },
+  { id: '6', source: 'Fire', target: 'Lửa', status: 3, statusMode: 1 },
+  { id: '7', source: 'Tree', target: 'Cây', status: 3, statusMode: 0 },
+  { id: '8', source: 'Book', target: 'Sách', status: 3, statusMode: 0 },
+  { id: '9', source: 'Pen', target: 'Bút', status: 0, statusMode: 0 },
+  { id: '10', source: 'Car', target: 'Xe hơi', status: 0, statusMode: 0 },
+  { id: '11', source: 'Cloud', target: 'Đám mây', status: 0, statusMode: 0 },
+  { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 0 }
+]
+
+const TestPage = () => {
   // Hàm đảo dữ liệu
+  /**
+   * shuffleArray
+   * - Trả về một bản sao của mảng đầu vào sau khi hoán vị ngẫu nhiên
+   * - Không thay đổi mảng gốc (immutable)
+   */
   const shuffleArray = <T,>(array: T[]): T[] => {
     const shuffled = [...array] // Tạo bản sao để không làm thay đổi mảng gốc
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -48,6 +57,10 @@ const TestPage = () => {
     }
     return shuffled
   }
+  /**
+   * getRandomItems
+   * - Lấy `x` phần tử ngẫu nhiên từ mảng `arr` (dùng shuffleArray)
+   */
   function getRandomItems(arr: Question[], x: number) {
     const shuffled = shuffleArray(arr)
     return shuffled.slice(0, x)
@@ -116,6 +129,12 @@ const TestPage = () => {
 
   // Xử lý dữ liệu cho từng chế độ
   // 1.. Chế độ đúng sai
+  /**
+   * generateTrueFalseData
+   * - Tạo dữ liệu cho chế độ đúng/sai
+   * - Với xác suất `trueRatio` câu sẽ hiển thị đúng target, ngược lại hiển thị target sai
+   * - Trả về mảng với trường `displayTarget` và `isCorrect`
+   */
   const generateTrueFalseData = (data: Question[], trueRatio = 0.4) => {
     return data.map((item) => {
       // random xác suất: nếu nhỏ hơn trueRatio => câu đúng
@@ -135,6 +154,11 @@ const TestPage = () => {
   }
   // 2.. Chế độ trắc nghiệm
   // Hàm trỗn dữ liệu ngẫu nhiên cho trắc nghiệm
+  /**
+   * getRandomOptions
+   * - Tạo 4 lựa chọn cho câu trắc nghiệm, gồm 1 đáp án đúng và 3 đáp án nhầm ngẫu nhiên
+   * - Trả về các option đã được shuffle
+   */
   const getRandomOptions = (correct: string, allSources: string[]): string[] => {
     const options = [correct]
     while (options.length < 4) {
@@ -192,6 +216,12 @@ const TestPage = () => {
     answered: boolean[],
     mode: 'trueFalse' | 'multiple' | 'essay'
   ) => {
+    /**
+     * handleNext
+     * - Dùng để chuyển đến câu hỏi tiếp theo chưa trả lời trong cùng chế độ
+     * - Nếu không còn câu trong chế độ hiện tại sẽ nhảy sang chế độ tiếp theo (trueFalse -> multiple -> essay)
+     * - Tự động cuộn tới phần tử và focus input khi cần (essay)
+     */
     const jumpToNextUnanswered = (
       ref: React.RefObject<(HTMLDivElement | HTMLInputElement | null)[]>,
       answered: boolean[]
@@ -255,6 +285,12 @@ const TestPage = () => {
     correctAnswer: string | boolean,
     refDivMain: React.RefObject<HTMLDivElement | null> | HTMLDivElement | null
   ) => {
+    /**
+     * handleSelectAnswer
+     * - Cập nhật lựa chọn đang highlight (selectedAnswers)
+     * - So sánh với đáp án đúng và lưu vào `userAnswers`
+     * - Thực hiện cập nhật theo từng chế độ
+     */
     // 1. Cập nhật highlight (đánh dấu đáp án đã chọn)
     setSelectedAnswers((prev) => ({
       ...prev,
@@ -293,6 +329,12 @@ const TestPage = () => {
 
   // ------------------------Hàm khi submit kiểm tra còn câu nào trống ---------
   const handleSubmitEndTest = () => {
+    /**
+     * handleSubmitEndTest
+     * - Kiểm tra xem có câu nào chưa trả lời không.
+     * - Nếu còn câu chưa trả lời: cuộn tới câu đó và dừng gửi bài.
+     * - Nếu tất cả đã trả lời: dừng timer và mở summary.
+     */
     const findFirstUnanswered = (
       ref: React.RefObject<(HTMLDivElement | HTMLInputElement | null)[]>,
       answered: boolean[]
@@ -354,6 +396,11 @@ const TestPage = () => {
     isUserCorrect: boolean | undefined,
     questionId: string
   ): string => {
+    /**
+     * getFeedbackText
+     * - Trả về chuỗi phản hồi tùy theo trạng thái (chưa nộp / đúng / sai)
+     * - Dùng một hàm băm đơn giản trên `questionId` để chọn thông điệp ngẫu nhiên
+     */
     // 🟢 Khi chưa nộp bài hoặc chưa chọn gì
     if (!isEndTest || isUserCorrect === null || isUserCorrect === undefined) {
       switch (mode) {
@@ -402,6 +449,10 @@ const TestPage = () => {
   // -------- Các hàm hiển thị giao diện cho từng loại -------
   // 1.. Giao diện hiển thị phần trăm đúng sai khi submit
   const TestResult = ({ time, correct, wrong }: { time: string; correct: number; wrong: number }) => {
+    /**
+     * TestResult component
+     * - Hiển thị thời gian làm bài, biểu đồ phần trăm, số câu đúng/sai và danh sách đáp án
+     */
     const total = correct + wrong
     const percent = Math.round((correct / total) * 100)
 
@@ -727,7 +778,7 @@ const TestPage = () => {
                 <p className={`${getFeedbackClass(isEndTest, userAnswer?.isCorrect)}`}>
                   {getFeedbackText('trueFalse', isEndTest, userAnswer?.isCorrect, items.id)}
                 </p>
-                <div className={`flex items-center justify-between gap-8 mt-5 }`}>
+                <div className={`flex items-center justify-between gap-8 mt-5`}>
                   {/* Hiển thị nút đúng sai */}
                   {['Đúng', 'Sai'].map((label) => {
                     const userChoice = label === 'Đúng'
@@ -881,11 +932,11 @@ const TestPage = () => {
                     }
                   }}
                   placeholder='Nhập đáp án của bạn'
-                  className={`w-full font-semibold  bg-gray-100 rounded-md px-2 py-3 placeholder-gray-400 placeholder:font-semibold mt-5 focus:outline-blue-300 focus:bg-white border-none}`}
+                  className={`w-full font-semibold bg-gray-100 rounded-md px-2 py-3 placeholder-gray-400 placeholder:font-semibold mt-5 focus:outline-blue-300 focus:bg-white border-none`}
                 />
                 <div className={`flex justify-end ${isEndTest ? '' : 'mt-3'}`}>
                   <Button
-                    className={`px-4 py-3 text-sm font-semibold ${dividedData.essay.length - 1 === index && 'invisible'} ${isEndTest && 'invisible'}`}
+                    className={`px-4 py-3 text-sm font-semibold ${dividedData.essay.length - 1 === index ? 'invisible' : ''} ${isEndTest ? 'invisible' : ''}`}
                     onClick={() => {}}
                     rounded='rounded-4xl'
                   >

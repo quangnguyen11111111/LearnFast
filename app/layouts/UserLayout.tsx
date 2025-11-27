@@ -1,8 +1,5 @@
 import { Outlet } from 'react-router'
 import Header from '../components/header/HeaderUser'
-import Footer from '../components/Footer'
-import { FolderIcon, HomeIcon } from '@heroicons/react/24/outline'
-import { useAppSelector } from '~/store/hook'
 import Sidebar from '~/components/Sidebar'
 
 export default function UserLayout() {

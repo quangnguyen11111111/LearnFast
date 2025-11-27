@@ -28,8 +28,6 @@ const MultipleChoicePage = () => {
     { id: '10', source: 'Car', target: 'Xe hơi', status: 0, statusMode: 0 },
     { id: '11', source: 'Cloud', target: 'Đám mây', status: 0, statusMode: 0 },
     { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 0 }
-    
-
   ])
   // Hàm lấy dữ liệu câu hỏi ( 6 câu 1 lần )
   const fetchQuestions = (data: Question[], round: number): Question[] => {

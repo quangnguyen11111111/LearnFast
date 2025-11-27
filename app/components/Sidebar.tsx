@@ -58,7 +58,7 @@ const Sidebar = ({ children }: SideBarProps) => {
     }
   ])
   return (
-    <div className='grid grid-cols-[auto_1fr] px-5 h-[calc(100vh-80px)] '>
+    <div className='grid grid-cols-[auto_1fr] px-5 h-[calc(100vh-80px)]'>
       {/* Sidebar */}
       <div
         className={` transition-all duration-300 ease-in-out ${toggleValue ? 'w-45' : ' max-md:w-0 w-12'} overflow-x-hidden overflow-y-auto
@@ -114,7 +114,7 @@ const Sidebar = ({ children }: SideBarProps) => {
       {/* Content */}
       <div
         className=' w-full scrollbar-none overflow-y-auto
-    sticky top-0 right-0'
+    sticky top-0 right-0 '
       >
         {children}
       </div>

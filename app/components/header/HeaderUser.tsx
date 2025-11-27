@@ -1,12 +1,13 @@
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import logo from '../../assets/logo.png'
-import { Bars3Icon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { BackspaceIcon, Bars3Icon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline'
 import Button from '../button/ButtonIcon'
 import { useAppDispatch } from '~/store/hook'
 import { toggle } from '~/features/actionPage/toggleSlice'
 interface HeaderProps {
-  display: 'sticky' | 'static'
+  display: 'sticky' | 'static' 
   shadow: boolean
+  linkTo?: string
 }
 const SearchInput = () => {
   return (
@@ -20,17 +21,24 @@ const SearchInput = () => {
     </div>
   )
 }
-export default function HeaderUser({ display, shadow }: HeaderProps) {
+export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  console.log(linkTo);
+  
   return (
-    <header className={`bg-background text-black ${display} ${shadow ? 'shadow' : ''} top-0 z-10`}>
+    <header className={`bg-background text-black ${display==='sticky' ? 'sticky top-0' : ''} ${shadow ? 'shadow' : ''}z-10`}>
       <div className=' w-full  mx-auto px-5 grid grid-cols-[auto_1fr_auto] items-center gap-10 max-sm:gap-1 py-2'>
         <div className='flex items-center cursor-pointer'>
           <Button
-            icon={Bars3Icon}
+            icon={linkTo =='create-lesson' ? BackspaceIcon : Bars3Icon}
             variant={'secondary'}
             size={7}
             onClick={() => {
+              if (linkTo === 'create-lesson') {
+                navigate(-1)
+                return
+              }
               dispatch(toggle())
             }}
           />

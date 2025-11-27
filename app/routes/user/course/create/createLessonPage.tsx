@@ -31,7 +31,7 @@ const LessonItem = ({ index, source, target, onChange, onDelete }: LessonItemPro
       </div>
 
       {/* main-item */}
-      <div className='grid grid-cols-2 gap-5 mt-3'>
+      <div className='grid grid-cols-2 max-md:grid-cols-1 gap-5 mt-3'>
         {/* source */}
         <div>
           <TextArea setValueInput={(value) => onChange(index, 'source', value)} valueInput={source} rows={1} />
@@ -156,7 +156,7 @@ const CreateLessonPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className='w-full'
+                className='w-full '
               >
                 <LessonItem
                   index={index}

@@ -21,7 +21,7 @@ const HeaderLearn = () => {
     { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: 'flash-card' },
     { icon: BookOpenIcon, title: 'Học', links: 'multiple-choice' },
     { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: 'test' },
-    { icon: NewspaperIcon, title: 'Blocks', links: '' },
+    { icon: NewspaperIcon, title: 'Blocks', links: 'blocks' },
     { icon: NewspaperIcon, title: 'Blast', links: '' },
     { icon: NewspaperIcon, title: 'Ghép thẻ', links: '' }
   ]
@@ -35,11 +35,11 @@ const HeaderLearn = () => {
   const navigate = useNavigate() // hàm điều hướng
   return (
     <div
-      className='sticky top-0 left-0 bg-background
+      className={`sticky top-0 left-0 bg-background
       md:flex md:justify-between
   grid grid-cols-[1fr_auto_1fr] items-center
-  max-md:grid-cols-2 max-md:grid-rows-2
-  px-15 py-3 max-md:px-5 z-50 gap-2'
+  ${activeFeature?.links === 'blocks' ? 'max-lg:grid-cols-[1fr_auto]' : 'max-md:grid-cols-2 max-md:grid-rows-2'}
+  px-15 py-3 max-md:px-5 z-50 gap-2`}
     >
       <div
         className='flex max-md:flex-1 items-center justify-start gap-2 cursor-pointer hover:bg-gray-200 px-5 py-3 rounded-2xl relative'
@@ -47,8 +47,8 @@ const HeaderLearn = () => {
           setIsDropDown(!isDropDown)
         }}
       >
-        {activeFeature?.icon && <activeFeature.icon className='size-6 text-blue-700' />}
-        <span className='font-semibold text-gray-600'>{activeFeature?.title}</span>
+        {activeFeature?.icon && <activeFeature.icon className='size-6 max-lg:size-5 text-blue-700' />}
+        <span className='font-semibold text-gray-600 max-lg:hidden'>{activeFeature?.title}</span>
         <ChevronDownIcon className='size-6' />
       </div>
       {/* danh mục lựa chọn */}
@@ -72,8 +72,8 @@ const HeaderLearn = () => {
       </div>
       {/* Kết thúc danh mục lựa chọn */}
       <div
-        className='font-semibold text-center
-  max-md:col-span-2 max-md:row-start-2'
+        className={`font-semibold text-center
+  max-md:col-span-2 max-md:row-start-2 ${activeFeature?.links === 'blocks' ? 'max-lg:hidden' : ''}`}
       >
         Thư mục 1
       </div>
