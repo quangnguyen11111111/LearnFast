@@ -8,34 +8,25 @@ import imgEndLesson from '~/assets/EndLesson.png'
 import Button from '~/components/button/Button'
 const MultipleChoicePage = () => {
   // Dữ liệu mẫu
-  interface Question {
-    id: string
-    source: string
-    target: string
-    status: number
-    statusMode: number
-  }
-  const [ORIGINAL_DATA, setORIGINAL_DATA] = useState<Question[]>([
-    { id: '1', source: 'Dog dog', target: 'Chó', status: 3, statusMode: 1 },
-    { id: '0', source: 'Sun', target: 'Mặt trời', status: 3, statusMode: 1 },
-    { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 1 },
-    { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 1 },
-    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 1 },
-    { id: '6', source: 'Fire', target: 'Lửa', status: 3, statusMode: 1 },
-    { id: '7', source: 'Tree', target: 'Cây', status: 3, statusMode: 0 },
-    { id: '8', source: 'Book', target: 'Sách', status: 3, statusMode: 0 },
-    { id: '9', source: 'Pen', target: 'Bút', status: 0, statusMode: 0 },
-    { id: '10', source: 'Car', target: 'Xe hơi', status: 0, statusMode: 0 },
-    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0, statusMode: 0 },
-    { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 0 }
-  ])
-  // Hàm lấy dữ liệu câu hỏi ( 6 câu 1 lần )
-  const fetchQuestions = (data: Question[], round: number): Question[] => {
-    const shuffled = [...data] // copy mảng để không thay đổi gốc
-    const start = round * 6
-    const end = start + 6
-    return shuffled.slice(start, end)
-  }
+  const ORIGINAL_DATA = [
+    { id: '1', source: 'Dog', target: 'Chó', status: 3 },
+    { id: '2', source: 'Sun', target: 'Mặt trời', status: 3 },
+    { id: '3', source: 'Water', target: 'Nước', status: 3 },
+    { id: '4', source: 'Cat', target: 'Mèo', status: 0 },
+    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 0 },
+    { id: '6', source: 'Fire', target: 'Lửa', status: 0 },
+    { id: '7', source: 'Tree', target: 'Cây', status: 0 },
+    { id: '8', source: 'Book', target: 'Sách', status: 0 },
+    { id: '9', source: 'Pen', target: 'Bút', status: 0 },
+    { id: '10', source: 'Car', target: 'Xe hơi', status: 0 },
+    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0 },
+    { id: '12', source: 'River', target: 'Dòng sông', status: 0 },
+    { id: '13', source: 'Mountain', target: 'Núi', status: 0 }
+  ]
+  const [indexMulti, setIndexMulti] = useState<number>(ORIGINAL_DATA.filter((item) => item.status === 3).length)
+  const [selected, setSelected] = useState<string | null>(null) // Trạng thái lựa chọn của người dùng
+  const [isAnswered, setIsAnswered] = useState(false) // Trạng thái đã trả lời hay chưa
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null) // Trạng thái đúng sai
   // Hàm trỗn dữ liệu ngẫu nhiên cho trắc nghiệm
   const getRandomOptions = (correct: string, allTargets: string[]): string[] => {
     const options = [correct]
@@ -45,7 +36,7 @@ const MultipleChoicePage = () => {
         options.push(random)
       }
     }
-    return options.sort(() => Math.random() - 0.5)
+    return options.sort(() => Math.random() - 0.5) 
   }
   //Hàm lấy chỉ số nhóm câu hỏi hiện tại
   const getRound = (indexMul: number): number => {

@@ -36,6 +36,7 @@ const LearnLessonPage = () => {
   const [selected, setSelected] = useState<string | null>(null) // Trạng thái lựa chọn của người dùng
   const [isAnswered, setIsAnswered] = useState(false) // Trạng thái đã trả lời hay chưa
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null) // Trạng thái đúng sai
+
   // Hàm trỗn dữ liệu ngẫu nhiên cho trắc nghiệm
   const getRandomOptions = (correct: string, allTargets: string[]): string[] => {
     const options = [correct]
