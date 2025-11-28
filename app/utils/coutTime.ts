@@ -1,17 +1,23 @@
-import  { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
+
+// TimerHook: Định nghĩa các hàm điều khiển đồng hồ đếm thời gian
 interface TimerHook {
   startTimer: () => void
   stopTimer: () => void
   resetTimer: () => void
-  formatTime:()=>string
-
+  formatTime: () => string
 }
+
+// useTimer: Hook đếm thời gian dạng mm:ss
+// - startTimer: bắt đầu nếu chưa chạy
+// - stopTimer: dừng và xóa interval
+// - resetTimer: đưa về 0 giây và dừng
+// - formatTime: chuyển số giây -> chuỗi mm:ss
 export const useTimer = (): TimerHook => {
-  const [time, setTime] = useState<number>(0) // thời gian tính bằng giây
+  const [time, setTime] = useState<number>(0)
   const [isRunning, setIsRunning] = useState<boolean>(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Bắt đầu timer
   const startTimer = () => {
     if (!isRunning) {
       setIsRunning(true)
@@ -21,7 +27,6 @@ export const useTimer = (): TimerHook => {
     }
   }
 
-  // Dừng timer
   const stopTimer = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
@@ -30,20 +35,17 @@ export const useTimer = (): TimerHook => {
     setIsRunning(false)
   }
 
-  // Reset timer về 0
   const resetTimer = () => {
     stopTimer()
     setTime(0)
   }
 
-  // Dọn dẹp khi component unmount
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
   }, [])
 
-  // Chuyển giây sang mm:ss
   const formatTime = (): string => {
     const m = Math.floor(time / 60)
       .toString()
@@ -51,5 +53,6 @@ export const useTimer = (): TimerHook => {
     const s = (time % 60).toString().padStart(2, '0')
     return `${m}:${s}`
   }
-  return {startTimer,stopTimer,resetTimer,formatTime}
+
+  return { startTimer, stopTimer, resetTimer, formatTime }
 }

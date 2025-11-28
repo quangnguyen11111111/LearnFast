@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+// useIsScrolled: Hook trả về true nếu người dùng đã cuộn quá 'threshold' px
+// - Dùng để thay đổi style header / nút trở lên đầu trang
 export default function useIsScrolled(threshold: number = 50): boolean {
   const [isScrolled, setIsScrolled] = useState(false)
 

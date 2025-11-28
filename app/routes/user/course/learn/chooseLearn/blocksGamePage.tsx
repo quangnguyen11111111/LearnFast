@@ -4,6 +4,9 @@ import { BlockPreview } from '../../../../../components/learnComponent/blocksGam
 import { BlockGhost } from '../../../../../components/learnComponent/blocksGame/BlockGhost'
 import { ScoreCard } from '~/components/learnComponent/blocksGame/ScoreCard'
 
+// BlocksGamePage: Trang chính chơi mini-game đặt block + chế độ hỏi đáp sau mỗi lượt dùng hết block.
+// - Sử dụng hook useBlocksGame để quản lý toàn bộ logic (bảng, kéo thả, điểm, question mode).
+// - Quản lý state answer cho phần hỏi đáp, auto focus input & nút đổi câu khi cần.
 export default function BlocksGamePage() {
   const {
     board,
@@ -30,6 +33,7 @@ export default function BlocksGamePage() {
     submitAnswer
   } = useBlocksGame()
   const [answer, setAnswer] = useState<string>('')
+  // useEffect: Reset input khi trả lời đúng (delay) hoặc sai (xóa ngay)
   useEffect(() => {
     if (answerState === 'correct') {
       const timer = setTimeout(() => {
@@ -44,6 +48,7 @@ export default function BlocksGamePage() {
   }, [answerState, wrongAttempts])
 
   const refInput = useRef<HTMLInputElement>(null)
+  // useEffect: Focus input khi vào chế độ câu hỏi
   useEffect(() => {
     if (!questionMode) return
 
@@ -55,6 +60,7 @@ export default function BlocksGamePage() {
   }, [questionMode, answerState, wrongAttempts])
 
   const refButtonChange = useRef<HTMLButtonElement>(null)
+  // useEffect: Khi đáp án bị reveal (sai 3 lần) -> focus nút đổi câu hỏi
   useEffect(() => {
     if (answerState === 'revealed') {
       setTimeout(() => {

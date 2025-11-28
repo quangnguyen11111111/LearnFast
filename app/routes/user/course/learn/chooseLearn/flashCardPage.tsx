@@ -2,8 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import Flashcard from '~/components/learnComponent/Flashcard'
 
+// FlashCardPage: Hiển thị danh sách flashcards để ôn tập từ vựng
+// - ORIGINAL_DATA: Dữ liệu mẫu; mỗi item có status (0: mặc định, 1: đã biết, 2: chưa biết)
+// - onProgress: Bật/tắt chế độ theo dõi tiến độ (hiển thị số thẻ đã biết/chưa biết)
+// - knownStatus / unknownStatus: Đếm động số thẻ đã đánh dấu
 const FlashCardPage = () => {
-  // Dữ liệu mẫu
+  // ORIGINAL_DATA: Dữ liệu mẫu (nên thay bằng API sau này)
   const ORIGINAL_DATA = [
     { id: '1', source: 'Dog', target: 'Chó', status: 0 },
     { id: '2', source: 'Sun', target: 'Mặt trời', status: 0 },
@@ -19,9 +23,9 @@ const FlashCardPage = () => {
     { id: '12', source: 'River', target: 'Dòng sông', status: 0 },
     { id: '13', source: 'Mountain', target: 'Núi', status: 0 }
   ]
-  const [onProgress, setOnProgress] = useState<boolean>(false)// trạng thái theo dõi tiến độ
-  const [knownStatus, setKnownStatus] = useState<number>(ORIGINAL_DATA.filter((item) => item.status === 1).length)// số thẻ đã biết
-  const [unknownStatus, setUnknownStatus] = useState<number>(ORIGINAL_DATA.filter((item) => item.status === 2).length)// số thẻ chưa biết
+  const [onProgress, setOnProgress] = useState<boolean>(false) // trạng thái theo dõi tiến độ
+  const [knownStatus, setKnownStatus] = useState<number>(ORIGINAL_DATA.filter((item) => item.status === 1).length) // số thẻ đã biết
+  const [unknownStatus, setUnknownStatus] = useState<number>(ORIGINAL_DATA.filter((item) => item.status === 2).length) // số thẻ chưa biết
   return (
     <>
       <div className='px-25 overflow-hidden'>
@@ -33,10 +37,10 @@ const FlashCardPage = () => {
             <span className='text-sm font-semibold text-red-600'>Chưa biết</span>
           </div>
           <div className='flex items-center gap-2'>
-            <span className='text-sm font-bold text-green-600 '>
-              Đã biết
-            </span>
-            <p className='border border-green-400 rounded-2xl px-4 font-bold py-1 bg-green-200 text-green-600'>{knownStatus}</p>
+            <span className='text-sm font-bold text-green-600 '>Đã biết</span>
+            <p className='border border-green-400 rounded-2xl px-4 font-bold py-1 bg-green-200 text-green-600'>
+              {knownStatus}
+            </p>
           </div>
         </div>
         <Flashcard

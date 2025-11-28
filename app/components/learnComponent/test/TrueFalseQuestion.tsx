@@ -3,6 +3,10 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { getButtonStyle, getFeedbackClass, getFeedbackText } from '~/utils/testFeedback'
 import type { UserAnswer } from '~/features/test/types'
 
+// TrueFalseQuestion: Component hiển thị câu hỏi Đúng/Sai gồm thuật ngữ + định nghĩa
+// - correctFlag: cho biết displayTarget có phải định nghĩa đúng không
+// - Khi kết thúc & câu sai => hiển thị định nghĩa đúng (correctTarget)
+
 interface Props {
   id: string
   source: string
@@ -35,7 +39,10 @@ const TrueFalseQuestion = forwardRef<HTMLDivElement, Props>(
     ref
   ) => {
     return (
-      <div ref={ref} className='relative w-full shadow-lg border-t-3 border-gray-100 rounded-2xl py-8 px-8 min-h-120 flex flex-col justify-between '>
+      <div
+        ref={ref}
+        className='relative w-full shadow-lg border-t-3 border-gray-100 rounded-2xl py-8 px-8 min-h-120 flex flex-col justify-between '
+      >
         <div className='text-gray-400 text-sm absolute right-6 top-6'>
           {indexNumberNow}/{total}
         </div>

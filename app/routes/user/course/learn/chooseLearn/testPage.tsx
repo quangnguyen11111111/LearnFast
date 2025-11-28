@@ -32,6 +32,9 @@ const defaultData: Question[] = [
   { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 0 }
 ]
 
+// TestPage: Trang thực hiện bài kiểm tra với 3 chế độ (Đúng/Sai, Trắc nghiệm, Tự luận)
+// - Quản lý chia câu hỏi theo chế độ, theo dõi trả lời, tính trạng thái kết thúc
+// - Hỗ trợ thiết lập số lượng câu và loại hình trước khi bắt đầu
 const TestPage = () => {
   // Hàm đảo dữ liệu
   /**
@@ -128,10 +131,7 @@ const TestPage = () => {
     const { trueFalse, multiple, essay } = questionCountByMode
     let start = 0
     const data = {
-      trueFalse: generateTrueFalseData(
-        ORIGINAL_DATA.slice(start, start + trueFalse),
-        ORIGINAL_DATA
-      ),
+      trueFalse: generateTrueFalseData(ORIGINAL_DATA.slice(start, start + trueFalse), ORIGINAL_DATA),
       multiple: ORIGINAL_DATA.slice(start + trueFalse, start + trueFalse + multiple),
       essay: ORIGINAL_DATA.slice(start + trueFalse + multiple, start + trueFalse + multiple + essay)
     }
@@ -166,6 +166,7 @@ const TestPage = () => {
     answeredEssay.current = new Array(dividedData.essay.length).fill(false)
   }, [dividedData])
 
+  // handleNext: Di chuyển đến câu hỏi chưa trả lời tiếp theo trong cùng chế độ hoặc nhảy sang chế độ kế tiếp
   const handleNext = (
     currentIndex: number,
     ref: React.RefObject<(HTMLDivElement | HTMLInputElement | null)[]>,
@@ -234,6 +235,7 @@ const TestPage = () => {
   // Lưu đáp án người dùng hiện đang chọn (dùng cho highlight)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string | boolean>>({})
 
+  // handleSelectAnswer: Lưu lựa chọn người dùng, tính đúng/sai và cập nhật danh sách câu trả lời
   const handleSelectAnswer = (
     questionId: string,
     mode: 'trueFalse' | 'multiple' | 'essay',
@@ -284,6 +286,7 @@ const TestPage = () => {
   const refButtonSubmitTest = useRef<HTMLButtonElement>(null)
 
   // ------------------------Hàm khi submit kiểm tra còn câu nào trống ---------
+  // handleSubmitEndTest: Kiểm tra còn câu chưa trả lời; nếu hoàn tất -> dừng thời gian & mở bảng tổng kết
   const handleSubmitEndTest = () => {
     /**
      * handleSubmitEndTest
@@ -337,6 +340,7 @@ const TestPage = () => {
   }, [dividedData.multiple])
 
   // 3.. hàm submit giao diện setup bài kiểm tra
+  // handleSubmitSetupTest: Khởi tạo lại dữ liệu bài test sau khi người dùng thiết lập (batchSize, chế độ)
   const handleSubmitSetupTest = () => {
     resetTimer()
     startTimer()
@@ -349,6 +353,7 @@ const TestPage = () => {
   }
 
   // Hàm cuộn lên đầu giao diện
+  // scrollToTop: Cuộn giao diện lên đầu khu vực bài kiểm tra
   const scrollToTop = () => {
     if (!refDivMain.current) return
     window.scrollTo({

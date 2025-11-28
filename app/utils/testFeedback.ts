@@ -1,5 +1,6 @@
 import type { Mode } from '~/features/test/types'
 
+// getButtonStyle: Trả về lớp CSS cho nút đáp án tùy theo trạng thái đã chọn / kết thúc bài test / đúng sai
 export const getButtonStyle = (
   isSelected: boolean,
   isEndTest: boolean,
@@ -19,6 +20,7 @@ export const getButtonStyle = (
   return `${baseStyle} border-gray-200 text-gray-600 hover:border-gray-400 cursor-pointer`
 }
 
+// getFeedbackText: Sinh thông điệp phản hồi cho từng câu dựa trên mode & trạng thái đúng sai
 export const getFeedbackText = (
   mode: Mode,
   isEndTest: boolean,
@@ -55,6 +57,7 @@ export const getFeedbackText = (
   return wrongMessages[index]
 }
 
+// getFeedbackClass: Trả về lớp màu chữ phù hợp theo trạng thái đúng sai / đã kết thúc bài test
 export const getFeedbackClass = (isEndTest: boolean, isUserCorrect: boolean | undefined): string => {
   if (!isEndTest || isUserCorrect === undefined) {
     return 'font-semibold text-gray-600 text-sm'

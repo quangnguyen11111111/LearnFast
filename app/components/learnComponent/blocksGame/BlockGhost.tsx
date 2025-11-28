@@ -2,6 +2,9 @@ import React from 'react'
 import { type BlockInstance } from '../../../features/blocksGame/types'
 import { BOARD_GAP_PX } from '../../../features/blocksGame/constants'
 
+// BlockGhost: Hiển thị "bóng mờ" (preview) của block khi kéo hoặc trong danh sách lựa chọn
+// - block: thông tin hình dạng + màu
+// - cellSize: kích thước 1 ô (px) để tính toán layout
 export function BlockGhost({ block, cellSize }: { block: BlockInstance; cellSize: number }) {
   const effectiveCell = cellSize || 40
   const innerSize = effectiveCell - BOARD_GAP_PX

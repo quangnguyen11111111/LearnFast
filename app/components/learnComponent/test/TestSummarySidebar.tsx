@@ -2,6 +2,9 @@ import React from 'react'
 import { XMarkIcon, CheckIcon } from '@heroicons/react/24/outline'
 import type { UserAnswer } from '~/features/test/types'
 
+// TestSummarySidebar: Sidebar liệt kê nhanh trạng thái từng câu hỏi sau khi làm
+// - Mỗi item có icon đúng/sai và cho phép scroll tới vị trí câu
+
 interface Props {
   open: boolean
   onClose: () => void

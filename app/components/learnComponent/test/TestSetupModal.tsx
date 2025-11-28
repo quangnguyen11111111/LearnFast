@@ -5,6 +5,7 @@ import { ClipboardDocumentCheckIcon, XMarkIcon } from '@heroicons/react/24/outli
 import Toggle from '~/components/Toggle'
 import Button from '~/components/button/Button'
 
+// Props: Các tham số cấu hình modal thiết lập bài kiểm tra
 interface Props {
   open: boolean
   onClose: () => void
@@ -21,6 +22,7 @@ interface Props {
   onStart: () => void
 }
 
+// TestSetupModal: Modal cho phép người dùng chọn số câu và bật/tắt các chế độ kiểm tra
 const TestSetupModal: React.FC<Props> = ({
   open,
   onClose,
@@ -39,7 +41,15 @@ const TestSetupModal: React.FC<Props> = ({
   return (
     <Transition appear show={open} as={Fragment}>
       <Dialog as='div' className='relative z-50' onClose={onClose}>
-        <TransitionChild as={Fragment} enter='ease-out duration-200' enterFrom='opacity-0' enterTo='opacity-100' leave='ease-in duration-150' leaveFrom='opacity-100' leaveTo='opacity-0'>
+        <TransitionChild
+          as={Fragment}
+          enter='ease-out duration-200'
+          enterFrom='opacity-0'
+          enterTo='opacity-100'
+          leave='ease-in duration-150'
+          leaveFrom='opacity-100'
+          leaveTo='opacity-0'
+        >
           <div className='fixed inset-0 bg-[#0101108f] backdrop-blur-sm ' />
         </TransitionChild>
 

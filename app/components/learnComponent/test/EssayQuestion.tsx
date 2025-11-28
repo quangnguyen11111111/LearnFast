@@ -3,6 +3,11 @@ import Button from '~/components/button/Button'
 import { getFeedbackClass, getFeedbackText } from '~/utils/testFeedback'
 import type { UserAnswer } from '~/features/test/types'
 
+// EssayQuestion: Component render câu hỏi tự luận
+// - Hiển thị định nghĩa (target) và ô input user gõ đáp án
+// - Enter sẽ trigger onEnter để lưu đáp án & chuyển câu tiếp
+// - isEndTest khóa input & ẩn nút Tiếp
+
 interface Props {
   id: string
   target: string
@@ -18,7 +23,10 @@ interface Props {
 const EssayQuestion = forwardRef<HTMLDivElement, Props>(
   ({ id, target, indexNumberNow, total, isEndTest, userAnswer, inputRef, onEnter, isLast }, ref) => {
     return (
-      <div ref={ref} className='relative w-full shadow-lg border-t-3 border-gray-100 rounded-2xl py-7 px-8 min-h-120 flex flex-col justify-between '>
+      <div
+        ref={ref}
+        className='relative w-full shadow-lg border-t-3 border-gray-100 rounded-2xl py-7 px-8 min-h-120 flex flex-col justify-between '
+      >
         <div className='text-gray-400 text-sm absolute right-6 top-6'>
           {indexNumberNow}/{total}
         </div>
@@ -45,7 +53,11 @@ const EssayQuestion = forwardRef<HTMLDivElement, Props>(
             className='w-full font-semibold bg-gray-100 rounded-md px-2 py-3 placeholder-gray-400 placeholder:font-semibold mt-5 focus:outline-blue-300 focus:bg-white border-none'
           />
           <div className={`flex justify-end ${isEndTest ? '' : 'mt-3'}`}>
-            <Button className={`px-4 py-3 text-sm font-semibold ${isLast ? 'invisible' : ''} ${isEndTest ? 'invisible' : ''}`} onClick={() => {}} rounded='rounded-4xl'>
+            <Button
+              className={`px-4 py-3 text-sm font-semibold ${isLast ? 'invisible' : ''} ${isEndTest ? 'invisible' : ''}`}
+              onClick={() => {}}
+              rounded='rounded-4xl'
+            >
               Tiếp
             </Button>
           </div>

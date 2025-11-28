@@ -2,6 +2,9 @@ import React from 'react'
 import { type BlockInstance } from '../../../features/blocksGame/types'
 import { BOARD_GAP_PX } from '../../../features/blocksGame/constants'
 
+// BlockPreview: Ô block tương tác trong "pool" để người chơi có thể kéo thả
+// - onPointerDown: khởi tạo drag khi người chơi nhấn giữ
+// - Hiển thị trạng thái dùng rồi (opacity + cursor)
 export function BlockPreview({
   block,
   onPointerDown,

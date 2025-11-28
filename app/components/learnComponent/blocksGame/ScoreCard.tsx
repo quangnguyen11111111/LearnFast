@@ -1,5 +1,6 @@
 import React from 'react'
 
+// ScoreCard: Thẻ nhỏ hiển thị chỉ số (điểm, combo, best...) với chấm màu accent
 export function ScoreCard({ label, value, accent }: { label: string; value: number; accent: string }) {
   return (
     <div className='flex min-w-[120px] flex-col items-start rounded-2xl bg-white/80 px-4 py-3 shadow'>

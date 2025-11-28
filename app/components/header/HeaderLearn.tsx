@@ -6,7 +6,7 @@ import {
   Square2StackIcon,
   XMarkIcon
 } from '@heroicons/react/24/solid'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Button from '../button/Button'
 import IconButton from '../button/ButtonIcon'
 import { useNavigate } from 'react-router'
@@ -32,6 +32,22 @@ const HeaderLearn = () => {
   const featuresCopy = features.filter((f) => f.title !== activeFeature?.title)
 
   const [isDropDown, setIsDropDown] = useState<boolean>(false)
+  const dropdownRef = useRef<HTMLDivElement | null>(null)
+  const triggerRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (!isDropDown) return
+      const inDropdown = dropdownRef.current?.contains(target)
+      const inTrigger = triggerRef.current?.contains(target)
+      if (!inDropdown && !inTrigger) {
+        setIsDropDown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isDropDown])
   const navigate = useNavigate() // hàm điều hướng
   return (
     <div
@@ -42,6 +58,7 @@ const HeaderLearn = () => {
   px-15 py-3 max-md:px-5 z-50 gap-2`}
     >
       <div
+        ref={triggerRef}
         className='flex max-md:flex-1 items-center justify-start gap-2 cursor-pointer hover:bg-gray-200 px-5 py-3 rounded-2xl relative'
         onClick={() => {
           setIsDropDown(!isDropDown)
@@ -53,6 +70,7 @@ const HeaderLearn = () => {
       </div>
       {/* danh mục lựa chọn */}
       <div
+        ref={dropdownRef}
         className={`absolute max-md:left-5 top-16 shadow-xl border border-gray-100 py-2 rounded-lg w-58 ${isDropDown ? '' : 'hidden'}  bg-white `}
       >
         {featuresCopy.map((feature, index) => (

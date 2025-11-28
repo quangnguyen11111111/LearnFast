@@ -1,5 +1,7 @@
 import React from 'react'
 
+// TestResult: Hiển thị kết quả sau khi nộp bài (thời gian, số đúng/sai, %)
+// - percent tính dựa trên correct / (correct + wrong)
 const TestResult = ({ time, correct, wrong }: { time: string; correct: number; wrong: number }) => {
   const total = Math.max(correct + wrong, 1)
   const percent = Math.round((correct / total) * 100)
