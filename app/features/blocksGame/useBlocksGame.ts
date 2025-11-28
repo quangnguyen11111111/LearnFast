@@ -252,7 +252,7 @@ export function useBlocksGame() {
   }, [dragState])
 
   const boardContainerClasses = useMemo(
-    () => 'mx-auto grid grid-cols-10 rounded-3xl bg-slate-200 px-3 py-4 shadow-xl sm:px-5',
+    () => 'mx-auto grid grid-cols-10 rounded-3xl bg-slate-300 px-3 py-4 shadow-xl sm:px-5',
     []
   )
 

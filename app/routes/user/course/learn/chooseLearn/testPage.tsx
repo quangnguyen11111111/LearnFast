@@ -1,30 +1,20 @@
-import React, { useEffect, useMemo, useRef, useState, Fragment } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Button from '~/components/button/Button'
 import imgBottomTest from '~/assets/imgBottomTest.svg'
 import { useTimer } from '~/utils/coutTime'
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import IconButton from '~/components/button/ButtonIcon'
-import { Cog8ToothIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { CheckBadgeIcon, CheckIcon, ClipboardDocumentCheckIcon, NumberedListIcon } from '@heroicons/react/24/solid'
-import Toggle from '~/components/Toggle'
-import { AnimatePresence, motion } from 'framer-motion'
+import { Cog8ToothIcon } from '@heroicons/react/24/outline'
+import { NumberedListIcon } from '@heroicons/react/24/solid'
+import TestResult from '~/components/learnComponent/test/TestResult'
+import TestSetupModal from '~/components/learnComponent/test/TestSetupModal'
+import TestSummarySidebar from '~/components/learnComponent/test/TestSummarySidebar'
+import TrueFalseQuestion from '~/components/learnComponent/test/TrueFalseQuestion'
+import MultipleChoiceQuestion from '~/components/learnComponent/test/MultipleChoiceQuestion'
+import EssayQuestion from '~/components/learnComponent/test/EssayQuestion'
+import { generateTrueFalseData, getRandomItems, getRandomOptions } from '~/utils/testUtils'
+import type { Question, UserAnswer } from '~/features/test/types'
 // Types used in this module
-interface Question {
-  id: string
-  source: string
-  target: string
-  status: number
-  statusMode: number
-}
-
-// Structure to hold a user's answer and basic metadata
-interface UserAnswer {
-  id: string
-  mode: 'trueFalse' | 'multiple' | 'essay'
-  userAnswer: string | boolean
-  isCorrect: boolean
-  refDivMain: React.RefObject<HTMLDivElement | null> | HTMLDivElement | null
-}
+// Types moved to ~/features/test/types
 
 // Example dataset (kept outside component to avoid re-creation on each render)
 const defaultData: Question[] = [
@@ -49,22 +39,7 @@ const TestPage = () => {
    * - Trả về một bản sao của mảng đầu vào sau khi hoán vị ngẫu nhiên
    * - Không thay đổi mảng gốc (immutable)
    */
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    const shuffled = [...array] // Tạo bản sao để không làm thay đổi mảng gốc
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1)) // random vị trí từ 0 → i
-      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]] // hoán đổi 2 phần tử
-    }
-    return shuffled
-  }
-  /**
-   * getRandomItems
-   * - Lấy `x` phần tử ngẫu nhiên từ mảng `arr` (dùng shuffleArray)
-   */
-  function getRandomItems(arr: Question[], x: number) {
-    const shuffled = shuffleArray(arr)
-    return shuffled.slice(0, x)
-  }
+  // Helpers moved to ~/utils/testUtils
 
   // -------------- Xử lí setup bài kiểm tra -----------
   // State lưu số lượng câu trong bài kiểm tra
@@ -129,29 +104,7 @@ const TestPage = () => {
 
   // Xử lý dữ liệu cho từng chế độ
   // 1.. Chế độ đúng sai
-  /**
-   * generateTrueFalseData
-   * - Tạo dữ liệu cho chế độ đúng/sai
-   * - Với xác suất `trueRatio` câu sẽ hiển thị đúng target, ngược lại hiển thị target sai
-   * - Trả về mảng với trường `displayTarget` và `isCorrect`
-   */
-  const generateTrueFalseData = (data: Question[], trueRatio = 0.4) => {
-    return data.map((item) => {
-      // random xác suất: nếu nhỏ hơn trueRatio => câu đúng
-      const isCorrect = Math.random() < trueRatio
-
-      // Nếu đúng, dùng target gốc
-      if (isCorrect) {
-        return { ...item, displayTarget: item.target, isCorrect: true }
-      }
-
-      // Nếu sai, chọn target ngẫu nhiên từ phần tử khác
-      const wrongOptions = ORIGINAL_DATA.filter((d) => d.id !== item.id)
-      const randomWrong = wrongOptions[Math.floor(Math.random() * wrongOptions.length)]
-
-      return { ...item, displayTarget: randomWrong.target, isCorrect: false }
-    })
-  }
+  // True/False data generator moved to utils (requires pool data argument)
   // 2.. Chế độ trắc nghiệm
   // Hàm trỗn dữ liệu ngẫu nhiên cho trắc nghiệm
   /**
@@ -175,7 +128,10 @@ const TestPage = () => {
     const { trueFalse, multiple, essay } = questionCountByMode
     let start = 0
     const data = {
-      trueFalse: generateTrueFalseData(ORIGINAL_DATA.slice(start, start + trueFalse)),
+      trueFalse: generateTrueFalseData(
+        ORIGINAL_DATA.slice(start, start + trueFalse),
+        ORIGINAL_DATA
+      ),
       multiple: ORIGINAL_DATA.slice(start + trueFalse, start + trueFalse + multiple),
       essay: ORIGINAL_DATA.slice(start + trueFalse + multiple, start + trueFalse + multiple + essay)
     }
@@ -371,146 +327,10 @@ const TestPage = () => {
   // --------- Các hàm chung cho các chế độ ---------
 
   // 1. Hàm trả về style chung cho các nút đáp án
-  const getButtonStyle = (isSelected: boolean, isEndTest: boolean, isCorrect?: boolean, isCorrectAnswer?: boolean) => {
-    const baseStyle = 'border-2 rounded-lg w-full px-3 py-4 text-start font-semibold transition-colors'
-
-    // Nếu đã nộp bài
-    if (isEndTest) {
-      // Nếu là đáp án đã chọn đúng
-      if (isSelected && isCorrect === true) return `${baseStyle} border-green-500 text-green-700`
-      // Nếu là đáp án chọn sai
-      if (isSelected && isCorrect === false) return `${baseStyle} border-red-500 text-red-700`
-      // Nếu là đáp án đúng nhưng không được chọn
-      if (!isSelected && isCorrectAnswer) return `${baseStyle} border-green-500 border-dashed text-green-700`
-      return `${baseStyle} border-gray-100 text-gray-400`
-    }
-
-    // Nếu đang làm bài
-    if (isSelected) return `${baseStyle} border-blue-400 bg-blue-50 text-blue-700`
-    return `${baseStyle} border-gray-200 text-gray-600 hover:border-gray-400 cursor-pointer`
-  }
-  // 2. Hàm trả về các đoạn text phản hồi
-  const getFeedbackText = (
-    mode: UserAnswer['mode'],
-    isEndTest: boolean,
-    isUserCorrect: boolean | undefined,
-    questionId: string
-  ): string => {
-    /**
-     * getFeedbackText
-     * - Trả về chuỗi phản hồi tùy theo trạng thái (chưa nộp / đúng / sai)
-     * - Dùng một hàm băm đơn giản trên `questionId` để chọn thông điệp ngẫu nhiên
-     */
-    // 🟢 Khi chưa nộp bài hoặc chưa chọn gì
-    if (!isEndTest || isUserCorrect === null || isUserCorrect === undefined) {
-      switch (mode) {
-        case 'trueFalse':
-          return 'Chọn câu trả lời'
-        case 'multiple':
-          return 'Chọn đáp án đúng'
-        case 'essay':
-          return 'Đáp án của bạn'
-        default:
-          return ''
-      }
-    }
-
-    // Khi người dùng chọn đúng
-    if (isUserCorrect) {
-      const correctMessages = ['Chính xác!', 'Bạn đang tiến bộ từng ngày!']
-      const hash = questionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-      const index = hash % correctMessages.length
-      return correctMessages[index]
-    }
-
-    // Khi người dùng chọn sai
-    const wrongMessages = [
-      'Chưa đúng, hãy cố gắng nhé!',
-      'Đừng nản chí, học là một quá trình!',
-      'Đừng lo, bạn vẫn đang học mà!'
-    ]
-    const hash = questionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    const index = hash % wrongMessages.length
-    return wrongMessages[index]
-  }
-
-  // 3.. Hàm hiển thị style các đoạn text theo phản hồi
-  const getFeedbackClass = (isEndTest: boolean, isUserCorrect: boolean | undefined): string => {
-    if (!isEndTest || isUserCorrect === undefined) {
-      // Mặc định chưa trả lời
-      return 'font-semibold text-gray-600 text-sm'
-    }
-
-    return isUserCorrect
-      ? 'font-semibold text-green-600 text-sm' // đúng: xanh lá
-      : 'font-semibold text-red-600 text-sm' // sai: đỏ
-  }
+  // Feedback helpers moved into ~/utils/testFeedback and used inside components
 
   // -------- Các hàm hiển thị giao diện cho từng loại -------
-  // 1.. Giao diện hiển thị phần trăm đúng sai khi submit
-  const TestResult = ({ time, correct, wrong }: { time: string; correct: number; wrong: number }) => {
-    /**
-     * TestResult component
-     * - Hiển thị thời gian làm bài, biểu đồ phần trăm, số câu đúng/sai và danh sách đáp án
-     */
-    const total = correct + wrong
-    const percent = Math.round((correct / total) * 100)
-
-    return (
-      <div className='px-6 pt-6'>
-        {/* Title */}
-        <h1 className='text-3xl font-bold mb-6'>Hãy đối tốt với bản thân, và tiếp tục ôn luyện!</h1>
-
-        {/* Main layout */}
-        <div className='flex items-center gap-12'>
-          {/* Left: Timer + circle chart */}
-          <div className='flex flex-col items-center'>
-            <p className='text-xl font-bold text-gray-600'>Thời gian của bạn: {time}</p>
-
-            {/* Circle chart */}
-            <div className='relative mt-1'>
-              <svg width='120' height='120'>
-                <circle cx='60' cy='60' r='50' className='stroke-orange-300' strokeWidth='12' fill='none' />
-                <circle
-                  cx='60'
-                  cy='60'
-                  r='50'
-                  stroke='#3aee86'
-                  strokeWidth='12'
-                  fill='none'
-                  strokeDasharray={`${(percent / 100) * 314} 314`}
-                  strokeLinecap='round'
-                  transform='rotate(-90 60 60)'
-                />
-              </svg>
-
-              <span className='absolute inset-0 flex items-center justify-center text-xl font-bold'>{percent}%</span>
-            </div>
-          </div>
-
-          {/* Right: Correct / Wrong */}
-          <div className='flex flex-col space-y-3'>
-            <div className='flex items-center gap-4'>
-              <span className='text-green-600 text-xl font-semibold'>Đúng</span>
-              <span className='border px-4 py-1 rounded-full text-lg bg-green-50 border-green-300 text-green-700 font-semibold'>
-                {correct}
-              </span>
-            </div>
-
-            <div className='flex items-center gap-4'>
-              <span className='text-orange-600 text-xl font-semibold'>Sai</span>
-              <span className='border px-4 py-1 rounded-full text-lg bg-orange-50 border-orange-300 text-orange-700 font-semibold'>
-                {wrong}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Answer section */}
-        <h2 className='mt-2 text-lg font-bold text-gray-600'>Đáp án của bạn</h2>
-      </div>
-    )
-  }
+  // TestResult extracted to component
   // 2.. Hàm tạo dữ liệu option cho trắc nghiệm
   const multipleOptions = useMemo(() => {
     return dividedData.multiple.map((item) => getRandomOptions(item.source, allSources))
@@ -549,58 +369,16 @@ const TestPage = () => {
   return (
     <div className='px-85 max-xl:px-55 max-lg:px-30 max-md:px-10 flex flex-col items-center gap-8 pb-10 relative'>
       {/* Giao diện hiển thị danh sách tóm tắt các câu hỏi sau khi trả lời */}
-      <>
-        {/* Button hiển thị khi sidebar đóng */}
-        {!isOpenSummary && isEndTest && (
-          <button
-            className='fixed top-20 left-5 z-40 border-[1px] border-gray-200 bg-white p-2 rounded-3xl hover:bg-gray-100 transition-colors cursor-pointer'
-            onClick={() => setIsOpenSummary(true)}
-          >
-            <NumberedListIcon className='size-6 text-gray-700' />
-          </button>
-        )}
-
-        {/* Sidebar */}
-        <div
-          className={`
-          fixed top-20 left-5 w-60 bg-white z-40 p-4
-          transform transition-transform duration-300
-          ${isOpenSummary ? 'translate-x-0' : '-translate-x-full'}
-        `}
+      {/* Toggle button to open summary */}
+      {!isOpenSummary && isEndTest && (
+        <button
+          className='fixed top-20 left-5 z-40 border-[1px] border-gray-200 bg-white p-2 rounded-3xl hover:bg-gray-100 transition-colors cursor-pointer'
+          onClick={() => setIsOpenSummary(true)}
         >
-          {/* Header */}
-          <div className='flex items-center justify-between'>
-            <h2 className='font-semibold text-gray-500'>Danh sách câu hỏi</h2>
-            <div className='hover:bg-gray-100 rounded-4xl p-1 cursor-pointer'>
-              <XMarkIcon className='w-6 h-6' onClick={() => setIsOpenSummary(false)} />
-            </div>
-          </div>
-
-          <div className='mt-5 flex flex-col gap-1 overflow-y-auto max-h-145 scrollbar-none '>
-            {userAnswers.map((q, idx) => {
-              return (
-                <button
-                  key={q.id}
-                  onClick={() => {
-                    q.refDivMain &&
-                      'scrollIntoView' in q.refDivMain &&
-                      q.refDivMain.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                  }}
-                  type='button'
-                  className='w-full flex items-center gap-1 p-2 rounded-md text-left hover:bg-gray-100 transition-colors'
-                >
-                  {q.isCorrect ? (
-                    <CheckIcon className='size-6 text-green-500' />
-                  ) : (
-                    <XMarkIcon className='size-6 text-red-500' />
-                  )}
-                  <span className='text-[16px] text-gray-700'>{idx + 1}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </>
+          <NumberedListIcon className='size-6 text-gray-700' />
+        </button>
+      )}
+      <TestSummarySidebar open={isOpenSummary} onClose={() => setIsOpenSummary(false)} userAnswers={userAnswers} />
       {/* Nút cài đặt bài kiểm tra */}
       <div
         className='fixed top-3 right-28 z-50 max-md:right-15'
@@ -611,132 +389,27 @@ const TestPage = () => {
         <IconButton icon={Cog8ToothIcon} onClick={() => {}} size={8} variant='secondary' />
       </div>
       {/* GIao diện setup bài kieemr tra */}
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog
-          as='div'
-          className='relative z-50'
-          onClose={() => {
-            startTimer()
-            setIsOpen(false)
-            // setORIGINAL_DATA(getRandomItems(defaultData, batchSize))
-          }}
-        >
-          {/* Overlay */}
-          <TransitionChild
-            as={Fragment}
-            enter='ease-out duration-200'
-            enterFrom='opacity-0'
-            enterTo='opacity-100'
-            leave='ease-in duration-150'
-            leaveFrom='opacity-100'
-            leaveTo='opacity-0'
-          >
-            <div className='fixed inset-0 bg-[#0101108f] backdrop-blur-sm ' />
-          </TransitionChild>
-
-          {/* Modal wrapper */}
-          <div className='fixed inset-0 flex items-center justify-center'>
-            <TransitionChild
-              as={Fragment}
-              enter='ease-out duration-200'
-              enterFrom='opacity-0 scale-95'
-              enterTo='opacity-100 scale-100'
-              leave='ease-in duration-150'
-              leaveFrom='opacity-100 scale-100'
-              leaveTo='opacity-0 scale-95'
-            >
-              <DialogPanel className='w-full max-w-3xl rounded-2xl bg-white px-10 py-8 shadow-xl relative'>
-                <div className='absolute top-1 right-3'>
-                  <IconButton
-                    icon={XMarkIcon}
-                    onClick={() => {
-                      startTimer()
-                      setIsOpen(false)
-                      // setORIGINAL_DATA(getRandomItems(defaultData, batchSize))
-                    }}
-                    size={7}
-                    variant='secondary'
-                  />
-                </div>
-                <DialogTitle className='mb-4 flex justify-between mt-5 items-center'>
-                  <div className=''>
-                    <p className='font-semibold text-lg'>Thư mục 1</p>
-                    <h1 className='font-bold text-3xl'>Thiết lập bài kiểm tra</h1>
-                  </div>
-                  <ClipboardDocumentCheckIcon className='size-13 text-blue-700' />
-                </DialogTitle>
-
-                {/* Nội dung modal (tùy chỉnh sau) */}
-                <div className='flex flex-col gap-y-10 mt-7'>
-                  <div className='flex items-center justify-between'>
-                    <p className='font-semibold text-lg'>
-                      Câu hỏi <span className='font-light'>{`(tối đa ${defaultData.length})`}</span>{' '}
-                    </p>
-                    <input
-                      type='number'
-                      value={batchSize}
-                      onChange={(e) => {
-                        const value = Number(e.target.value)
-
-                        // Giới hạn từ 1 đến maxBatchSize
-                        if (value < 1) setbatchSize(1)
-                        else if (value > defaultData.length) setbatchSize(defaultData.length)
-                        else setbatchSize(value)
-                      }}
-                      min={1}
-                      className='w-20 px-3 py-3 font-semibold rounded-xl border-none bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-300'
-                    />
-                  </div>
-                  <div className='w-full h-[1px] bg-gray-300'></div>
-                  <div className='flex items-center justify-between'>
-                    <p className='font-semibold text-lg'>Đúng/Sai</p>
-                    <Toggle
-                      checked={isTestTrueFalse}
-                      onChange={() => {
-                        if (isTestTrueFalse && countEnabled === 1) return // chặn tắt cuối cùng
-                        setIsTestTrueFalse(!isTestTrueFalse)
-                      }}
-                    />
-                  </div>
-                  <div className='flex items-center justify-between'>
-                    <p className='font-semibold text-lg'>Trắc nghiệm</p>
-                    <Toggle
-                      checked={isTestMultiple}
-                      onChange={() => {
-                        if (isTestMultiple && countEnabled === 1) return
-                        setIsTestMultiple(!isTestMultiple)
-                      }}
-                    />
-                  </div>
-                  <div className='flex items-center justify-between'>
-                    <p className='font-semibold text-lg'>Tự luận</p>
-                    <Toggle
-                      checked={isTestEssay}
-                      onChange={() => {
-                        if (isTestEssay && countEnabled === 1) return
-                        setIsTestEssay(!isTestEssay)
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className='mt-6 flex justify-end'>
-                  <Button
-                    className='px-4 py-2 text-sm font-semibold'
-                    onClick={() => {
-                      handleSubmitSetupTest()
-                      scrollToTop()
-                    }}
-                    rounded='rounded-3xl'
-                  >
-                    Bắt đầu làm kiểm tra
-                  </Button>
-                </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </Dialog>
-      </Transition>
+      <TestSetupModal
+        open={isOpen}
+        onClose={() => {
+          startTimer()
+          setIsOpen(false)
+        }}
+        batchSize={batchSize}
+        setBatchSize={setbatchSize}
+        maxCount={defaultData.length}
+        isTestTrueFalse={isTestTrueFalse}
+        setIsTestTrueFalse={setIsTestTrueFalse}
+        isTestMultiple={isTestMultiple}
+        setIsTestMultiple={setIsTestMultiple}
+        isTestEssay={isTestEssay}
+        setIsTestEssay={setIsTestEssay}
+        countEnabled={countEnabled}
+        onStart={() => {
+          handleSubmitSetupTest()
+          scrollToTop()
+        }}
+      />
       {/* Thống kê đúng sai khi submit */}
       <div className=' w-full' ref={refDivMain}>
         {isEndTest && (
@@ -752,135 +425,59 @@ const TestPage = () => {
         dividedData.trueFalse.map((items, index) => {
           indexNumberNow += 1
           const userAnswer = userAnswers.find((a) => a.id === items.id && a.mode === 'trueFalse')
+          const isSelected = selectedAnswers[items.id]
           return (
-            <div
+            <TrueFalseQuestion
               key={items.id}
+              id={items.id}
+              source={items.source}
+              displayTarget={items.displayTarget}
+              correctFlag={items.isCorrect}
+              correctTarget={items.target}
+              indexNumberNow={indexNumberNow}
+              total={ORIGINAL_DATA.length}
+              isEndTest={isEndTest}
+              userAnswer={userAnswer}
+              selected={isSelected as boolean | undefined}
+              onSelect={(userChoice) => {
+                handleSelectAnswer(items.id, 'trueFalse', userChoice, items.isCorrect, refTrueFalse.current[index])
+                answeredTrueFalse.current[index] = true
+                handleNext(index, refTrueFalse, answeredTrueFalse.current, 'trueFalse')
+              }}
               ref={(el) => {
                 refTrueFalse.current[index] = el
               }}
-              className='relative w-full shadow-lg border-t-3 border-gray-100 rounded-2xl py-8 px-8 min-h-120 flex flex-col justify-between '
-            >
-              <div className='text-gray-400 text-sm absolute right-6 top-6'>
-                {indexNumberNow}/{ORIGINAL_DATA.length}
-              </div>
-              <div className='grid grid-cols-2 items-start justify-items-start flex-1 '>
-                <div className='px-3'>
-                  <p className='font-semibold text-gray-500 text-sm mb-10'>Thuật ngữ</p>
-                  <p className='text-xl'>{items.source}</p>
-                </div>
-                <div className='border-s-2 border-gray-200 h-full px-3'>
-                  <p className='font-semibold text-gray-500 text-sm mb-10'>Định nghĩa</p>
-                  <p className='text-xl'>{items.displayTarget}</p>
-                </div>
-              </div>
-              <div className='mt-5'>
-                {/* Hiển thị phản hồi */}
-                <p className={`${getFeedbackClass(isEndTest, userAnswer?.isCorrect)}`}>
-                  {getFeedbackText('trueFalse', isEndTest, userAnswer?.isCorrect, items.id)}
-                </p>
-                <div className={`flex items-center justify-between gap-8 mt-5`}>
-                  {/* Hiển thị nút đúng sai */}
-                  {['Đúng', 'Sai'].map((label) => {
-                    const userChoice = label === 'Đúng'
-                    const isSelected = selectedAnswers[items.id] === userChoice
-
-                    return (
-                      <button
-                        key={label}
-                        disabled={isEndTest}
-                        onClick={() => {
-                          handleSelectAnswer(
-                            items.id,
-                            'trueFalse',
-                            userChoice,
-                            items.isCorrect,
-                            refTrueFalse.current[index]
-                          )
-                          answeredTrueFalse.current[index] = true
-                          handleNext(index, refTrueFalse, answeredTrueFalse.current, 'trueFalse')
-                        }}
-                        className={getButtonStyle(isSelected, isEndTest, userAnswer?.isCorrect)}
-                      >
-                        {label}
-                      </button>
-                    )
-                  })}
-                </div>
-                <AnimatePresence>
-                  {items.isCorrect === false && isEndTest && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.4, ease: 'easeOut' }}
-                      className='text-start'
-                    >
-                      <p className='mb-2 text-gray-500 font-semibold mt-5'>Định ngữ đúng</p>
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-                        className='text-gray-500 mt-4 text-lg'
-                      >
-                        <div className='border-2 border-green-700 rounded-lg px-2 py-4 flex'>
-                          <span>{items.target}</span>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
+            />
           )
         })}
       {/* chế độ trắc nghiệm */}
       {isTestMultiple &&
         !isOpen &&
         dividedData.multiple.map((items, index) => {
-          const option = multipleOptions[index] // luôn cố định
+          const option = multipleOptions[index]
           indexNumberNow += 1
           const userAnswer = userAnswers.find((a) => a.id === items.id && a.mode === 'multiple')
-
           return (
-            <div
-              key={index}
+            <MultipleChoiceQuestion
+              key={items.id}
+              id={items.id}
+              target={items.target}
+              options={option}
+              correctSource={items.source}
+              indexNumberNow={indexNumberNow}
+              total={ORIGINAL_DATA.length}
+              isEndTest={isEndTest}
+              userAnswer={userAnswer}
+              selected={selectedAnswers[items.id]}
+              onSelect={(v) => {
+                answeredMultiple.current[index] = true
+                handleNext(index, refMultiple, answeredMultiple.current, 'multiple')
+                handleSelectAnswer(items.id, 'multiple', v, items.source, refMultiple.current[index])
+              }}
               ref={(el) => {
                 refMultiple.current[index] = el
               }}
-              className='relative w-full shadow-lg border-t-3 border-gray-100 rounded-2xl py-7 px-8 min-h-120 flex flex-col justify-between '
-            >
-              <div className='text-gray-400 text-sm absolute right-6 top-6'>
-                {indexNumberNow}/{ORIGINAL_DATA.length}
-              </div>
-              <div className=''>
-                <p className='font-semibold text-gray-500 text-sm mb-10'>Định nghĩa</p>
-                <p className='text-xl'>{items.target}</p>
-              </div>
-              <div className='mt-5'>
-                <p className={getFeedbackClass(isEndTest, userAnswer?.isCorrect)}>
-                  {getFeedbackText('multiple', isEndTest, userAnswer?.isCorrect, items.id)}
-                </p>
-                <div className='grid grid-cols-2 gap-5 mt-5'>
-                  {option.map((v, i) => {
-                    const isSelected = selectedAnswers[items.id] === v
-                    return (
-                      <button
-                        key={i}
-                        disabled={isEndTest}
-                        onClick={() => {
-                          answeredMultiple.current[index] = true
-                          handleNext(index, refMultiple, answeredMultiple.current, 'multiple')
-                          handleSelectAnswer(items.id, 'multiple', v, items.source, refMultiple.current[index])
-                        }}
-                        className={getButtonStyle(isSelected, isEndTest, userAnswer?.isCorrect, v === items.source)}
-                      >
-                        {v}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
+            />
           )
         })}
       {/* chế độ tự luận */}
@@ -890,84 +487,33 @@ const TestPage = () => {
           indexNumberNow += 1
           const userAnswer = userAnswers.find((a) => a.id === items.id && a.mode === 'essay')
           return (
-            <div
+            <EssayQuestion
               key={items.id}
+              id={items.id}
+              target={items.target}
+              indexNumberNow={indexNumberNow}
+              total={ORIGINAL_DATA.length}
+              isEndTest={isEndTest}
+              userAnswer={userAnswer}
+              inputRef={(el) => {
+                refInputEssay.current[index] = el
+              }}
+              onEnter={(val) => {
+                answeredEssay.current[index] = true
+                handleNext(index, refEssay, answeredEssay.current, 'essay')
+                handleSelectAnswer(
+                  items.id,
+                  'essay',
+                  val.trim().toLowerCase(),
+                  items.source.trim().toLowerCase(),
+                  refEssay.current[index]
+                )
+              }}
+              isLast={dividedData.essay.length - 1 === index}
               ref={(el) => {
                 refEssay.current[index] = el
               }}
-              className='relative w-full shadow-lg border-t-3 border-gray-100 rounded-2xl py-7 px-8 min-h-120 flex flex-col justify-between '
-            >
-              <div className='text-gray-400 text-sm absolute right-6 top-6'>
-                {indexNumberNow}/{ORIGINAL_DATA.length}
-              </div>
-              <div className=''>
-                <p className='font-semibold text-gray-500 text-sm mb-10'>Định nghĩa</p>
-                <p className='text-xl'>{items.target}</p>
-              </div>
-              <div className='mt-5 '>
-                <p className={getFeedbackClass(isEndTest, userAnswer?.isCorrect)}>
-                  {getFeedbackText('essay', isEndTest, userAnswer?.isCorrect, items.id)}
-                </p>
-                <input
-                  type='text'
-                  disabled={isEndTest}
-                  ref={(el) => {
-                    refInputEssay.current[index] = el
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      if (e.currentTarget.value.trim() !== '') {
-                        answeredEssay.current[index] = true
-                      }
-
-                      handleNext(index, refEssay, answeredEssay.current, 'essay')
-                      handleSelectAnswer(
-                        items.id,
-                        'essay',
-                        e.currentTarget.value.trim().toLowerCase(),
-                        items.source.trim().toLowerCase(),
-                        refEssay.current[index]
-                      )
-                    }
-                  }}
-                  placeholder='Nhập đáp án của bạn'
-                  className={`w-full font-semibold bg-gray-100 rounded-md px-2 py-3 placeholder-gray-400 placeholder:font-semibold mt-5 focus:outline-blue-300 focus:bg-white border-none`}
-                />
-                <div className={`flex justify-end ${isEndTest ? '' : 'mt-3'}`}>
-                  <Button
-                    className={`px-4 py-3 text-sm font-semibold ${dividedData.essay.length - 1 === index ? 'invisible' : ''} ${isEndTest ? 'invisible' : ''}`}
-                    onClick={() => {}}
-                    rounded='rounded-4xl'
-                  >
-                    Tiếp
-                  </Button>
-                </div>
-                <AnimatePresence>
-                  {userAnswer?.isCorrect === false && isEndTest && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.4, ease: 'easeOut' }}
-                      className='text-start'
-                    >
-                      <p className='mb-2 text-green-700 font-semibold'>Đáp án đúng</p>
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-                        className='text-gray-500 mt-4 text-lg'
-                      >
-                        <div className='border-2 border-dashed border-green-500 rounded-lg px-2 py-2 flex'>
-                          <span>{items.source}</span>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
+            />
           )
         })}
       {/* nút hoàn thành */}

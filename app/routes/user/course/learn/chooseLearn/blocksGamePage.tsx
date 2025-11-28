@@ -182,7 +182,7 @@ export default function BlocksGamePage() {
                     <div
                       key={key}
                       data-cell={key}
-                      className={`relative flex aspect-square w-full items-center justify-center rounded-xl border border-white/40 transition-all ${
+                      className={`relative flex aspect-square w-full items-center justify-center rounded-xl border border-white/10 transition-all ${
                         cell ? '' : 'bg-white/90'
                       } ${highlighted ? 'ring-2 ring-amber-400' : ''}`}
                       style={{

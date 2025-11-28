@@ -5,7 +5,15 @@ export const BLOCKS_PER_ROUND = 3
 export const BOARD_GAP_PX = 1
 export const POOL_CELL_SIZE = 42
 
-export const COLOR_PALETTE = ['#34d399', '#f87171', '#60a5fa', '#fb923c', '#a855f7', '#facc15']
+export const COLOR_PALETTE = [
+  '#059669', // xanh đậm hơn (#34d399)
+  '#dc2626', // đỏ đậm (#f87171)
+  '#2563eb', // xanh dương đậm (#60a5fa)
+  '#ea580c', // cam đậm (#fb923c)
+  '#7e22ce', // tím đậm (#a855f7)
+  '#ca8a04'  // vàng đậm (#facc15)
+];
+
 
 export const SHAPES: Cell[][] = [
   [{ row: 0, col: 0 }],
