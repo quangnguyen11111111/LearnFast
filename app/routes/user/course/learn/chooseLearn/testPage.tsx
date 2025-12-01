@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React from 'react'
 import Button from '~/components/button/Button'
 import imgBottomTest from '~/assets/imgBottomTest.svg'
-import { useTimer } from '~/utils/coutTime'
 import IconButton from '~/components/button/ButtonIcon'
 import { Cog8ToothIcon } from '@heroicons/react/24/outline'
 import { NumberedListIcon } from '@heroicons/react/24/solid'
@@ -11,8 +10,8 @@ import TestSummarySidebar from '~/components/learnComponent/test/TestSummarySide
 import TrueFalseQuestion from '~/components/learnComponent/test/TrueFalseQuestion'
 import MultipleChoiceQuestion from '~/components/learnComponent/test/MultipleChoiceQuestion'
 import EssayQuestion from '~/components/learnComponent/test/EssayQuestion'
-import { generateTrueFalseData, getRandomItems, getRandomOptions } from '~/utils/testUtils'
-import type { Question, UserAnswer } from '~/features/test/types'
+import { useTestExam } from '~/features/test/useTestExam'
+import type { Question } from '~/features/test/types'
 // Types used in this module
 // Types moved to ~/features/test/types
 
@@ -36,341 +35,46 @@ const defaultData: Question[] = [
 // - Quản lý chia câu hỏi theo chế độ, theo dõi trả lời, tính trạng thái kết thúc
 // - Hỗ trợ thiết lập số lượng câu và loại hình trước khi bắt đầu
 const TestPage = () => {
-  // Hàm đảo dữ liệu
-  /**
-   * shuffleArray
-   * - Trả về một bản sao của mảng đầu vào sau khi hoán vị ngẫu nhiên
-   * - Không thay đổi mảng gốc (immutable)
-   */
-  // Helpers moved to ~/utils/testUtils
+  const {
+    ORIGINAL_DATA,
+    batchSize,
+    setBatchSize,
+    isTestTrueFalse,
+    setIsTestTrueFalse,
+    isTestMultiple,
+    setIsTestMultiple,
+    isTestEssay,
+    setIsTestEssay,
+    countEnabled,
+    questionCountByMode,
+    dividedData,
+    multipleOptions,
+    userAnswers,
+    selectedAnswers,
+    handleSelectAnswer,
+    isEndTest,
+    handleSubmitEndTest,
+    formatTime,
+    startTimer,
+    isOpenSetup,
+    setIsOpenSetup,
+    handleSubmitSetupTest,
+    isOpenSummary,
+    setIsOpenSummary,
+    handleNext,
+    refTrueFalse,
+    refMultiple,
+    refEssay,
+    refInputEssay,
+    refDivMain,
+    refButtonSubmitTest,
+    answeredTrueFalse,
+    answeredMultiple,
+    answeredEssay,
+    scrollToTop
+  } = useTestExam({ initialData: defaultData })
 
-  // -------------- Xử lí setup bài kiểm tra -----------
-  // State lưu số lượng câu trong bài kiểm tra
-  const [batchSize, setbatchSize] = useState<number>(defaultData.length >= 8 ? 8 : defaultData.length)
-
-  // dữ liệu mẫu
-  const [ORIGINAL_DATA, setORIGINAL_DATA] = useState<Question[]>(getRandomItems(defaultData, batchSize))
-  // mảng chứa tất cả target
-  const allSources = defaultData.map((item) => item.source)
-  // CHế độ kiểm tra đúng sai
-  const [isTestTrueFalse, setIsTestTrueFalse] = useState<boolean>(true)
-
-  // CHế độ kiểm tra trắc nghiệm
-  const [isTestMultiple, setIsTestMultiple] = useState<boolean>(true)
-
-  // CHế độ kiểm tra tự luận
-  const [isTestEssay, setIsTestEssay] = useState<boolean>(true)
-  // Biến để đếm có bao nhiêu chế độ bật
-  const countEnabled = (isTestTrueFalse ? 1 : 0) + (isTestMultiple ? 1 : 0) + (isTestEssay ? 1 : 0)
-
-  // Biến lưu trữ mỗi chế độ có bao nhiêu câu
-  const questionCountByMode = useMemo(() => {
-    const total = ORIGINAL_DATA.length
-    const modes = [
-      { key: 'trueFalse', enabled: isTestTrueFalse },
-      { key: 'essay', enabled: isTestEssay },
-      { key: 'multiple', enabled: isTestMultiple }
-    ]
-
-    // Lọc ra các chế độ đang bật
-    const enabledModes = modes.filter((m) => m.enabled)
-    const count = enabledModes.length
-    if (count === 0) return { trueFalse: 0, essay: 0, multiple: 0 }
-
-    // Chia đều
-    const base = Math.floor(total / count)
-    let remainder = total % count
-
-    // Mặc định mỗi chế độ nhận base câu
-    const result = {
-      trueFalse: isTestTrueFalse ? base : 0,
-      essay: isTestEssay ? base : 0,
-      multiple: isTestMultiple ? base : 0
-    }
-
-    // Nếu còn dư, ưu tiên cho Multiple trước
-    if (remainder > 0 && isTestMultiple) {
-      result.multiple += 1
-      remainder--
-    }
-
-    // Nếu còn dư (ví dụ bật 2 chế độ và multiple tắt), chuyển dư sang Essay
-    if (remainder > 0 && isTestEssay) {
-      result.essay += 1
-    }
-
-    return result
-  }, [ORIGINAL_DATA, isTestTrueFalse, isTestEssay, isTestMultiple])
-
-  // Hook trả về các hàm xử lí thời gian
-  const { startTimer, stopTimer, resetTimer, formatTime } = useTimer()
-
-  // Xử lý dữ liệu cho từng chế độ
-  // 1.. Chế độ đúng sai
-  // True/False data generator moved to utils (requires pool data argument)
-  // 2.. Chế độ trắc nghiệm
-  // Hàm trỗn dữ liệu ngẫu nhiên cho trắc nghiệm
-  /**
-   * getRandomOptions
-   * - Tạo 4 lựa chọn cho câu trắc nghiệm, gồm 1 đáp án đúng và 3 đáp án nhầm ngẫu nhiên
-   * - Trả về các option đã được shuffle
-   */
-  const getRandomOptions = (correct: string, allSources: string[]): string[] => {
-    const options = [correct]
-    while (options.length < 4) {
-      const random = allSources[Math.floor(Math.random() * allSources.length)]
-      if (!options.includes(random)) {
-        options.push(random)
-      }
-    }
-    return options.sort(() => Math.random() - 0.5)
-  }
-
-  // Biến chứa dữ liệu mỗi chế độ chưa trả lời
-  const dividedData = useMemo(() => {
-    const { trueFalse, multiple, essay } = questionCountByMode
-    let start = 0
-    const data = {
-      trueFalse: generateTrueFalseData(ORIGINAL_DATA.slice(start, start + trueFalse), ORIGINAL_DATA),
-      multiple: ORIGINAL_DATA.slice(start + trueFalse, start + trueFalse + multiple),
-      essay: ORIGINAL_DATA.slice(start + trueFalse + multiple, start + trueFalse + multiple + essay)
-    }
-    return data
-  }, [ORIGINAL_DATA, questionCountByMode])
-
-  // Số thứ tự câu
   let indexNumberNow = 0
-
-  // Lưu trữ đường dẫn của các câu
-  // 1.. ref đúng sai
-  const refTrueFalse = useRef<(HTMLDivElement | null)[]>([])
-  // 2.. ref multiple
-  const refMultiple = useRef<(HTMLDivElement | null)[]>([])
-  // 3.. ref essay
-  const refEssay = useRef<(HTMLInputElement | HTMLDivElement | null)[]>([])
-  // 4.. ref input essay
-  const refInputEssay = useRef<(HTMLInputElement | null)[]>([])
-  // 5.. ref div main để quay lại khi người dùng submit
-  const refDivMain = useRef<HTMLDivElement>(null)
-  // lưu trạng thái trả lời chưa cho từng chế độ
-  // 1..
-  const answeredTrueFalse = useRef<boolean[]>([])
-  // 2..
-  const answeredMultiple = useRef<boolean[]>([])
-  // 3..
-  const answeredEssay = useRef<boolean[]>([])
-  // Khởi tạo bạn đầu là chưa trả lời
-  useEffect(() => {
-    answeredTrueFalse.current = new Array(dividedData.trueFalse.length).fill(false)
-    answeredMultiple.current = new Array(dividedData.multiple.length).fill(false)
-    answeredEssay.current = new Array(dividedData.essay.length).fill(false)
-  }, [dividedData])
-
-  // handleNext: Di chuyển đến câu hỏi chưa trả lời tiếp theo trong cùng chế độ hoặc nhảy sang chế độ kế tiếp
-  const handleNext = (
-    currentIndex: number,
-    ref: React.RefObject<(HTMLDivElement | HTMLInputElement | null)[]>,
-    answered: boolean[],
-    mode: 'trueFalse' | 'multiple' | 'essay'
-  ) => {
-    /**
-     * handleNext
-     * - Dùng để chuyển đến câu hỏi tiếp theo chưa trả lời trong cùng chế độ
-     * - Nếu không còn câu trong chế độ hiện tại sẽ nhảy sang chế độ tiếp theo (trueFalse -> multiple -> essay)
-     * - Tự động cuộn tới phần tử và focus input khi cần (essay)
-     */
-    const jumpToNextUnanswered = (
-      ref: React.RefObject<(HTMLDivElement | HTMLInputElement | null)[]>,
-      answered: boolean[]
-    ) => {
-      const nextIndex = answered.findIndex((a) => !a)
-      if (nextIndex !== -1 && ref.current[nextIndex]) {
-        const next = ref.current[nextIndex]
-        next.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        // 👉 chỉ focus khi nhảy sang essay
-        if (ref === refEssay) {
-          setTimeout(() => refInputEssay.current[nextIndex]?.focus({ preventScroll: true }), 250)
-        }
-        return true
-      }
-      return false
-    }
-
-    // tìm câu chưa trả lời trong cùng chế độ
-    let nextIndex = currentIndex + 1
-    while (nextIndex < answered.length && answered[nextIndex]) {
-      nextIndex++
-    }
-
-    if (nextIndex < answered.length) {
-      const next = ref.current[nextIndex]
-
-      if (next) {
-        next.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        if (mode === 'essay') {
-          setTimeout(() => refInputEssay.current[nextIndex]?.focus({ preventScroll: true }), 250)
-          console.log('có chạy rồi')
-        }
-      }
-      return
-    }
-
-    // Nếu đã hết câu trong chế độ hiện tại => chuyển sang chế độ kế tiếp
-    if (mode === 'trueFalse') {
-      if (isTestMultiple && jumpToNextUnanswered(refMultiple, answeredMultiple.current)) return
-      if (isTestEssay && jumpToNextUnanswered(refEssay, answeredEssay.current)) return
-    } else if (mode === 'multiple') {
-      if (isTestEssay && jumpToNextUnanswered(refEssay, answeredEssay.current)) return
-    }
-
-    // Nếu tất cả đều đã làm xong
-    console.log('✅ Người dùng đã hoàn thành tất cả câu hỏi!')
-    refButtonSubmitTest.current?.focus()
-  }
-
-  // ------------------ HÀM CHỌN ĐÁP ÁN ------------------
-  // 1.. State lưu trữ câu trả lời và đánh giá đúng sai
-  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([])
-  // 2.. State lưu trữ đáp án hiện tại người dùng đang chọn
-  // Lưu đáp án người dùng hiện đang chọn (dùng cho highlight)
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string | boolean>>({})
-
-  // handleSelectAnswer: Lưu lựa chọn người dùng, tính đúng/sai và cập nhật danh sách câu trả lời
-  const handleSelectAnswer = (
-    questionId: string,
-    mode: 'trueFalse' | 'multiple' | 'essay',
-    userAnswer: string | boolean,
-    correctAnswer: string | boolean,
-    refDivMain: React.RefObject<HTMLDivElement | null> | HTMLDivElement | null
-  ) => {
-    /**
-     * handleSelectAnswer
-     * - Cập nhật lựa chọn đang highlight (selectedAnswers)
-     * - So sánh với đáp án đúng và lưu vào `userAnswers`
-     * - Thực hiện cập nhật theo từng chế độ
-     */
-    // 1. Cập nhật highlight (đánh dấu đáp án đã chọn)
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [questionId]: userAnswer
-    }))
-
-    // 2️. Đánh giá đúng sai
-    const isCorrect = userAnswer === correctAnswer
-    console.log('kiểm tra isCorrect ', isCorrect, '- người dùng trả lời', userAnswer, '- đáp án ddunsg ', correctAnswer)
-
-    // 3️. Cập nhật mảng userAnswers
-    setUserAnswers((prev) => {
-      const existingIndex = prev.findIndex((a) => a.id === questionId && a.mode === mode)
-      const updatedAnswer = {
-        id: questionId,
-        mode,
-        userAnswer,
-        isCorrect,
-        refDivMain
-      }
-
-      if (existingIndex !== -1) {
-        const newArr = [...prev]
-        newArr[existingIndex] = updatedAnswer
-        return newArr
-      }
-      return [...prev, updatedAnswer]
-    })
-  }
-
-  // State xác định người dùng đã trả lời xong chưa
-  const [isEndTest, setIsEndTest] = useState<boolean>(false)
-
-  // ref button Gửi bài kiểm tra
-  const refButtonSubmitTest = useRef<HTMLButtonElement>(null)
-
-  // ------------------------Hàm khi submit kiểm tra còn câu nào trống ---------
-  // handleSubmitEndTest: Kiểm tra còn câu chưa trả lời; nếu hoàn tất -> dừng thời gian & mở bảng tổng kết
-  const handleSubmitEndTest = () => {
-    /**
-     * handleSubmitEndTest
-     * - Kiểm tra xem có câu nào chưa trả lời không.
-     * - Nếu còn câu chưa trả lời: cuộn tới câu đó và dừng gửi bài.
-     * - Nếu tất cả đã trả lời: dừng timer và mở summary.
-     */
-    const findFirstUnanswered = (
-      ref: React.RefObject<(HTMLDivElement | HTMLInputElement | null)[]>,
-      answered: boolean[]
-    ) => {
-      const index = answered.findIndex((a) => !a)
-      if (index !== -1 && ref.current[index]) {
-        const el = ref.current[index]
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        // Nếu là essay → focus input
-        if (ref === refEssay) {
-          setTimeout(() => refInputEssay.current[index]?.focus({ preventScroll: true }), 250)
-        }
-        return true
-      }
-      return false
-    }
-
-    // 2️⃣ Nếu còn câu nào chưa làm → focus và dừng gửi
-    if (
-      (isTestTrueFalse && findFirstUnanswered(refTrueFalse, answeredTrueFalse.current)) ||
-      (isTestMultiple && findFirstUnanswered(refMultiple, answeredMultiple.current)) ||
-      (isTestEssay && findFirstUnanswered(refEssay, answeredEssay.current))
-    ) {
-      alert('⚠️ Bạn vẫn còn câu hỏi chưa trả lời!')
-      return
-    }
-
-    // 3️⃣ Nếu đã hoàn thành tất cả → cho phép gửi bài
-    setIsEndTest(true)
-    stopTimer()
-    setIsOpenSummary(true)
-  }
-
-  // --------- Các hàm chung cho các chế độ ---------
-
-  // 1. Hàm trả về style chung cho các nút đáp án
-  // Feedback helpers moved into ~/utils/testFeedback and used inside components
-
-  // -------- Các hàm hiển thị giao diện cho từng loại -------
-  // TestResult extracted to component
-  // 2.. Hàm tạo dữ liệu option cho trắc nghiệm
-  const multipleOptions = useMemo(() => {
-    return dividedData.multiple.map((item) => getRandomOptions(item.source, allSources))
-  }, [dividedData.multiple])
-
-  // 3.. hàm submit giao diện setup bài kiểm tra
-  // handleSubmitSetupTest: Khởi tạo lại dữ liệu bài test sau khi người dùng thiết lập (batchSize, chế độ)
-  const handleSubmitSetupTest = () => {
-    resetTimer()
-    startTimer()
-    setIsOpen(false)
-    setIsEndTest(false)
-    setIsOpenSummary(false)
-    setUserAnswers([])
-    setSelectedAnswers({})
-    setORIGINAL_DATA(getRandomItems(defaultData, batchSize))
-  }
-
-  // Hàm cuộn lên đầu giao diện
-  // scrollToTop: Cuộn giao diện lên đầu khu vực bài kiểm tra
-  const scrollToTop = () => {
-    if (!refDivMain.current) return
-    window.scrollTo({
-      top: refDivMain.current.offsetTop - 60, // chỉnh theo layout thực tế
-      behavior: 'smooth'
-    })
-  }
-
-  // State hiển thị modal setup bài kiểm tra
-  const [isOpen, setIsOpen] = useState(false)
-
-  // Mở modal khi vào trang
-  useEffect(() => {
-    setIsOpen(true)
-  }, [])
-  // 3.. Giao diện hiển thị liệt kê tóm tắt các câu
-  const [isOpenSummary, setIsOpenSummary] = useState<boolean>(false)
   return (
     <div className='px-85 max-xl:px-55 max-lg:px-30 max-md:px-10 flex flex-col items-center gap-8 pb-10 relative'>
       {/* Giao diện hiển thị danh sách tóm tắt các câu hỏi sau khi trả lời */}
@@ -388,20 +92,20 @@ const TestPage = () => {
       <div
         className='fixed top-3 right-28 z-50 max-md:right-15'
         onClick={() => {
-          setIsOpen(true)
+          setIsOpenSetup(true)
         }}
       >
         <IconButton icon={Cog8ToothIcon} onClick={() => {}} size={8} variant='secondary' />
       </div>
       {/* GIao diện setup bài kieemr tra */}
       <TestSetupModal
-        open={isOpen}
+        open={isOpenSetup}
         onClose={() => {
           startTimer()
-          setIsOpen(false)
+          setIsOpenSetup(false)
         }}
         batchSize={batchSize}
-        setBatchSize={setbatchSize}
+        setBatchSize={setBatchSize}
         maxCount={defaultData.length}
         isTestTrueFalse={isTestTrueFalse}
         setIsTestTrueFalse={setIsTestTrueFalse}
@@ -457,7 +161,7 @@ const TestPage = () => {
         })}
       {/* chế độ trắc nghiệm */}
       {isTestMultiple &&
-        !isOpen &&
+        !isOpenSetup &&
         dividedData.multiple.map((items, index) => {
           const option = multipleOptions[index]
           indexNumberNow += 1
@@ -474,12 +178,12 @@ const TestPage = () => {
               isEndTest={isEndTest}
               userAnswer={userAnswer}
               selected={selectedAnswers[items.id]}
-              onSelect={(v) => {
+              onSelect={(v: string) => {
                 answeredMultiple.current[index] = true
                 handleNext(index, refMultiple, answeredMultiple.current, 'multiple')
                 handleSelectAnswer(items.id, 'multiple', v, items.source, refMultiple.current[index])
               }}
-              ref={(el) => {
+              ref={(el: HTMLDivElement | null) => {
                 refMultiple.current[index] = el
               }}
             />
@@ -500,10 +204,10 @@ const TestPage = () => {
               total={ORIGINAL_DATA.length}
               isEndTest={isEndTest}
               userAnswer={userAnswer}
-              inputRef={(el) => {
+              inputRef={(el: HTMLInputElement | null) => {
                 refInputEssay.current[index] = el
               }}
-              onEnter={(val) => {
+              onEnter={(val: string) => {
                 answeredEssay.current[index] = true
                 handleNext(index, refEssay, answeredEssay.current, 'essay')
                 handleSelectAnswer(
@@ -515,7 +219,7 @@ const TestPage = () => {
                 )
               }}
               isLast={dividedData.essay.length - 1 === index}
-              ref={(el) => {
+              ref={(el: HTMLDivElement | null) => {
                 refEssay.current[index] = el
               }}
             />

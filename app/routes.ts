@@ -16,7 +16,7 @@ export default [
     route('multiple-choice', 'routes/user/course/learn/chooseLearn/multipleChoicePage.tsx'),
     route('test', 'routes/user/course/learn/chooseLearn/testPage.tsx'),
     route('blocks', 'routes/user/course/learn/chooseLearn/blocksGamePage.tsx'),
-    
+    route('card-matching', 'routes/user/course/learn/chooseLearn/cardMatchingPage.tsx')
   ]),
   // Route không có layout (ví dụ login)
   route('login', 'routes/guest/auth/loginPage.tsx'),

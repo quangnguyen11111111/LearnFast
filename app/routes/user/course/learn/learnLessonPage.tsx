@@ -14,7 +14,7 @@ const LearnLessonPage = () => {
     { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: 'test' },
     { icon: NewspaperIcon, title: 'Blocks', links: 'blocks' },
     { icon: NewspaperIcon, title: 'Blast', links: '' },
-    { icon: NewspaperIcon, title: 'Ghép thẻ', links: '' }
+    { icon: NewspaperIcon, title: 'Ghép thẻ', links: 'card-matching' }
   ]
   // Dữ liệu mẫu
   const ORIGINAL_DATA = [

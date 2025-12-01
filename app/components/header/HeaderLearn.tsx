@@ -23,7 +23,7 @@ const HeaderLearn = () => {
     { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: 'test' },
     { icon: NewspaperIcon, title: 'Blocks', links: 'blocks' },
     { icon: NewspaperIcon, title: 'Blast', links: '' },
-    { icon: NewspaperIcon, title: 'Ghép thẻ', links: '' }
+    { icon: NewspaperIcon, title: 'Ghép thẻ', links: 'card-matching' }
   ]
   const localhost = document.location.pathname
   // Tìm chức năng hiện tại dựa trên đường dẫn
