@@ -22,12 +22,14 @@ const HeaderLearn = () => {
     { icon: BookOpenIcon, title: 'Học', links: 'multiple-choice' },
     { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: 'test' },
     { icon: NewspaperIcon, title: 'Blocks', links: 'blocks' },
-    { icon: NewspaperIcon, title: 'Blast', links: '' },
+    { icon: NewspaperIcon, title: 'Blast', links: 'blast' },
     { icon: NewspaperIcon, title: 'Ghép thẻ', links: 'card-matching' }
   ]
   const localhost = document.location.pathname
   // Tìm chức năng hiện tại dựa trên đường dẫn
   const activeFeature = features.find((f) => localhost.toLowerCase().includes(f.links.toLowerCase()))
+  console.log('kiểm tra activeFeature',activeFeature);
+  
   // Tạo mảng chức năng không bao gồm chức năng hiện tại
   const featuresCopy = features.filter((f) => f.title !== activeFeature?.title)
 
@@ -54,7 +56,7 @@ const HeaderLearn = () => {
       className={`sticky top-0 left-0 bg-background
       md:flex md:justify-between
   grid grid-cols-[1fr_auto_1fr] items-center
-  ${activeFeature?.links === 'blocks' ? 'max-lg:grid-cols-[1fr_auto]' : 'max-md:grid-cols-2 max-md:grid-rows-2'}
+  ${activeFeature?.links === 'blocks' ? 'max-lg:grid-cols-[1fr_auto]' : 'max-md:grid-cols-2 '}
   px-15 py-3 max-md:px-5 z-50 gap-2`}
     >
       <div
@@ -91,7 +93,7 @@ const HeaderLearn = () => {
       {/* Kết thúc danh mục lựa chọn */}
       <div
         className={`font-semibold text-center
-  max-md:col-span-2 max-md:row-start-2 ${activeFeature?.links === 'blocks' ? 'max-lg:hidden' : ''}`}
+  max-md:col-span-2 max-md:row-start-2 ${activeFeature?.links === 'blocks'||activeFeature?.links === 'card-matching' ? 'max-lg:hidden' : ''}`}
       >
         Thư mục 1
       </div>
