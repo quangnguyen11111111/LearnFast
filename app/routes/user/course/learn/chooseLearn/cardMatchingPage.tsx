@@ -1,6 +1,7 @@
 import { use, useMemo, useState } from 'react'
 import type { Question } from '~/features/cardMatching/types'
 import useCardMatching from '~/features/cardMatching/useCardMatching'
+import { useTimer } from '~/utils/coutTime'
 import { getRandomItems, shuffleArray } from '~/utils/testUtils'
 
 const CardMatchingPage = () => {
@@ -29,7 +30,7 @@ const CardMatchingPage = () => {
     })
     return pairs
   }
-  // Sử dụng hàm này với dataRandom
+  // Biến lưu trữ các thẻ đã được xáo trộn ( source và target )
   const cardPairs = useMemo(() => shuffleArray(getCardPairs(dataRandom)), [dataRandom])
   const [selectedIndices, setSelectedIndices] = useState<number[]>([])
   const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set()) // thẻ đã ghép đúng
@@ -66,19 +67,21 @@ const CardMatchingPage = () => {
     }
   }
 
+   const { startTimer, stopTimer, resetTimer, formatTime } = useTimer()
+
   return (
     <div className='max-h-screen h-[calc(100vh-75px)] w-full flex items-center justify-center bg-gray-50'>
-      <div className='w-full h-full grid grid-cols-3 gap-x-3 p-2 ' style={{ maxWidth: '1200px', minHeight: '70vh' }}>
+      <div className='w-full h-full grid grid-cols-3 gap-3 p-2 ' style={{ maxWidth: '1200px', minHeight: '70vh' }}>
         {cardPairs.map((card, idx) => (
           <button
             key={idx}
             onClick={() => handleSelect(idx)}
-            className={`  flex items-center justify-center h-[9rem] w-full
-                          border  rounded-xl shadow text-center text-base font-medium
-                          transition bg-white cursor-pointer
+            className={`  flex items-center justify-center h-[calc((100vh-9rem)/4)] w-full
+                          border rounded-xl shadow text-center text-base font-medium
+                          transition  cursor-pointer
 
                           ${matchedIds.has(card.id) ? 'shrink-hide' : ''}
-                          ${selectedIndices.includes(idx) ? 'border-blue-500 bg-blue-100' : 'border-gray-200'}
+                          ${selectedIndices.includes(idx) ? 'border-blue-500 bg-blue-100' : 'border-gray-300 bg-white'}
 
                           ${shakeIndices.includes(idx) ? 'shake border-red-500 bg-red-100' : ''}`}
           >
