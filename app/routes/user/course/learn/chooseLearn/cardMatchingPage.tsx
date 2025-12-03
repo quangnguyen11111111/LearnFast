@@ -1,8 +1,10 @@
 import { use, useMemo, useState } from 'react'
+import SetUpGame from '~/components/learnComponent/SetUpGame'
 import type { Question } from '~/features/cardMatching/types'
 import useCardMatching from '~/features/cardMatching/useCardMatching'
 import { useTimer } from '~/utils/coutTime'
 import { getRandomItems, shuffleArray } from '~/utils/testUtils'
+import imgCardMatching from '~/assets/match_hero.png'
 
 const CardMatchingPage = () => {
   const initialData: Question[] = [
@@ -58,7 +60,8 @@ const CardMatchingPage = () => {
       } else {
         // sai → tạo shake
         setShakeIndices([first, second])
-
+        increaseTime() // tăng thời gian phạt
+        // xóa selected sau animation
         setTimeout(() => {
           setShakeIndices([])
           setSelectedIndices([])
@@ -67,11 +70,19 @@ const CardMatchingPage = () => {
     }
   }
 
-   const { startTimer, stopTimer, resetTimer, formatTime } = useTimer()
-
+   const { startTimer, stopTimer, resetTimer, formatTime,increaseTime } = useTimer()
+const [isSetUpGame, setIsSetUpGame] = useState<boolean>(true);
+const handleSetUp=()=>{
+  setIsSetUpGame(false);
+  resetTimer();
+  startTimer();
+}
   return (
     <div className='max-h-screen h-[calc(100vh-75px)] w-full flex items-center justify-center bg-gray-50'>
-      <div className='w-full h-full grid grid-cols-3 gap-3 p-2 ' style={{ maxWidth: '1200px', minHeight: '70vh' }}>
+    {isSetUpGame && <SetUpGame handleStartGame={handleSetUp} img={imgCardMatching} title="Card Matching Game" 
+    content="Ghép tất cả các thuật ngữ với định nghĩa của chúng càng nhanh càng tốt. Tránh ghép sai vì sẽ mất thêm thời gian!" />}
+      {
+        !isSetUpGame&&<div className='w-full h-full grid grid-cols-3 gap-3 p-2 ' style={{ maxWidth: '1200px', minHeight: '70vh' }}>
         {cardPairs.map((card, idx) => (
           <button
             key={idx}
@@ -91,6 +102,7 @@ const CardMatchingPage = () => {
           </button>
         ))}
       </div>
+      }
     </div>
   )
 }
