@@ -1,6 +1,8 @@
 import { NewspaperIcon } from '@heroicons/react/24/outline'
 import Button from '~/components/button/Button'
 import imgHomePage from '~/assets/HomePage.png'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router'
 
 /* ---------------- FeatureCard ---------------- */
 const FeatureCard = ({
@@ -22,8 +24,10 @@ const FeatureCard = ({
 )
 
 /* ---------------- DeckCard ---------------- */
-const DeckCard = ({ title, count, author }: { title: string; count: number; author: string }) => (
-  <div className='flex justify-between shadow-md border border-[#edeff4] p-5 items-center relative after:h-1 after:w-0 hover:after:w-full after:bg-blue-500 after:absolute after:bottom-0 after:left-0 after:transition-all after:duration-300'>
+const DeckCard = ({ title, count, author, handleClick }: { title: string; count: number; author: string; handleClick: () => void }) => (
+  <div className='flex justify-between shadow-md border border-[#edeff4] p-5 items-center 
+  relative after:h-1 after:w-0 hover:after:w-full after:bg-blue-500 after:absolute after:bottom-0 after:left-0 after:transition-all after:duration-300'
+    onClick={handleClick}>
     <div>
       <p className='text-xl font-bold'>{title}</p>
       <p className='inline text-gray-500'>
@@ -44,6 +48,11 @@ const HomePage = () => {
     { icon: NewspaperIcon, title: 'Thống kê kết quả', description: 'Theo dõi tiến trình học tập' },
     { icon: NewspaperIcon, title: 'Học trên mọi thiết bị', description: 'Đồng bộ dữ liệu mọi nơi' }
   ]
+  useEffect(()=>{
+    if(!localStorage.getItem('guestFreeAccessUsed'))
+    localStorage.setItem('guestFreeAccessUsed','false')
+  },[])
+  const navigate = useNavigate()
 
   const decks = [
     { title: 'TOEIC Vocabulary', count: 50, author: 'Ngọc Huyền' },
@@ -88,7 +97,7 @@ const HomePage = () => {
         <p className='font-bold text-3xl mb-5 text-center'>Danh sách bộ thẻ nổi bật</p>
         <div className='w-full grid grid-cols-3 max-xl:grid-cols-2 max-md:grid-cols-1 gap-5'>
           {decks.map((deck, i) => (
-            <DeckCard key={i} title={deck.title} count={deck.count} author={deck.author} />
+            <DeckCard key={i} title={deck.title} count={deck.count} author={deck.author} handleClick={() => {navigate('/learn-lesson')}} />
           ))}
         </div>
       </div>

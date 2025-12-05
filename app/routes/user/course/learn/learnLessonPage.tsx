@@ -6,7 +6,23 @@ import logo from '~/assets/logo.png'
 import Button from '~/components/button/Button'
 import { useMemo, useState } from 'react'
 import MultipleChoise from '~/components/learnComponent/MultipleChoice'
-const LearnLessonPage = () => {
+import { useAppSelector } from '~/store/hook'
+import { useNavigate } from 'react-router'
+const LearnLessonPage = (links: string) => {
+  const navigate = useNavigate()
+  // Xử lý chế độ người dùng
+  const user = false
+  const isFreeAccessUsed = localStorage.getItem('guestFreeAccessUsed')
+  const handleNavigateGuestFreeAccess = (link: string) => {
+    if (!user && isFreeAccessUsed === 'false') {
+      localStorage.setItem('guestFreeAccessUsed', 'true')
+      alert('Bạn đã sử dụng quyền truy cập miễn phí cho khách!')
+      navigate(`${link}`)
+    } else if (!user && isFreeAccessUsed === 'true') {
+      alert('Bạn đã sử dụng hết quyền truy cập miễn phí cho khách! Vui lòng đăng ký tài khoản để tiếp tục học tập.')
+    }
+  }
+
   // các chức năng
   const features = [
     { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: 'flash-card' },
@@ -49,12 +65,12 @@ const LearnLessonPage = () => {
     return options.sort(() => Math.random() - 0.5)
   }
   const handleNextQuestion = () => {
-    if(indexMulti == ORIGINAL_DATA.length -1){
+    if (indexMulti == ORIGINAL_DATA.length - 1) {
       alert('Bạn đã hoàn thành tất cả các câu hỏi!')
       return
     }
     setIndexMulti((prevIndex) => {
-      return (prevIndex + 1)
+      return prevIndex + 1
     })
   }
   // mảng chứa Đích
@@ -62,6 +78,7 @@ const LearnLessonPage = () => {
   const option = useMemo(() => {
     return getRandomOptions(ORIGINAL_DATA[indexMulti].target, allTargets)
   }, [indexMulti])
+
   return (
     <div className='mx-30 mb-10 max-md:mx-2'>
       <div className='flex justify-between mt-5 '>
@@ -81,7 +98,16 @@ const LearnLessonPage = () => {
           features.map((item, index) => {
             const Icon = item.icon
             return (
-              <ListItem key={index} background='bg-gray-50' navigatevalue={item.links}>
+              <ListItem
+                key={index}
+                background='bg-gray-50'
+                navigatevalue={item.links}
+                {...(!user
+                  ? {
+                      handleClick: () => handleNavigateGuestFreeAccess(item.links)
+                    }
+                  : {})}
+              >
                 <div className='flex items-center gap-1'>
                   <Icon className='size-6 flex-shrink-0 text-blue-500' />
                   <span className='font-semibold'>{item.title}</span>
