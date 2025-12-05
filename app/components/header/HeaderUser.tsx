@@ -4,6 +4,9 @@ import { BackspaceIcon, Bars3Icon, MagnifyingGlassIcon, PlusIcon } from '@heroic
 import Button from '../button/ButtonIcon'
 import { useAppDispatch } from '~/store/hook'
 import { toggle } from '~/features/actionPage/toggleSlice'
+import { useState } from 'react'
+import { DocumentIcon, FolderIcon } from '@heroicons/react/24/outline'
+import ModalCreateFolder from '../ModalCreateFolder'
 interface HeaderProps {
   display: 'sticky' | 'static' 
   shadow: boolean
@@ -25,7 +28,8 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   console.log(linkTo);
-  
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false)
+  const [openModal, setOpenModal] = useState<boolean>(false);
   return (
     <header className={`bg-background text-black ${display==='sticky' ? 'sticky top-0' : ''} ${shadow ? 'shadow' : ''}z-10`}>
       <div className=' w-full  mx-auto px-5 grid grid-cols-[auto_1fr_auto] items-center gap-10 max-sm:gap-1 py-2'>
@@ -50,8 +54,21 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
         <div className='max-w-[55rem] w-full mx-auto max-sm:col-span-3 max-sm:order-1'>
           <SearchInput />
         </div>
-        <div className='flex items-center  max-sm:col-span-2 justify-end'>
-          <Button icon={PlusIcon} onClick={() => {}} />
+        <div className='flex items-center  max-sm:col-span-2 justify-end gap-x-5 relative'>
+          <Button icon={PlusIcon} onClick={() => {setIsDropdownOpen(!isDropdownOpen)}} />
+          {/* khung giao diện thêm thư mục và hoch phần */}
+          <div className={` absolute top-15 min-w-50 px-5 right-[6rem] p-4 rounded-md shadow-lg border ${isDropdownOpen ? '' : 'hidden'}`}>
+            <div className="flex items-center gap-2" >
+              <FolderIcon className='size-6 text-gray-600 stroke-[2] ' />
+            <p className='font-semibold text-gray-600'>Thêm thư mục</p>
+            </div>
+            <div className="flex items-center gap-2 " onClick={()=>setOpenModal(!openModal)}>
+              <DocumentIcon className='size-6 text-gray-600 stroke-[2] ' />
+            <p className='mt-2 font-semibold text-gray-600'>Thêm học phần</p>
+            
+            </div>
+          </div>
+          <ModalCreateFolder isOpen={openModal} setIsOpen={setOpenModal} />
           <img src={logo} alt='avatar' className='size-16 rounded-2xl' />
         </div>
       </div>
