@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router'
 import logo from '../../assets/logo.png'
-import { BackspaceIcon, Bars3Icon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { BackspaceIcon, Bars3Icon, MagnifyingGlassIcon, PlusIcon, Cog6ToothIcon, MoonIcon } from '@heroicons/react/24/outline'
+import { TrophyIcon } from '@heroicons/react/24/solid'
 import Button from '../button/ButtonIcon'
 import { useAppDispatch } from '~/store/hook'
 import { toggle } from '~/features/actionPage/toggleSlice'
@@ -29,9 +30,12 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
   const navigate = useNavigate()
   console.log(linkTo)
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false)
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState<boolean>(false)
   const [openModal, setOpenModal] = useState<boolean>(false)
-    const dropdownRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const userDropdownRef = useRef<HTMLDivElement>(null)
+  const userButtonRef = useRef<HTMLImageElement>(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -44,13 +48,32 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
       ) {
         setIsDropdownOpen(false)
       }
+
+      if (
+        userDropdownRef.current &&
+        userButtonRef.current &&
+        !userDropdownRef.current.contains(event.target as Node) &&
+        !userButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsUserDropdownOpen(false)
+      }
     }
 
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+    // Close dropdown when scrolling
+    const handleScroll = () => {
+      setIsDropdownOpen(false)
+      setIsUserDropdownOpen(false)
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isDropdownOpen])
+
+    if (isDropdownOpen || isUserDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      window.addEventListener('wheel', handleScroll)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('wheel', handleScroll)
+    }
+  }, [isDropdownOpen, isUserDropdownOpen])
   return (
     <>
     <header
@@ -80,15 +103,20 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
         </div>
         <div className='flex items-center  max-sm:col-span-2 justify-end gap-x-5 relative'>
           <Button
-          ref={buttonRef}
+            ref={buttonRef}
             icon={PlusIcon}
             onClick={() => {
               setIsDropdownOpen(!isDropdownOpen)
             }}
           />
 
-
-          <img src={logo} alt='avatar' className='size-16 rounded-2xl' />
+          <img
+            ref={userButtonRef}
+            src={logo}
+            alt='avatar'
+            className='size-16 rounded-2xl cursor-pointer'
+            onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+          />
         </div>
       </div>
     </header>
@@ -116,6 +144,62 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
             >
               <DocumentIcon className='size-6 text-gray-600 stroke-[2]' />
               <p className='mt-2 font-semibold text-gray-600'>Thêm học phần</p>
+            </div>
+          </div>
+          {/* khung giao diện dropdown người dùng */}
+          <div
+            ref={userDropdownRef}
+            className={`absolute top-20 right-5 w-64 z-50 bg-white rounded-lg shadow-lg border border-gray-200 ${
+              isUserDropdownOpen ? '' : 'hidden'
+            }`}
+          >
+            {/* User Info */}
+            <div className='p-4 border-b border-gray-200'>
+              <div className='flex items-center gap-3'>
+                <img src={logo} alt='avatar' className='size-12 rounded-full' />
+                <div className='flex-1 min-w-0'>
+                  <p className='font-semibold text-gray-800 truncate'>quizlette848489</p>
+                  <p className='text-sm text-gray-500 truncate'>ducduc2687@gmail.com</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Menu Items */}
+            <div className='py-2'>
+              <div
+                className='px-4 py-2 flex items-center gap-3 text-gray-700 hover:bg-gray-50 cursor-pointer transition'
+                onClick={() => {
+                  setIsUserDropdownOpen(false)
+                }}
+              >
+                <TrophyIcon className='size-5 text-yellow-500' />
+                <span className='font-medium'>Thành tựu</span>
+              </div>
+
+              <div
+                className='px-4 py-2 flex items-center gap-3 text-gray-700 hover:bg-gray-50 cursor-pointer transition'
+                onClick={() => {
+                  setIsUserDropdownOpen(false)
+                }}
+              >
+                <Cog6ToothIcon className='size-5 text-gray-600' />
+                <span className='font-medium'>Cài đặt</span>
+              </div>
+
+              <div
+                className='px-4 py-2 flex items-center gap-3 text-gray-700 hover:bg-gray-50 cursor-pointer transition'
+                onClick={() => {
+                  setIsUserDropdownOpen(false)
+                }}
+              >
+                <MoonIcon className='size-5 text-gray-600' />
+                <span className='font-medium'>Tối</span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className='px-4 py-2 border-t border-gray-200 text-sm text-gray-500'>
+              <div className='hover:text-blue-500 cursor-pointer transition'>Đăng xuất</div>
             </div>
           </div>
     </>

@@ -58,11 +58,11 @@ const Sidebar = ({ children }: SideBarProps) => {
     }
   ])
   return (
-    <div className='grid grid-cols-[auto_1fr] px-5 h-[calc(100vh-80px)]'>
+    <div className='grid grid-cols-[auto_1fr] px-5 h-[calc(100vh-80px)] relative'>
       {/* Sidebar */}
       <div
         className={` transition-all duration-300 ease-in-out ${toggleValue ? 'w-45' : ' max-md:w-0 w-12'} overflow-x-hidden overflow-y-auto
-          scrollbar-none sticky top-0 left-0 overscroll-contain pb-5 max-md:pb-15 `}
+          scrollbar-none sticky top-0 left-0 overscroll-contain pb-5 max-md:pb-15 max-lg:hidden `}
       >
         {/* chuyển hướng Trang chủ */}
         <div className='mt-5 flex flex-col gap-3'>
