@@ -21,39 +21,39 @@ const Sidebar = ({ children }: SideBarProps) => {
       title: 'Thư mục 2'
     },
     {
-      id: 2,
+      id: 3,
       title: 'Thư mục 2'
     },
     {
-      id: 2,
+      id: 4,
       title: 'Thư mục 2'
     },
     {
-      id: 2,
+      id: 5,
       title: 'Thư mục 2'
     },
     {
-      id: 2,
+      id: 6,
       title: 'Thư mục 2'
     },
     {
-      id: 2,
+      id: 7,
       title: 'Thư mục 2'
     },
     {
-      id: 2,
+      id: 8,
       title: 'Thư mục 2'
     },
     {
-      id: 2,
+      id: 9,
       title: 'Thư mục 2'
     },
     {
-      id: 2,
+      id: 10,
       title: 'Thư mục 2'
     },
     {
-      id: 2,
+      id: 11,
       title: 'Thư mục 2'
     }
   ])
