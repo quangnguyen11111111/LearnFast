@@ -1,6 +1,7 @@
 import { FolderIcon, FolderMinusIcon, FolderPlusIcon, HomeIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
-import { useAppSelector } from '~/store/hook'
+import { useAppDispatch, useAppSelector } from '~/store/hook'
+import { toggle } from '~/features/actionPage/toggleSlice'
 
 interface SideBarProps {
   children: React.ReactNode
@@ -10,6 +11,7 @@ interface IFolder {
   title: string
 }
 const Sidebar = ({ children }: SideBarProps) => {
+  const dispatch = useAppDispatch()
   const toggleValue = useAppSelector((state) => state.toggle.actionUserPage)
   const [listFolders, setListFolders] = useState<IFolder[]>([
     {
@@ -57,12 +59,25 @@ const Sidebar = ({ children }: SideBarProps) => {
       title: 'Thư mục 2'
     }
   ])
+  const localhost = document.location.pathname
+  const isInfoPage = localhost === '/learn-lesson'
+  const overlayMode = isInfoPage ? 'fixed top-0 left-0 h-screen w-64 bg-white shadow-2xl px-4 pt-5 z-40' : ''
+  const overlayTranslate = isInfoPage ? (toggleValue ? 'translate-x-0' : '-translate-x-full') : ''
+  const isLatest = localhost === '/latest'
   return (
-    <div className='grid grid-cols-[auto_1fr] px-5 h-[calc(100vh-80px)] relative'>
+    <div className={`relative ${!isInfoPage?'lg:grid lg:grid-cols-[auto_1fr]': ''}  px-5 ${isLatest?'h-[calc(100vh-80px)]':'min-h-screen'} `}>
       {/* Sidebar */}
       <div
-        className={` transition-all duration-300 ease-in-out ${toggleValue ? 'w-45' : ' max-md:w-0 w-12'} overflow-x-hidden overflow-y-auto
-          scrollbar-none sticky top-0 left-0 overscroll-contain pb-5 max-md:pb-15 max-lg:hidden `}
+        className={`transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto scrollbar-none overscroll-contain pb-5 
+          ${!isInfoPage?`max-md:pb-15
+          lg:sticky lg:top-0 lg:left-0 lg:h-full lg:bg-transparent lg:shadow-none
+          ${toggleValue ? 'lg:w-45' : 'lg:w-12'}`:``}
+          max-lg:fixed max-lg:top-0 max-lg:left-0 max-lg:h-screen max-lg:w-64 max-lg:bg-white max-lg:shadow-2xl max-lg:px-4 max-lg:pt-5 max-lg:z-40
+          ${toggleValue ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'}
+          
+           /* overlay for isInfoPage */
+    ${overlayMode}
+    ${overlayTranslate}`}
       >
         {/* chuyển hướng Trang chủ */}
         <div className='mt-5 flex flex-col gap-3'>
@@ -111,13 +126,11 @@ const Sidebar = ({ children }: SideBarProps) => {
         </div>
       </div>
 
+      {/* Overlay for mobile/tablet */}
+      {toggleValue && <div className={`fixed inset-0 bg-black/30 z-30 ${isInfoPage ? '' : 'lg:hidden'} `} onClick={() => dispatch(toggle())} />}
+
       {/* Content */}
-      <div
-        className=' w-full scrollbar-none overflow-y-auto
-    sticky top-0 right-0 '
-      >
-        {children}
-      </div>
+      <div className='w-full scrollbar-none overflow-y-auto'>{children}</div>
     </div>
   )
 }

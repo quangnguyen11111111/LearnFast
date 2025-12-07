@@ -77,7 +77,7 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
   return (
     <>
     <header
-      className={`bg-background text-black ${display === 'sticky' ? 'sticky top-0' : ''} ${shadow ? 'shadow' : ''}z-10`}
+      className={`bg-background text-black ${display === 'sticky' ? 'sticky top-0' : ''} ${shadow ? 'shadow' : ''} z-50`}
     >
       <div className=' w-full  mx-auto px-5 grid grid-cols-[auto_1fr_auto] items-center gap-10 max-sm:gap-1 py-2'>
         <div className='flex items-center cursor-pointer'>
