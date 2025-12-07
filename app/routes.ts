@@ -6,7 +6,8 @@ export default [
   // layout người dùng đã đăng nhập
   route('', 'layouts/UserLayout.tsx', [
     route('/latest', 'routes/user/homeUserPage.tsx'),
-    route('learn-lesson', 'routes/user/course/learn/learnLessonPage.tsx')
+    route('learn-lesson', 'routes/user/course/learn/learnLessonPage.tsx'),
+    route('libary', 'routes/user/libary/libaryPage.tsx')
   ]),
   // layout người đăng kí khi tạo bài học( thu mục, học phần)
   route('', 'layouts/CreateLayout.tsx', [route('create-lesson', 'routes/user/course/create/createLessonPage.tsx')]),

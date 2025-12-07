@@ -1,7 +1,8 @@
 import { FolderIcon, FolderMinusIcon, FolderPlusIcon, HomeIcon } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { use, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '~/store/hook'
 import { toggle } from '~/features/actionPage/toggleSlice'
+import { useNavigate } from 'react-router'
 
 interface SideBarProps {
   children: React.ReactNode
@@ -61,9 +62,10 @@ const Sidebar = ({ children }: SideBarProps) => {
   ])
   const localhost = document.location.pathname
   const isInfoPage = localhost === '/learn-lesson'
-  const overlayMode = isInfoPage ? 'fixed top-0 left-0 h-screen w-64 bg-white shadow-2xl px-4 pt-5 z-40' : ''
+  const overlayMode = isInfoPage ? 'fixed top-10 left-0 h-screen w-64 bg-white shadow-2xl px-4 pt-5 pb-15 z-40' : ''
   const overlayTranslate = isInfoPage ? (toggleValue ? 'translate-x-0' : '-translate-x-full') : ''
-  const isLatest = localhost === '/latest'
+  const isLatest = localhost === '/latest' || localhost === '/libary'
+  const navigate = useNavigate()
   return (
     <div className={`relative ${!isInfoPage?'lg:grid lg:grid-cols-[auto_1fr]': ''}  px-5 ${isLatest?'h-[calc(100vh-80px)]':'min-h-screen'} `}>
       {/* Sidebar */}
@@ -72,12 +74,12 @@ const Sidebar = ({ children }: SideBarProps) => {
           ${!isInfoPage?`max-md:pb-15
           lg:sticky lg:top-0 lg:left-0 lg:h-full lg:bg-transparent lg:shadow-none
           ${toggleValue ? 'lg:w-45' : 'lg:w-12'}`:``}
-          max-lg:fixed max-lg:top-0 max-lg:left-0 max-lg:h-screen max-lg:w-64 max-lg:bg-white max-lg:shadow-2xl max-lg:px-4 max-lg:pt-5 max-lg:z-40
+          max-lg:fixed max-lg:top-10 max-lg:left-0 max-lg:h-screen max-lg:w-64 max-lg:bg-white max-lg:shadow-2xl max-lg:px-4 max-lg:pt-5 max-lg:pb-15 max-lg:z-40
           ${toggleValue ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'}
           
            /* overlay for isInfoPage */
-    ${overlayMode}
-    ${overlayTranslate}`}
+          ${overlayMode}
+          ${overlayTranslate}`}
       >
         {/* chuyển hướng Trang chủ */}
         <div className='mt-5 flex flex-col gap-3'>
@@ -90,6 +92,9 @@ const Sidebar = ({ children }: SideBarProps) => {
             <p className={`${!toggleValue && 'hidden'} text-gray-500  font-semibold text-sm`}>Trang chủ</p>
           </div>
           <div
+          onClick={() => {navigate('/libary')
+            dispatch(toggle())
+          }}
             className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
               toggleValue ? '' : 'w-fit'
             }`}
