@@ -7,7 +7,11 @@ export default [
   route('', 'layouts/UserLayout.tsx', [
     route('/latest', 'routes/user/homeUserPage.tsx'),
     route('learn-lesson', 'routes/user/course/learn/learnLessonPage.tsx'),
-    route('libary', 'routes/user/libary/libaryPage.tsx')
+    route('libary', 'routes/user/libary/libaryPage.tsx', [
+      route('lesson', 'routes/user/libary/LessonPage.tsx'),
+      route('course', 'routes/user/libary/CouresPage.tsx')
+    ]),
+    
   ]),
   // layout người đăng kí khi tạo bài học( thu mục, học phần)
   route('', 'layouts/CreateLayout.tsx', [route('create-lesson', 'routes/user/course/create/createLessonPage.tsx')]),

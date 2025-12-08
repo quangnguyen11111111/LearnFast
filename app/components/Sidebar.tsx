@@ -64,17 +64,18 @@ const Sidebar = ({ children }: SideBarProps) => {
   const isInfoPage = localhost === '/learn-lesson'
   const overlayMode = isInfoPage ? 'fixed top-10 left-0 h-screen w-64 bg-white shadow-2xl px-4 pt-5 pb-15 z-40' : ''
   const overlayTranslate = isInfoPage ? (toggleValue ? 'translate-x-0' : '-translate-x-full') : ''
-  const isLatest = localhost === '/latest' || localhost === '/libary'
+  const isLatest = localhost === '/latest' || localhost.includes('/libary')
+  
   const navigate = useNavigate()
   return (
-    <div className={`relative ${!isInfoPage?'lg:grid lg:grid-cols-[auto_1fr]': ''}  px-5 ${isLatest?'h-[calc(100vh-80px)]':'min-h-screen'} `}>
+    <div className={`relative ${!isInfoPage?'lg:grid lg:grid-cols-[auto_1fr]': ''}  px-5 ${!isLatest?'min-h-screen':'h-[calc(100vh-80px)]'} `}>
       {/* Sidebar */}
       <div
         className={`transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto scrollbar-none overscroll-contain pb-5 
-          ${!isInfoPage?`max-md:pb-15
+          ${!isInfoPage?`max-md:pb-25
           lg:sticky lg:top-0 lg:left-0 lg:h-full lg:bg-transparent lg:shadow-none
           ${toggleValue ? 'lg:w-45' : 'lg:w-12'}`:``}
-          max-lg:fixed max-lg:top-10 max-lg:left-0 max-lg:h-screen max-lg:w-64 max-lg:bg-white max-lg:shadow-2xl max-lg:px-4 max-lg:pt-5 max-lg:pb-15 max-lg:z-40
+          max-lg:fixed max-lg:top-10 max-md:top-23 max-lg:left-0 max-lg:h-screen max-lg:w-64 max-lg:bg-white max-lg:shadow-2xl max-lg:px-4 max-lg:pt-5 max-lg:pb-15 max-lg:z-40
           ${toggleValue ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'}
           
            /* overlay for isInfoPage */
@@ -85,22 +86,26 @@ const Sidebar = ({ children }: SideBarProps) => {
         <div className='mt-5 flex flex-col gap-3'>
           <div
             className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
-              toggleValue ? '' : 'w-fit'
-            }`}
+              toggleValue ? '' : 'w-fit' }
+               ${localhost.includes('/latest') ? 'text-blue-600' : 'text-gray-500'}
+              `}
           >
-            <HomeIcon className='size-6 flex-shrink-0 text-gray-500 font-semibold' />
-            <p className={`${!toggleValue && 'hidden'} text-gray-500  font-semibold text-sm`}>Trang chủ</p>
+            <HomeIcon className='size-6 flex-shrink-0  font-semibold' />
+            <p className={`${!toggleValue && 'hidden'}  font-semibold text-sm`}>Trang chủ</p>
           </div>
           <div
           onClick={() => {navigate('/libary')
-            dispatch(toggle())
+            if (toggleValue) {
+              dispatch(toggle())
+            }
           }}
-            className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
-              toggleValue ? '' : 'w-fit'
-            }`}
+            className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 
+              ${toggleValue ? '' : 'w-fit'}
+              ${localhost.includes('/libary') ? 'text-blue-600' : 'text-gray-500'}
+              `}
           >
-            <FolderIcon className='size-6 flex-shrink-0 text-gray-500 font-semibold' />
-            <p className={`${!toggleValue && 'hidden'} text-gray-500  font-semibold text-sm`}>Thư viện của bạn</p>
+            <FolderIcon className='size-6 flex-shrink-0  font-semibold' />
+            <p className={`${!toggleValue && 'hidden'}  font-semibold text-sm`}>Thư viện của bạn</p>
           </div>
           <div className='w-full h-2 border-b-3 border-gray-200'></div>
         </div>
