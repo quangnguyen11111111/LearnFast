@@ -9,7 +9,7 @@ interface CourseItem {
   month: string
 }
 
-const LessonPage = () => {
+const LessonLibaryPage = () => {
   // Dữ liệu mẫu
   const courses: CourseItem[] = [
     {
@@ -113,4 +113,4 @@ const LessonPage = () => {
   )
 }
 
-export default LessonPage
+export default LessonLibaryPage

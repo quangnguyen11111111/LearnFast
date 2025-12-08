@@ -32,7 +32,7 @@ export default function ModalCreateFolder({ isOpen, setIsOpen }: ModalCreateFold
         </TransitionChild>
 
         {/* Modal panel */}
-        <div className="fixed inset-0 flex items-center justify-center p-4">
+        <div className="fixed inset-0 flex items-start justify-center p-4 pt-20">
           <TransitionChild
             as={Fragment}
             enter="ease-out duration-300"

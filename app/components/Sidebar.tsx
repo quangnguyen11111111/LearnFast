@@ -2,7 +2,8 @@ import { FolderIcon, FolderMinusIcon, FolderPlusIcon, HomeIcon } from '@heroicon
 import { use, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '~/store/hook'
 import { toggle } from '~/features/actionPage/toggleSlice'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
+import ModalCreateFolder from './ModalCreateFolder'
 
 interface SideBarProps {
   children: React.ReactNode
@@ -62,11 +63,13 @@ const Sidebar = ({ children }: SideBarProps) => {
   ])
   const localhost = document.location.pathname
   const isInfoPage = localhost === '/learn-lesson'
-  const overlayMode = isInfoPage ? 'fixed top-10 left-0 h-screen w-64 bg-white shadow-2xl px-4 pt-5 pb-15 z-40' : ''
+  const overlayMode = isInfoPage ? 'fixed top-13 left-0 h-screen w-64 bg-white shadow-2xl px-4 pt-5 pb-15 z-40' : ''
   const overlayTranslate = isInfoPage ? (toggleValue ? 'translate-x-0' : '-translate-x-full') : ''
   const isLatest = localhost === '/latest' || localhost.includes('/libary')
   
   const navigate = useNavigate()
+  const { folderId } = useParams()
+  const [openModal, setOpenModal] = useState<boolean>(false)
   return (
     <div className={`relative ${!isInfoPage?'lg:grid lg:grid-cols-[auto_1fr]': ''}  px-5 ${!isLatest?'min-h-screen':'h-[calc(100vh-80px)]'} `}>
       {/* Sidebar */}
@@ -75,7 +78,7 @@ const Sidebar = ({ children }: SideBarProps) => {
           ${!isInfoPage?`max-md:pb-25
           lg:sticky lg:top-0 lg:left-0 lg:h-full lg:bg-transparent lg:shadow-none
           ${toggleValue ? 'lg:w-45' : 'lg:w-12'}`:``}
-          max-lg:fixed max-lg:top-10 max-md:top-23 max-lg:left-0 max-lg:h-screen max-lg:w-64 max-lg:bg-white max-lg:shadow-2xl max-lg:px-4 max-lg:pt-5 max-lg:pb-15 max-lg:z-40
+          max-lg:fixed max-lg:top-12 max-md:top-20 max-sm:top-23 max-lg:left-0 max-lg:h-screen max-lg:w-64 max-lg:bg-white max-lg:shadow-2xl max-lg:px-4 max-lg:pt-5 max-lg:pb-15 max-lg:z-40
           ${toggleValue ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'}
           
            /* overlay for isInfoPage */
@@ -89,6 +92,7 @@ const Sidebar = ({ children }: SideBarProps) => {
               toggleValue ? '' : 'w-fit' }
                ${localhost.includes('/latest') ? 'text-blue-600' : 'text-gray-500'}
               `}
+              onClick={()=>navigate('/latest')}
           >
             <HomeIcon className='size-6 flex-shrink-0  font-semibold' />
             <p className={`${!toggleValue && 'hidden'}  font-semibold text-sm`}>Trang chủ</p>
@@ -116,16 +120,19 @@ const Sidebar = ({ children }: SideBarProps) => {
             listFolders.map((item) => (
               <div
                 key={item.id}
+                onClick={() => navigate(`/course/${item.id}`)}
                 className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
-                  toggleValue ? '' : 'w-fit'
-                }`}
+                  toggleValue ? '' : 'w-fit'}
+                  ${folderId == item.id.toString() ? 'text-blue-600' : 'text-gray-500'}
+                `}
               >
-                <FolderMinusIcon className='size-6 flex-shrink-0 text-gray-500 font-semibold' />
-                <p className={`${!toggleValue && 'hidden'} text-gray-500  font-semibold text-sm`}>{item.title}</p>
+                <FolderMinusIcon className='size-6 flex-shrink-0  font-semibold' />
+                <p className={`${!toggleValue && 'hidden'}   font-semibold text-sm`}>{item.title}</p>
               </div>
             ))}
 
           <div
+          onClick={()=>{setOpenModal(true)}}
             className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
               toggleValue ? '' : 'w-fit'
             }`}
@@ -141,6 +148,7 @@ const Sidebar = ({ children }: SideBarProps) => {
 
       {/* Content */}
       <div className='w-full scrollbar-none overflow-y-auto'>{children}</div>
+      <ModalCreateFolder isOpen={openModal} setIsOpen={setOpenModal} />
     </div>
   )
 }

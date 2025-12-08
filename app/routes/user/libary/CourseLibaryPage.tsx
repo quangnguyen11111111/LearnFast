@@ -1,11 +1,8 @@
 import { FolderIcon } from "@heroicons/react/24/outline"
+import { useNavigate } from "react-router"
 
-interface CourseItem {
-  id: string
-  title: string
-  terms: number
-}
-const CoursePage = () => {
+
+const CourseLibaryPage = () => {
   const folders = [
     { id: '1', title: 'Thư mục 1', terms: 10 },
     { id: '2', title: 'Thư mục 2', terms: 15 },
@@ -13,11 +10,14 @@ const CoursePage = () => {
     { id: '4', title: 'Thư mục 4', terms: 25 },
     { id: '5', title: 'Thư mục 5', terms: 30 }
   ]
+  const navigate = useNavigate()
   return <div className="flex flex-col gap-5">
     {
         folders && folders.map((item)=>{
             return(
-                <div className="flex flex-col bg-white px-3 py-4 border border-gray-200 rounded-xl hover:shadow-lg" key={item.id}>
+                <div 
+                onClick={() => navigate(`/course/${item.id}`)}
+                className="flex flex-col bg-white px-3 py-4 border border-gray-200 rounded-xl hover:shadow-lg" key={item.id}>
                     <p className="text-sm font-semibold text-gray-700">{item.terms} mục</p>
                     <div className="flex gap-3 items-center mt-2">
                         <FolderIcon className='w-6 h-6 text-gray-400'/>
@@ -29,4 +29,4 @@ const CoursePage = () => {
     }
   </div>
 }
-export default CoursePage
+export default CourseLibaryPage

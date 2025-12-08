@@ -8,9 +8,10 @@ export default [
     route('/latest', 'routes/user/homeUserPage.tsx'),
     route('learn-lesson', 'routes/user/course/learn/learnLessonPage.tsx'),
     route('libary', 'routes/user/libary/libaryPage.tsx', [
-      route('lesson', 'routes/user/libary/LessonPage.tsx'),
-      route('course', 'routes/user/libary/CouresPage.tsx')
+      route('lesson', 'routes/user/libary/LessonLibaryPage.tsx'),
+      route('course', 'routes/user/libary/CourseLibaryPage.tsx')
     ]),
+    route('course/:folderId', 'routes/user/course/pageMain/coursePage.tsx'),
     
   ]),
   // layout người đăng kí khi tạo bài học( thu mục, học phần)
