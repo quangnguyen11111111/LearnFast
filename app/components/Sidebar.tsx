@@ -65,7 +65,7 @@ const Sidebar = ({ children }: SideBarProps) => {
   const isInfoPage = localhost === '/learn-lesson'
   const overlayMode = isInfoPage ? 'fixed top-13 left-0 h-screen w-64 bg-white shadow-2xl px-4 pt-5 pb-15 z-40' : ''
   const overlayTranslate = isInfoPage ? (toggleValue ? 'translate-x-0' : '-translate-x-full') : ''
-  const isLatest = localhost === '/latest' || localhost.includes('/libary')
+  const isLatest = localhost === '/latest' || localhost.includes('/libary') || localhost.includes('/course')
   
   const navigate = useNavigate()
   const { folderId } = useParams()
