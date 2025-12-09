@@ -74,7 +74,7 @@ const Sidebar = ({ children }: SideBarProps) => {
     <div className={`relative ${!isInfoPage?'lg:grid lg:grid-cols-[auto_1fr]': ''}  px-5 ${!isLatest?'min-h-screen':'h-[calc(100vh-80px)]'} `}>
       {/* Sidebar */}
       <div
-        className={`transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto scrollbar-none overscroll-contain pb-5 
+        className={`transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto scrollbar-none overscroll-contain pb-5 z-40
           ${!isInfoPage?`max-md:pb-25
           lg:sticky lg:top-0 lg:left-0 lg:h-full lg:bg-transparent lg:shadow-none
           ${toggleValue ? 'lg:w-45' : 'lg:w-12'}`:``}
@@ -132,7 +132,7 @@ const Sidebar = ({ children }: SideBarProps) => {
             ))}
 
           <div
-          onClick={()=>{setOpenModal(true)}}
+            onClick={()=>{setOpenModal(true)}}
             className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
               toggleValue ? '' : 'w-fit'
             }`}
@@ -148,6 +148,7 @@ const Sidebar = ({ children }: SideBarProps) => {
 
       {/* Content */}
       <div className='w-full scrollbar-none overflow-y-auto'>{children}</div>
+      {/* Interface Modal create folder */}
       <ModalCreateFolder isOpen={openModal} setIsOpen={setOpenModal} />
     </div>
   )
