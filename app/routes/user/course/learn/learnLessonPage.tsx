@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router'
 const LearnLessonPage = (links: string) => {
   const navigate = useNavigate()
   // Xử lý chế độ người dùng
-  const user = false
+  const user = true //useAppSelector((state) => state.auth.user)
   const isFreeAccessUsed = localStorage.getItem('guestFreeAccessUsed')
   const handleNavigateGuestFreeAccess = (link: string) => {
     if (!user && isFreeAccessUsed === 'false') {

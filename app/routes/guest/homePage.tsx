@@ -3,6 +3,7 @@ import Button from '~/components/button/Button'
 import imgHomePage from '~/assets/HomePage.png'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
+import { useAppSelector } from '~/store/hook'
 
 /* ---------------- FeatureCard ---------------- */
 const FeatureCard = ({
@@ -42,6 +43,12 @@ const DeckCard = ({ title, count, author, handleClick }: { title: string; count:
 
 /* ---------------- HomePage ---------------- */
 const HomePage = () => {
+  
+  const user = useAppSelector((state) => state.auth.user)
+  useEffect(()=>{
+    if (user) {
+      navigate('/latest', { replace: true })
+    }},[user])
   const features = [
     { icon: NewspaperIcon, title: 'Tạo bộ thẻ riêng', description: 'Tự tạo và tùy chỉnh thẻ đọc' },
     { icon: NewspaperIcon, title: 'Ôn tập thông minh', description: 'Lặp lại ngắt quãng giúp nhớ lâu' },

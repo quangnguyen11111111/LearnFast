@@ -2,7 +2,7 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 
 import type { Route } from './+types/root'
 import './app.css'
-import { Provider, useDispatch } from 'react-redux'
+import { Provider } from 'react-redux'
 import { store } from './store/store'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 

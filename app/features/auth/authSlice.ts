@@ -1,15 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import authAPI, { loginWithGoogleApi, refreshTokenApi } from './authAPI'
-import type { LoginResponse } from './authAPI'
+import  { loginLocalApi, loginWithGoogleApi, refreshTokenApi } from './authAPI'
 
-// login: Thunk đăng nhập (fake) lấy từ authAPI
-export const login = createAsyncThunk<LoginResponse, { email: string; password: string }>(
-  'auth/login',
-  async (credentials) => {
-    const res = await authAPI.login(credentials)
-    return res // axiosClient interceptor => trả về data
-  }
-)
 
 // AuthState: Trạng thái quản lý người dùng + token
 type AuthState = {
@@ -29,20 +20,20 @@ type AuthState = {
 }
 
 // Các kiểu dữ liệu phục vụ đăng nhập Google
-interface LoginGoogleResponse {
+interface LoginResponse {
   data: any
   message: string
   accessToken: string
   refreshToken: string
   errCode: number
 }
-interface LoginGooglePayload {
+// Kiểu dữ liệu payload truyền vào cho các thunk đăng nhập
+interface LoginPayload {
   userAccount?: string
-  userGmail?: string
-  userName?: string
-  token?: string // token JWT
+  userPassword?: string
+  idToken?: string
 }
-interface LoginGoogleResult {
+interface LoginResult {
   data?: any
   accessToken?: string
   message: string
@@ -61,12 +52,32 @@ interface RefreshTokenResult {
   }
 }
 
-// loginWithGoogleAccount: Thunk đăng nhập bằng Google
-export const loginWithGoogleAccount = createAsyncThunk<LoginGoogleResult, LoginGooglePayload, { rejectValue: string }>(
-  'user/loginWithGoogleAccount',
+// loginWithLocalAccount: Thunk đăng nhập bằng tài khoản mật khẩu
+export const loginWithLocalAccount = createAsyncThunk<LoginResult, LoginPayload, { rejectValue: string }>(
+  'user/loginWithLocalAccount',
   async (data, { rejectWithValue }) => {
     try {
-      const res = (await loginWithGoogleApi(data)) as LoginGoogleResponse
+      const res = (await loginLocalApi(data)) as LoginResponse
+      if (res && res.errCode === 0) {
+        const { data: userData, message, accessToken, refreshToken, errCode } = res
+        localStorage.setItem('accessToken', accessToken)
+        localStorage.setItem('refreshToken', refreshToken)
+        return { data: userData, accessToken, message, errCode }
+      }
+      return rejectWithValue(res.message)
+    } catch (e: any) {
+      return rejectWithValue(e?.message || 'Unknown error')
+    }
+  }
+)
+
+// loginWithGoogleAccount: Thunk đăng nhập bằng Google
+export const loginWithGoogleAccount = createAsyncThunk<LoginResult, LoginPayload, { rejectValue: string }>(
+  'user/loginWithGoogleAccount',
+  async (data, { rejectWithValue }) => {
+    try {      
+      const res = (await loginWithGoogleApi(data)) as LoginResponse
+      
       if (res && res.errCode === 0) {
         const { data: userData, message, accessToken, refreshToken, errCode } = res
         localStorage.setItem('accessToken', accessToken)
@@ -113,7 +124,8 @@ const authSlice = createSlice({
     // logout: Xóa user khỏi state và token khỏi localStorage
     logout: (state) => {
       state.user = null
-      localStorage.removeItem('token')
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
     }
   },
   extraReducers: (builder) => {

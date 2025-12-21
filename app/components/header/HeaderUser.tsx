@@ -179,6 +179,7 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
               <div
                 className='px-4 py-2 flex items-center gap-3 text-gray-700 hover:bg-gray-50 cursor-pointer transition'
                 onClick={() => {
+                  navigate('/settings')
                   setIsUserDropdownOpen(false)
                 }}
               >

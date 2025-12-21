@@ -14,19 +14,19 @@ const GoogleButton: React.FC<GoogleButtonProps> =({children}) => {
   const handleLoginWithGoogle = async (credentialResponse: CredentialResponse) => {
     try {
       const token = credentialResponse.credential;
-      console.log("token nè",token);
       
       if (!token) {
         throw new Error("Không lấy được credential từ Google");
       }
 
       const response = await dispatch(
-        loginWithGoogleAccount({ token }) // gửi token lên backend
+        loginWithGoogleAccount({ idToken: token }) // gửi idToken lên backend
       ).unwrap();
 
       if (response.errCode === 0) {
         alert( response.message);
-        navigate("/about"); // dùng React Router navigate
+        // điều hướng về trang latest sau khi đăng nhập thành công và không cho người dùng quay lại các trang đã truy cập trước đó
+        navigate("/latest", { replace: true });
       } else {
         alert( response.message);
       }

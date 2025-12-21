@@ -12,7 +12,7 @@ export default [
       route('course', 'routes/user/libary/CourseLibaryPage.tsx')
     ]),
     route('course/:folderId', 'routes/user/course/pageMain/coursePage.tsx'),
-    
+    route('settings', 'routes/user/settings/settingsPage.tsx')
   ]),
   // layout người đăng kí khi tạo bài học( thu mục, học phần)
   route('', 'layouts/CreateLayout.tsx', [route('create-lesson', 'routes/user/course/create/createLessonPage.tsx')]),
