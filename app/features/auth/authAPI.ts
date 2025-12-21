@@ -1,7 +1,7 @@
 import axiosClient from '../../services/axiosClient'
 
 // loginLocalApi: Gọi API đăng nhập bằng tài khoản mật khẩu (backend thật)
-export const loginLocalApi = (data: any) => axiosClient.post('/api/login', data)
+export const loginLocalApi = (data: any) => axiosClient.post('/api/loginLocal', data)
 
 // loginWithGoogleApi: Gọi API đăng nhập bằng Google (backend thật)
 export const loginWithGoogleApi = (data: any) => axiosClient.post('/api/loginWithGoogle', data)

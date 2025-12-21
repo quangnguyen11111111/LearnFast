@@ -29,8 +29,8 @@ interface LoginResponse {
 }
 // Kiểu dữ liệu payload truyền vào cho các thunk đăng nhập
 interface LoginPayload {
-  userAccount?: string
-  userPassword?: string
+  email?: string
+  password?: string
   idToken?: string
 }
 interface LoginResult {
@@ -137,6 +137,19 @@ const authSlice = createSlice({
         state.loading = false
       })
       .addCase(loginWithGoogleAccount.fulfilled, (state, action) => {
+        state.user = action.payload.data
+        state.accessToken = action.payload.accessToken || null
+        state.loading = false
+        state.errCode = action.payload.errCode
+        state.message = action.payload.message
+      })
+      .addCase(loginWithLocalAccount.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(loginWithLocalAccount.rejected, (state) => {
+        state.loading = false
+      })
+      .addCase(loginWithLocalAccount.fulfilled, (state, action) => {
         state.user = action.payload.data
         state.accessToken = action.payload.accessToken || null
         state.loading = false

@@ -8,6 +8,7 @@ import { toggle } from '~/features/actionPage/toggleSlice'
 import { useEffect, useRef, useState } from 'react'
 import { DocumentIcon, FolderIcon } from '@heroicons/react/24/outline'
 import ModalCreateFolder from '../ModalCreateFolder'
+import { logout } from '~/features/auth/authSlice'
 interface HeaderProps {
   display: 'sticky' | 'static'
   shadow: boolean
@@ -120,7 +121,7 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
         </div>
       </div>
     </header>
-      <ModalCreateFolder isOpen={openModal} setIsOpen={setOpenModal} />
+    <ModalCreateFolder isOpen={openModal} setIsOpen={setOpenModal} />
               {/* khung giao diện thêm thư mục và hoch phần */}
           <div
           ref={dropdownRef}
@@ -200,7 +201,7 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
 
             {/* Footer */}
             <div className='px-4 py-2 border-t border-gray-200 text-sm text-gray-500'>
-              <div className='hover:text-blue-500 cursor-pointer transition'>Đăng xuất</div>
+              <div className='hover:text-blue-500 cursor-pointer transition' onClick={()=>{dispatch(logout())}}>Đăng xuất</div>
             </div>
           </div>
     </>

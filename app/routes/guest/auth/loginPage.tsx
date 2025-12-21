@@ -4,6 +4,8 @@ import imgLogin from '~/assets/imgLogin2.jpg'
 import Button from '~/components/button/Button'
 import Input from '~/components/input/Input'
 import GoogleButton from '~/components/button/ButtonLoginGoogle'
+import { useAppDispatch } from '~/store/hook'
+import { loginWithLocalAccount } from '~/features/auth/authSlice'
 
 type LoginForm = {
   account: string
@@ -15,6 +17,7 @@ const LoginPage = () => {
     account: '',
     password: ''
   })
+    const dispatch = useAppDispatch();
   const navigate = useNavigate()
   // cập nhật state
   const handleChange = (key: keyof LoginForm, value: string) => {
@@ -25,10 +28,21 @@ const LoginPage = () => {
   }
 
   // submit form
-  const handleSubmit = () => {
-    console.log('Login form:', formData)
-    navigate('/latest')
-    // TODO: gọi API login ở đây
+  const handleSubmit = async() => {
+    try {
+          const response = await dispatch(
+            loginWithLocalAccount({ email: formData.account, password: formData.password })
+          ).unwrap();
+          if (response.errCode === 0) {
+            alert( response.message);
+            navigate("/latest", { replace: true });
+          } else {
+            alert( response.message);
+          }
+        } catch (error) {
+          alert( "Hệ thống bị mất kết nối");
+          console.error("đây là lỗi login",error);
+        }
   }
 
   return (
