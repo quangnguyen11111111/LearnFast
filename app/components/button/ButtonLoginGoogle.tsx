@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useNavigate } from "react-router";
 import { loginWithGoogleAccount } from "~/features/auth/authSlice";
 import { useAppDispatch } from "~/store/hook";
+import { toast } from 'react-toastify'
 interface GoogleButtonProps {
   children?: React.ReactNode;
 }
@@ -25,14 +26,14 @@ const GoogleButton: React.FC<GoogleButtonProps> =({children}) => {
       ).unwrap();
 
       if (response.errCode === 0) {
-        alert( response.message);
+        toast.success( response.message || "Đăng nhập thành công");
         // điều hướng về trang latest sau khi đăng nhập thành công và không cho người dùng quay lại các trang đã truy cập trước đó
         navigate("/latest", { replace: true });
       } else {
-        alert( response.message);
+        toast.error( response.message || "Đăng nhập thất bại");
       }
     } catch (error) {
-      alert( "Hệ thống bị mất kết nối");
+      toast.error( "Hệ thống bị mất kết nối");
       console.error("đây là lỗi home",error);
     }
   };

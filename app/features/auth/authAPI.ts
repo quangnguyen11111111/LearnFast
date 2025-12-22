@@ -10,3 +10,9 @@ export const loginWithGoogleApi = (data: any) => axiosClient.post('/api/loginWit
 export const refreshTokenApi = <T>(token: string): Promise<T> =>
   axiosClient.post('/api/refreshToken', { refreshToken: token })
 
+// registerLocalApi: Gọi API đăng ký bằng tài khoản mật khẩu
+export const registerLocalApi = (data:{
+  email: string
+  password: string
+  username: string
+}) => axiosClient.post('/api/createNewUser', data)

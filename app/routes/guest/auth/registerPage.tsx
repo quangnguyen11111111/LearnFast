@@ -1,27 +1,30 @@
-import { useState } from 'react'
-import { Link } from 'react-router'
+import { useRef, useState, type RefObject } from 'react'
+import { Link, useNavigate } from 'react-router'
 import imgLogin from '~/assets/imgLogin2.jpg'
 import Button from '~/components/button/Button'
 import GoogleButton from '~/components/button/ButtonLoginGoogle'
 import Input from '~/components/input/Input'
+import { registerLocalAccount } from '~/features/auth/authSlice'
+import { useAppDispatch } from '~/store/hook'
+import { toast } from 'react-toastify'
 
 // type cho form đăng ký
 type RegisterForm = {
-  userAccount: string
   userPassword: string
   userName: string
   userEmail: string
-  userPhone: string
 }
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState<RegisterForm>({
-    userAccount: '',
     userPassword: '',
     userName: '',
-    userEmail: '',
-    userPhone: ''
+    userEmail: ''
   })
+
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
 
   // cập nhật state
   const handleChange = (key: keyof RegisterForm, value: string) => {
@@ -32,18 +35,88 @@ const RegisterPage = () => {
   }
 
   // config các field input
-  const fields: { key: keyof RegisterForm; id: string; title: string; type: string }[] = [
-    { key: 'userAccount', id: 'account', title: 'Tài khoản', type: 'text' },
-    { key: 'userPassword', id: 'password', title: 'Mật khẩu', type: 'password' },
-    { key: 'userName', id: 'name', title: 'Họ và tên', type: 'text' },
-    { key: 'userEmail', id: 'email', title: 'Email', type: 'email' },
-    { key: 'userPhone', id: 'phone', title: 'Số điện thoại', type: 'text' }
+  const fields: {
+    key: keyof RegisterForm
+    id: string
+    title: string
+    type: string
+    ref?: RefObject<HTMLInputElement | null>
+  }[] = [
+    { key: 'userEmail', id: 'email', title: 'Email', type: 'email', ref: emailRef },
+    { key: 'userPassword', id: 'password', title: 'Mật khẩu', type: 'password', ref: passwordRef },
+    { key: 'userName', id: 'name', title: 'Họ và tên', type: 'text', ref: nameRef }
   ]
 
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+
+  const validateForm = () => {
+    const email = formData.userEmail.trim()
+    const password = formData.userPassword
+    const name = formData.userName.trim()
+
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (email === '') {
+      toast.error('Email không được để trống')
+      emailRef.current?.focus()
+      return false
+    }
+
+    if (!emailPattern.test(email)) {
+      toast.error('Email phải đúng định dạng')
+      emailRef.current?.focus()
+      return false
+    }
+
+    if (email.length > 60) {
+      toast.error('Email không được vượt quá 60 ký tự')
+      emailRef.current?.focus()
+      return false
+    }
+
+    if (password.length < 6) {
+      toast.error('Mật khẩu phải có ít nhất 6 ký tự')
+      passwordRef.current?.focus()
+      return false
+    }
+
+    if (password.includes(' ')) {
+      toast.error('Mật khẩu không được chứa dấu cách')
+      passwordRef.current?.focus()
+      return false
+    }
+
+    if (name === '') {
+      toast.error('Họ và tên không được để trống')
+      nameRef.current?.focus()
+      return false
+    }
+    return true
+  }
   // submit
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('Submit form:', formData)
     // TODO: gọi API đăng ký ở đây
+    if (!validateForm()) return
+
+    try {
+      const response = await dispatch(
+        registerLocalAccount({
+          email: formData.userEmail,
+          password: formData.userPassword,
+          username: formData.userName
+        })
+      ).unwrap()
+      if (response.errCode === 0) {
+        toast.success(response.message || 'Tạo tài khoản thành công')
+        navigate(-1)
+      } else {
+        toast.error(response.message || 'Tạo tài khoản thất bại')
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Unknown error')
+    }
   }
 
   return (
@@ -70,6 +143,7 @@ const RegisterPage = () => {
             setValueInput={(v) => handleChange(field.key, v)}
             title={field.title}
             type={field.type}
+            inputRef={field.ref}
           />
         ))}
 

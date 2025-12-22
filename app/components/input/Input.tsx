@@ -1,5 +1,5 @@
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, type RefObject } from 'react'
 
 interface InputProps {
   valueInput: string
@@ -8,9 +8,10 @@ interface InputProps {
   type: string
   setValueInput: (value: string) => void
   placeholder?: string
+  inputRef?: RefObject<HTMLInputElement | null>
 }
 
-const Input = ({ valueInput, title, id, type, setValueInput, placeholder = ' ' }: InputProps) => {
+const Input = ({ valueInput, title, id, type, setValueInput, placeholder = ' ', inputRef }: InputProps) => {
   const [showPassword, setShowPassword] = useState(false)
   const [isFocused, setIsFocused] = useState<boolean>(false)
   return (
@@ -20,9 +21,14 @@ const Input = ({ valueInput, title, id, type, setValueInput, placeholder = ' ' }
         type={type === 'password' && showPassword ? 'text' : type}
         value={valueInput}
         onChange={(e) => setValueInput(e.target.value)}
-        onFocus={() => { setIsFocused(true) }} 
-        onBlur={() => { setIsFocused(false) }} 
+        onFocus={() => {
+          setIsFocused(true)
+        }}
+        onBlur={() => {
+          setIsFocused(false)
+        }}
         placeholder={`${isFocused ? placeholder : ' '}`}
+        ref={inputRef}
         className='peer w-full h-full pl-4 pr-12 text-xl border-b-2 rounded-md border-transparent py-3 text-gray-900 
           focus:border-blue-500 focus:outline-none focus:bg-white transition-all duration-300 bg-gray-200'
       />
@@ -43,11 +49,7 @@ const Input = ({ valueInput, title, id, type, setValueInput, placeholder = ' ' }
           onClick={() => setShowPassword((prev) => !prev)}
           className='absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer hover:text-gray-500'
         >
-          {showPassword ? (
-            <EyeSlashIcon className='size-7' />
-          ) : (
-            <EyeIcon className='size-7' />
-          )}
+          {showPassword ? <EyeSlashIcon className='size-7' /> : <EyeIcon className='size-7' />}
         </button>
       )}
     </div>

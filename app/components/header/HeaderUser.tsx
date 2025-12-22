@@ -3,7 +3,7 @@ import logo from '../../assets/logo.png'
 import { BackspaceIcon, Bars3Icon, MagnifyingGlassIcon, PlusIcon, Cog6ToothIcon, MoonIcon } from '@heroicons/react/24/outline'
 import { TrophyIcon } from '@heroicons/react/24/solid'
 import Button from '../button/ButtonIcon'
-import { useAppDispatch } from '~/store/hook'
+import { useAppDispatch, useAppSelector } from '~/store/hook'
 import { toggle } from '~/features/actionPage/toggleSlice'
 import { useEffect, useRef, useState } from 'react'
 import { DocumentIcon, FolderIcon } from '@heroicons/react/24/outline'
@@ -37,7 +37,11 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const userDropdownRef = useRef<HTMLDivElement>(null)
   const userButtonRef = useRef<HTMLImageElement>(null)
-
+  const user = useAppSelector((state) => state.auth.user)
+  useEffect(()=>{
+    if (!user) {
+      navigate('/login', { replace: true })
+    }},[user])
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

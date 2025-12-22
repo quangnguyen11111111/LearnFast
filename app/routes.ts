@@ -2,7 +2,7 @@ import { type RouteConfig, index, route } from '@react-router/dev/routes'
 
 export default [
   // layout người chưa đăng nhập
-  route('', 'layouts/GuestLayout.tsx', [index('routes/guest/homePage.tsx'), route('about', 'routes/about.tsx')]),
+  route('', 'layouts/GuestLayout.tsx', [index('routes/guest/homePage.tsx')]),
   // layout người dùng đã đăng nhập
   route('', 'layouts/UserLayout.tsx', [
     route('/latest', 'routes/user/homeUserPage.tsx'),

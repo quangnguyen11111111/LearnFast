@@ -5,6 +5,8 @@ import './app.css'
 import { Provider } from 'react-redux'
 import { store } from './store/store'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 import RefreshToken from './layouts/RefreshToken'
 
@@ -34,15 +36,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-
   return (
-     <GoogleOAuthProvider clientId="428261725591-09ei2o0r3gp4rijospe96atjq0uhogle.apps.googleusercontent.com">
-    <Provider store={store}>
-      <Outlet />
-      <RefreshToken/>
-    </Provider>
+    <GoogleOAuthProvider clientId='428261725591-09ei2o0r3gp4rijospe96atjq0uhogle.apps.googleusercontent.com'>
+      <Provider store={store}>
+        <Outlet />
+        <RefreshToken />
+        <ToastContainer position='top-right' autoClose={3000} hideProgressBar newestOnTop closeOnClick pauseOnHover />
+      </Provider>
     </GoogleOAuthProvider>
-    )
+  )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import  { loginLocalApi, loginWithGoogleApi, refreshTokenApi } from './authAPI'
+import  { loginLocalApi, loginWithGoogleApi, refreshTokenApi, registerLocalApi } from './authAPI'
 
 
 // AuthState: Trạng thái quản lý người dùng + token
@@ -51,7 +51,11 @@ interface RefreshTokenResult {
     refreshToken: string
   }
 }
-
+interface RegisterPayload {
+  email: string
+  password: string
+  username: string
+}
 // loginWithLocalAccount: Thunk đăng nhập bằng tài khoản mật khẩu
 export const loginWithLocalAccount = createAsyncThunk<LoginResult, LoginPayload, { rejectValue: string }>(
   'user/loginWithLocalAccount',
@@ -105,6 +109,23 @@ export const refreshToken = createAsyncThunk<RefreshTokenResult, string, { rejec
       return rejectWithValue('Không có dữ liệu')
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Lỗi refresh token')
+    }
+  }
+)
+
+// registerLocalAccount: Thunk đăng ký bằng tài khoản mật khẩu
+export const registerLocalAccount = createAsyncThunk<LoginResult, RegisterPayload, { rejectValue: string }>(
+  'user/registerLocalAccount',
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = (await registerLocalApi(data)) as LoginResponse
+      if (res && res.errCode === 0) {
+        const {  message, errCode } = res
+        return { message, errCode }
+      }
+      return rejectWithValue(res.message)
+    } catch (e: any) {
+      return rejectWithValue(e?.message || 'Unknown error')
     }
   }
 )
@@ -166,6 +187,17 @@ const authSlice = createSlice({
         state.user = action.payload.data
         state.loading = false
         state.errCode = action.payload.errCode
+      })
+      .addCase(registerLocalAccount.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(registerLocalAccount.rejected, (state) => {
+        state.loading = false
+      })
+      .addCase(registerLocalAccount.fulfilled, (state, action) => {
+        state.loading = false
+        state.errCode = action.payload.errCode
+        state.message = action.payload.message
       })
   }
 })

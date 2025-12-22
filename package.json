@@ -28,6 +28,7 @@
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
     "react-router": "^7.5.3",
+    "react-toastify": "^11.0.5",
     "tw-elements": "^2.0.0",
     "zustand": "^5.0.8"
   },

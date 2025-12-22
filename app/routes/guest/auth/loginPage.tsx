@@ -6,6 +6,7 @@ import Input from '~/components/input/Input'
 import GoogleButton from '~/components/button/ButtonLoginGoogle'
 import { useAppDispatch } from '~/store/hook'
 import { loginWithLocalAccount } from '~/features/auth/authSlice'
+import { toast } from 'react-toastify'
 
 type LoginForm = {
   account: string
@@ -17,7 +18,7 @@ const LoginPage = () => {
     account: '',
     password: ''
   })
-    const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
   // cập nhật state
   const handleChange = (key: keyof LoginForm, value: string) => {
@@ -28,21 +29,21 @@ const LoginPage = () => {
   }
 
   // submit form
-  const handleSubmit = async() => {
+  const handleSubmit = async () => {
     try {
-          const response = await dispatch(
-            loginWithLocalAccount({ email: formData.account, password: formData.password })
-          ).unwrap();
-          if (response.errCode === 0) {
-            alert( response.message);
-            navigate("/latest", { replace: true });
-          } else {
-            alert( response.message);
-          }
-        } catch (error) {
-          alert( "Hệ thống bị mất kết nối");
-          console.error("đây là lỗi login",error);
-        }
+      const response = await dispatch(
+        loginWithLocalAccount({ email: formData.account, password: formData.password })
+      ).unwrap()
+      if (response.errCode === 0) {
+        toast.success(response.message || 'Đăng nhập thành công')
+        navigate('/latest', { replace: true })
+      } else {
+        toast.error(response.message || 'Đăng nhập thất bại')
+      }
+    } catch (error) {
+      toast.error(error?.toString() || 'Hệ thống bị mất kết nối')
+      console.error('đây là lỗi login', error)
+    }
   }
 
   return (
@@ -80,7 +81,7 @@ const LoginPage = () => {
           </Link>
         </div>
 
-        <Button className='w-full p-4' onClick={handleSubmit}>
+        <Button className='w-full p-4' onClick={handleSubmit} disabled={!formData.account || !formData.password}>
           Đăng nhập
         </Button>
 
