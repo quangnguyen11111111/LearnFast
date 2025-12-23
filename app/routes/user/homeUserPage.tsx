@@ -28,7 +28,7 @@ const HomeUserPage = () => {
   useEffect(() => {
     if (user?.userID) {
       dispatch(getRecentFilesThunk({ userID: user.userID }))
-      dispatch(getTop6FilesThunk())
+      dispatch(getTop6FilesThunk({ userID: user.userID }))
       dispatch(getSimilarFilesThunk({ userID: user.userID }))
     }
   }, [user?.userID])

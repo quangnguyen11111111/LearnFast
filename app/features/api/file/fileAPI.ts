@@ -6,7 +6,7 @@ export const getRecentFilesApi = (data:{
 }) => axiosClient.get(`/api/files/recently?userID=${data.userID}&page=${data.page||1}&limit=${data.limit||12}`)
 
 // lấy top 6 file được truy cập nhiều nhất
-export const getTop6FilesApi = () => axiosClient.get(`/api/files/top`)
+export const getTop6FilesApi = (userID:string) => axiosClient.get(`/api/files/top?userID=${userID}`)
 
 // lấy danh sách file tương tự file người dùng đã truy cập
 export const getSimilarFilesApi = (data:{

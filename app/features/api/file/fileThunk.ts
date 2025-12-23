@@ -52,11 +52,11 @@ export const getRecentFilesThunk = createAsyncThunk<IFileResult, IFilePayload, {
 )
 
 // getTop6FilesThunk: Thunk lấy top 6 file được truy cập nhiều nhất
-export const getTop6FilesThunk = createAsyncThunk<IFileResult, void, { rejectValue: string }>(
+export const getTop6FilesThunk = createAsyncThunk<IFileResult, {userID:string}, { rejectValue: string }>(
   'file/getTop6FilesThunk',
   async (data, { rejectWithValue }) => {
     try {
-      const res = (await getTop6FilesApi()) as IFileResult
+      const res = (await getTop6FilesApi(data.userID)) as IFileResult
       console.log('kiểm tra res file recently :', res)
 
       if (res && res.errCode === 0) {

@@ -1,15 +1,18 @@
+import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
+import { useState } from "react"
+
 interface CourseItem {
   id: string
   title: string
   terms: number
   author: string
   avatar: string
-  isTeacher: boolean
   date: string
   month: string
 }
 
 const LessonLibaryPage = () => {
+
   // Dữ liệu mẫu
   const courses: CourseItem[] = [
     {
@@ -18,7 +21,6 @@ const LessonLibaryPage = () => {
       terms: 2,
       author: 'quizlette848489',
       avatar: '',
-      isTeacher: false,
       date: '2 thuật ngữ',
       month: 'THÁNG 11 NĂM 2025'
     },
@@ -28,7 +30,6 @@ const LessonLibaryPage = () => {
       terms: 37,
       author: 'ETMinhVu',
       avatar: '',
-      isTeacher: true,
       date: '37 thuật ngữ',
       month: 'THÁNG 3 NĂM 2025'
     },
@@ -38,7 +39,6 @@ const LessonLibaryPage = () => {
       terms: 40,
       author: 'ETMinhVu',
       avatar: '',
-      isTeacher: true,
       date: '40 thuật ngữ',
       month: 'THÁNG 3 NĂM 2025'
     },
@@ -48,7 +48,6 @@ const LessonLibaryPage = () => {
       terms: 41,
       author: 'ETMinhVu',
       avatar: '',
-      isTeacher: true,
       date: '41 thuật ngữ',
       month: 'THÁNG 3 NĂM 2025'
     },
@@ -58,7 +57,6 @@ const LessonLibaryPage = () => {
       terms: 38,
       author: 'ETMinhVu',
       avatar: '',
-      isTeacher: true,
       date: '38 thuật ngữ',
       month: 'THÁNG 3 NĂM 2025'
     }
@@ -76,8 +74,30 @@ const LessonLibaryPage = () => {
     {} as Record<string, CourseItem[]>
   )
 
+    const [searchQuery, setSearchQuery] = useState('')
   return (
     <div>
+              {/* Filter and Search */}
+        <div className="flex gap-4 mb-8">
+          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+            Gần đây
+            <ChevronDownIcon className="size-4" />
+          </button>
+
+          <div className="flex-1 max-w-xl">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm thẻ ghi nhớ"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+        </div>
+
       {Object.entries(groupedCourses).map(([month, items]) => (
         <div key={month}>
           <h2 className='text-sm font-bold text-gray-500 mb-4 uppercase tracking-wide'>{month}</h2>
@@ -92,13 +112,7 @@ const LessonLibaryPage = () => {
                     <div className='flex items-center gap-2 mb-2'>
                       <span className='text-sm text-gray-600'>{course.date}</span>
                       <div className='flex items-center gap-2'>
-                        {course.isTeacher && (
-                          <span className='text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded'>👨‍🏫</span>
-                        )}
                         <span className='text-sm text-gray-700 font-medium'>{course.author}</span>
-                        {course.isTeacher && (
-                          <span className='text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded'>Giáo viên</span>
-                        )}
                       </div>
                     </div>
                     <h3 className='text-lg font-bold text-gray-900'>{course.title}</h3>
