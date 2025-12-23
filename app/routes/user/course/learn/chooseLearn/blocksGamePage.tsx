@@ -226,3 +226,6 @@ export default function BlocksGamePage() {
     </div>
   )
 }
+
+  // Tiêu đề trang
+  export const meta = () => [{ title: 'Blocks Game - LearnFast' }]

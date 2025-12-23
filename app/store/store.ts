@@ -1,12 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
-import authReducer from '../features/auth/authSlice'
+import authReducer from '../features/api/auth/authSlice'
 import toggleReducer from '../features/actionPage/toggleSlice'
-
+import fileReducer from '../features/api/file/fileSlice'
 // store: Khởi tạo Redux store gom các slice (auth, toggle)
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    toggle: toggleReducer
+    toggle: toggleReducer,
+    file: fileReducer
   }
 })
 

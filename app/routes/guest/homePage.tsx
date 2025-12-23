@@ -111,5 +111,6 @@ const HomePage = () => {
     </div>
   )
 }
-
+// Tiêu đề trang hiển thị trên tab trình duyệt
+export const meta = () => [{ title: 'Trang chủ - LearnFast' }]
 export default HomePage

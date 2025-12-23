@@ -184,4 +184,6 @@ const LearnLessonPage = (links: string) => {
     </div>
   )
 }
+  // Tiêu đề trang
+  export const meta = () => [{ title: 'Trang học bài - LearnFast' }]
 export default LearnLessonPage

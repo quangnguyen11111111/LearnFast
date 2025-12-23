@@ -1,17 +1,27 @@
-import { useEffect } from "react";
-import { refreshToken } from "~/features/auth/authSlice";
-import { useAppDispatch } from "~/store/hook";
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router'
+import { refreshToken } from '~/features/api/auth/authSlice'
+import { useAppDispatch, useAppSelector } from '~/store/hook'
 
-const RefreshToken=()=>{
-      const dispatch = useAppDispatch();
-
+const RefreshToken = () => {
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   useEffect(() => {
-    const token = localStorage.getItem("refreshToken");
+    const token = localStorage.getItem('refreshToken')
     if (token) {
-      dispatch(refreshToken(token));
+      dispatch(refreshToken(token))
+        .unwrap()
+        .then((response) => {
+          if (response.errCode !== 0) {
+            navigate('/login', { replace: true })
+          }
+        })
+        .catch(() => {
+          navigate('/login', { replace: true })
+        })
     }
-  }, [dispatch]);
+  }, [dispatch, navigate])
 
-    return<></>
+  return <></>
 }
-export default RefreshToken;
+export default RefreshToken

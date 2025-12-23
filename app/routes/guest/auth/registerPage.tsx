@@ -4,9 +4,10 @@ import imgLogin from '~/assets/imgLogin2.jpg'
 import Button from '~/components/button/Button'
 import GoogleButton from '~/components/button/ButtonLoginGoogle'
 import Input from '~/components/input/Input'
-import { registerLocalAccount } from '~/features/auth/authSlice'
+import { registerLocalAccount } from '~/features/api/auth/authSlice'
 import { useAppDispatch } from '~/store/hook'
 import { toast } from 'react-toastify'
+import ProtectedGuestRoute from '~/components/ProtectedGuestRoute'
 
 // type cho form đăng ký
 type RegisterForm = {
@@ -54,7 +55,6 @@ const RegisterPage = () => {
     const email = formData.userEmail.trim()
     const password = formData.userPassword
     const name = formData.userName.trim()
-
 
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (email === '') {
@@ -120,54 +120,58 @@ const RegisterPage = () => {
   }
 
   return (
-    <div className='grid grid-cols-[1fr_1fr] max-lg:grid-cols-[1fr] h-screen w-screen items-center overflow-hidden'>
-      {/* Cột ảnh */}
-      <div
-        className='max-lg:hidden bg-cover h-full bg-no-repeat relative'
-        style={{ backgroundImage: `url(${imgLogin})` }}
-      >
-        <p className='font-bold bg-gradient-to-br from-violet-500 to-green-500 bg-clip-text text-transparent text-[45px] text-center absolute w-xl top-55 left-1/2 -translate-x-1/2'>
-          {/* bạn có thể thêm slogan ở đây */}
-        </p>
-      </div>
-
-      {/* Form */}
-      <div className='bg-background h-screen flex flex-col gap-7 items-center p-10 md:px-25 overflow-y-auto'>
-        <p className='font-bold text-4xl'>Đăng kí</p>
-
-        {fields.map((field) => (
-          <Input
-            key={field.id}
-            id={field.id}
-            valueInput={formData[field.key]}
-            setValueInput={(v) => handleChange(field.key, v)}
-            title={field.title}
-            type={field.type}
-            inputRef={field.ref}
-          />
-        ))}
-
-        <Button className='w-full p-4' onClick={handleSubmit}>
-          Đăng kí
-        </Button>
-
-        <p>
-          Bạn đã có tài khoản?{' '}
-          <Link to='/login' className='text-blue-500 cursor-pointer'>
-            Đăng nhập
-          </Link>
-        </p>
-
-        <div className='flex items-center w-full'>
-          <div className='flex-1 border-t border-gray-300'></div>
-          <span className='px-3 text-gray-600'>hoặc tiếp tục bằng Google</span>
-          <div className='flex-1 border-t border-gray-300'></div>
+    <ProtectedGuestRoute>
+      <div className='grid grid-cols-[1fr_1fr] max-lg:grid-cols-[1fr] h-screen w-screen items-center overflow-hidden'>
+        {/* Cột ảnh */}
+        <div
+          className='max-lg:hidden bg-cover h-full bg-no-repeat relative'
+          style={{ backgroundImage: `url(${imgLogin})` }}
+        >
+          <p className='font-bold bg-gradient-to-br from-violet-500 to-green-500 bg-clip-text text-transparent text-[45px] text-center absolute w-xl top-55 left-1/2 -translate-x-1/2'>
+            {/* bạn có thể thêm slogan ở đây */}
+          </p>
         </div>
 
-        <GoogleButton>Tiếp tục với Google</GoogleButton>
+        {/* Form */}
+        <div className='bg-background h-screen flex flex-col gap-7 items-center p-10 md:px-25 overflow-y-auto'>
+          <p className='font-bold text-4xl'>Đăng kí</p>
+
+          {fields.map((field) => (
+            <Input
+              key={field.id}
+              id={field.id}
+              valueInput={formData[field.key]}
+              setValueInput={(v) => handleChange(field.key, v)}
+              title={field.title}
+              type={field.type}
+              inputRef={field.ref}
+            />
+          ))}
+
+          <Button className='w-full p-4' onClick={handleSubmit}>
+            Đăng kí
+          </Button>
+
+          <p>
+            Bạn đã có tài khoản?{' '}
+            <Link to='/login' className='text-blue-500 cursor-pointer'>
+              Đăng nhập
+            </Link>
+          </p>
+
+          <div className='flex items-center w-full'>
+            <div className='flex-1 border-t border-gray-300'></div>
+            <span className='px-3 text-gray-600'>hoặc tiếp tục bằng Google</span>
+            <div className='flex-1 border-t border-gray-300'></div>
+          </div>
+
+          <GoogleButton>Tiếp tục với Google</GoogleButton>
+        </div>
       </div>
-    </div>
+    </ProtectedGuestRoute>
   )
 }
 
+// Tiêu đề trang hiển thị trên tab trình duyệt
+export const meta = () => [{ title: 'Đăng kí - LearnFast' }]
 export default RegisterPage

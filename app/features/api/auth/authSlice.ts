@@ -5,12 +5,11 @@ import  { loginLocalApi, loginWithGoogleApi, refreshTokenApi, registerLocalApi }
 // AuthState: Trạng thái quản lý người dùng + token
 type AuthState = {
   user: null | {
-    userID: number
-    userAccount: string
-    userGmail: string
-    userName: string
-    userPhone?: string
+    userID: string
+    email: string
+    username: string
     refreshToken: string
+    avatar?: string
   }
   loading: boolean
   error?: string
@@ -43,10 +42,9 @@ interface RefreshTokenResult {
   errCode: number
   accessToken: string
   data: {
-    userID: number
-    userAccount: string
-    userGmail: string
-    userName: string
+    userID: string
+    email: string
+    username: string
     userPhone?: string
     refreshToken: string
   }
