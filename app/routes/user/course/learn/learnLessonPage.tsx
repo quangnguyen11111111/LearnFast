@@ -38,7 +38,6 @@ const LearnLessonPage = () => {
   const [searchParams] = useSearchParams()
 
   const fileID = searchParams.get('fileId')
-  console.log('Kiểm tra fileID từ URL:', fileID)
   useEffect(() => {
     if (fileID) {
       // Gọi thunk để lấy chi tiết file
@@ -47,24 +46,18 @@ const LearnLessonPage = () => {
   }, [fileID])
   // Lấy dữ liệu chi tiết file từ store
   const { fileDetail, loadingDetail } = useAppSelector((state) => state.file)
-  console.log('kiểm tra dữ liệu fileDetail', fileDetail, loadingDetail)
 
-  // Dữ liệu mẫu
-  const ORIGINAL_DATA = [
-    { id: '1', source: 'Dog dog', target: 'Chó', status: 3, statusMode: 1 },
-    { id: '2', source: 'Sun', target: 'Mặt trời', status: 3, statusMode: 1 },
-    { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 1 },
-    { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 1 },
-    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 1 },
-    { id: '6', source: 'Fire', target: 'Lửa', status: 3, statusMode: 1 },
-    { id: '7', source: 'Tree', target: 'Cây', status: 3, statusMode: 0 },
-    { id: '8', source: 'Book', target: 'Sách', status: 3, statusMode: 0 },
-    { id: '9', source: 'Pen', target: 'Bút', status: 0, statusMode: 0 },
-    { id: '10', source: 'Car', target: 'Xe hơi', status: 0, statusMode: 0 },
-    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0, statusMode: 0 },
-    { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 0 },
-    { id: '13', source: 'Mountain', target: 'Núi', status: 0, statusMode: 0 }
-  ]
+  // Chuyển đổi fileDetail thành format cho các component
+  const cardData = useMemo(() => {
+    if (!fileDetail) return []
+    return fileDetail.map((item) => ({
+      id: item.detailID,
+      source: item.source,
+      target: item.target,
+      status: item.quizState,
+      statusMode: item.flashcardState
+    }))
+  }, [fileDetail])
   const [indexMulti, setIndexMulti] = useState<number>(0)
   const [selected, setSelected] = useState<string | null>(null) // Trạng thái lựa chọn của người dùng
   const [isAnswered, setIsAnswered] = useState(false) // Trạng thái đã trả lời hay chưa
@@ -82,7 +75,7 @@ const LearnLessonPage = () => {
     return options.sort(() => Math.random() - 0.5)
   }
   const handleNextQuestion = () => {
-    if (indexMulti == ORIGINAL_DATA.length - 1) {
+    if (cardData.length === 0 || indexMulti === cardData.length - 1) {
       alert('Bạn đã hoàn thành tất cả các câu hỏi!')
       return
     }
@@ -91,10 +84,11 @@ const LearnLessonPage = () => {
     })
   }
   // mảng chứa Đích
-  const allTargets = ORIGINAL_DATA.map((item) => item.target)
+  const allTargets = useMemo(() => cardData.map((item) => item.target), [cardData])
   const option = useMemo(() => {
-    return getRandomOptions(ORIGINAL_DATA[indexMulti].target, allTargets)
-  }, [indexMulti])
+    if (cardData.length === 0) return []
+    return getRandomOptions(cardData[indexMulti].target, allTargets)
+  }, [indexMulti, cardData, allTargets])
 
   return (
     <div className='mx-30 mb-10 max-md:mx-2'>
@@ -135,7 +129,17 @@ const LearnLessonPage = () => {
       </div>
       {/* flash card */}
       <div className=''>
-        <Flashcard cards={ORIGINAL_DATA} />
+        {loadingDetail ? (
+          <div className='flex justify-center items-center h-40'>
+            <span className='text-gray-500'>Đang tải dữ liệu...</span>
+          </div>
+        ) : cardData.length > 0 ? (
+          <Flashcard cards={cardData} />
+        ) : (
+          <div className='flex justify-center items-center h-40'>
+            <span className='text-gray-500'>Không có dữ liệu</span>
+          </div>
+        )}
       </div>
       {/* tác giả */}
       <div className='border-t-2 border-gray-300 flex justify-start mt-5 '>
@@ -167,35 +171,44 @@ const LearnLessonPage = () => {
             </Button>
           </div>
           {/* content */}
-          <MultipleChoise
-            ORIGINAL_DATA={ORIGINAL_DATA}
-            handleNextQuestion={handleNextQuestion}
-            indexMulti={indexMulti}
-            option={option}
-            isAnswered={isAnswered}
-            setIsAnswered={setIsAnswered}
-            isCorrect={isCorrect}
-            setIsCorrect={setIsCorrect}
-            selected={selected}
-            setSelected={setSelected}
-            showButtonNext={true}
-          />
+          {cardData.length > 0 && (
+            <MultipleChoise
+              ORIGINAL_DATA={cardData}
+              handleNextQuestion={handleNextQuestion}
+              indexMulti={indexMulti}
+              option={option}
+              isAnswered={isAnswered}
+              setIsAnswered={setIsAnswered}
+              isCorrect={isCorrect}
+              setIsCorrect={setIsCorrect}
+              selected={selected}
+              setSelected={setSelected}
+              showButtonNext={true}
+            />
+          )}
         </div>
       </div>
       {/* Thuật ngữ trong học phần này */}
       <div className='mt-5'>
-        <p className='font-bold text-2xl mt-8 mb-5'>Thuật ngữ trong học phần này</p>
+        <p className='font-bold text-2xl mt-8 mb-5'>Thuật ngữ trong học phần này ({cardData.length})</p>
         <div className='bg-gray-100 p-3 rounded-2xl flex flex-col gap-3'>
-          {ORIGINAL_DATA &&
-            ORIGINAL_DATA.map((item, index) => {
-              return (
-                <div className='bg-white rounded-lg grid grid-cols-[1fr_auto_1fr] p-3 justify-items-center' key={index}>
-                  <p className=''>{item.source}</p>
-                  <span className='w-[1px] bg-gray-300'></span>
-                  <p className=''>{item.target}</p>
-                </div>
-              )
-            })}
+          {loadingDetail ? (
+            <div className='flex justify-center items-center h-20'>
+              <span className='text-gray-500'>Đang tải...</span>
+            </div>
+          ) : cardData.length > 0 ? (
+            cardData.map((item, index) => (
+              <div className='bg-white rounded-lg grid grid-cols-[1fr_auto_1fr] p-3 justify-items-center' key={item.id}>
+                <p className=''>{item.source}</p>
+                <span className='w-[1px] bg-gray-300'></span>
+                <p className=''>{item.target}</p>
+              </div>
+            ))
+          ) : (
+            <div className='flex justify-center items-center h-20'>
+              <span className='text-gray-500'>Không có thuật ngữ</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
