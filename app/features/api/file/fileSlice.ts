@@ -1,14 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { getRecentFilesThunk, getSimilarFilesThunk, getTop6FilesThunk, type IFile, type Pagination } from './fileThunk'
+import { getFileDetailThunk, getRecentFilesThunk, getSimilarFilesThunk, getTop6FilesThunk, type FileDetail, type IFile, type Pagination } from './fileThunk'
 interface FileState {
   filesRecent: IFile[] | null
   filesTop6: IFile[] | null
   filesSimilar: IFile[] | null
   loadingRecent: boolean
   loadingTop6: boolean
-  loadingSimilar?: boolean
+  loadingSimilar: boolean
   paginationRecent?: Pagination | null
   canNextPageRecent?: boolean
+
+  // _______ detail file _______
+  fileDetail: FileDetail[] | null
+  loadingDetail: boolean
 }
 
 // initialState: Trạng thái khởi tạo của slice
@@ -20,7 +24,11 @@ const initialState: FileState = {
   loadingTop6: false,
   loadingSimilar: false,
   paginationRecent: null,
-  canNextPageRecent: false
+  canNextPageRecent: false,
+
+  // _______ detail file _______
+  fileDetail: null,
+  loadingDetail: false,
 }
 
 // authSlice: Slice quản lý logic auth + xử lý các thunk ở extraReducers
@@ -64,6 +72,17 @@ const fileSlice = createSlice({
         .addCase(getSimilarFilesThunk.fulfilled, (state, action) => {
             state.filesSimilar = action.payload.data
             state.loadingSimilar = false
+        })
+        // _______ chi tiết file _______
+        .addCase(getFileDetailThunk.pending, (state) => {
+            state.loadingDetail = true
+        })
+        .addCase(getFileDetailThunk.rejected, (state) => {
+            state.loadingDetail = false
+        })
+        .addCase(getFileDetailThunk.fulfilled, (state, action) => {
+            state.fileDetail = action.payload.data
+            state.loadingDetail = false
         })
   }
 })

@@ -12,3 +12,6 @@ export const getTop6FilesApi = (userID:string) => axiosClient.get(`/api/files/to
 export const getSimilarFilesApi = (data:{
     userID:string
 }) => axiosClient.get(`/api/files/similar?userID=${data.userID}`)
+
+// lấy dữ liệu chi tiết file theo fileID và userID ( có thể không truyền userID)
+export const getFileDetailApi = (fileID:string,userID?:string) => axiosClient.get(`/api/files/detail?fileID=${fileID}${userID?`&userID=${userID}`:''}`)

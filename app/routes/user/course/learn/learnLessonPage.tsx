@@ -4,14 +4,16 @@ import ListItem from '~/components/Listitem'
 import Flashcard from '~/components/learnComponent/Flashcard'
 import logo from '~/assets/logo.png'
 import Button from '~/components/button/Button'
-import { useMemo, useState } from 'react'
+import { use, useEffect, useMemo, useState } from 'react'
 import MultipleChoise from '~/components/learnComponent/MultipleChoice'
-import { useAppSelector } from '~/store/hook'
-import { useNavigate } from 'react-router'
-const LearnLessonPage = (links: string) => {
+import { useAppDispatch, useAppSelector } from '~/store/hook'
+import { useNavigate, useSearchParams } from 'react-router'
+import { getFileDetailThunk } from '~/features/api/file/fileThunk'
+const LearnLessonPage = () => {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   // Xử lý chế độ người dùng
-  const user = true //useAppSelector((state) => state.auth.user)
+  const user = useAppSelector((state) => state.auth.user)
   const isFreeAccessUsed = localStorage.getItem('guestFreeAccessUsed')
   const handleNavigateGuestFreeAccess = (link: string) => {
     if (!user && isFreeAccessUsed === 'false') {
@@ -32,6 +34,21 @@ const LearnLessonPage = (links: string) => {
     { icon: NewspaperIcon, title: 'Blast', links: '' },
     { icon: NewspaperIcon, title: 'Ghép thẻ', links: 'card-matching' }
   ]
+  //lấy fileID từ URL
+  const [searchParams] = useSearchParams()
+
+  const fileID = searchParams.get('fileId')
+  console.log('Kiểm tra fileID từ URL:', fileID)
+  useEffect(() => {
+    if (fileID) {
+      // Gọi thunk để lấy chi tiết file
+      dispatch(getFileDetailThunk({ fileID: fileID, ...(user && { userID: user.userID }) }))
+    }
+  }, [fileID])
+  // Lấy dữ liệu chi tiết file từ store
+  const { fileDetail, loadingDetail } = useAppSelector((state) => state.file)
+  console.log('kiểm tra dữ liệu fileDetail', fileDetail, loadingDetail)
+
   // Dữ liệu mẫu
   const ORIGINAL_DATA = [
     { id: '1', source: 'Dog dog', target: 'Chó', status: 3, statusMode: 1 },
@@ -184,6 +201,6 @@ const LearnLessonPage = (links: string) => {
     </div>
   )
 }
-  // Tiêu đề trang
-  export const meta = () => [{ title: 'Trang học bài - LearnFast' }]
+// Tiêu đề trang
+export const meta = () => [{ title: 'Trang học bài - LearnFast' }]
 export default LearnLessonPage
