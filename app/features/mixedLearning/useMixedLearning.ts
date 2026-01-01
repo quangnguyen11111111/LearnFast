@@ -19,6 +19,10 @@ import type { Question } from './types'
 export interface UseMixedLearningOptions {
   initialData: Question[] // Mảng câu hỏi đầu vào.
   batchSize?: number // Kích thước 1 vòng học (default: 6).
+  // Callback khi statusMode của một câu hỏi thay đổi (dùng để sync lên server)
+  onStatusModeChange?: (questionId: string, newStatusMode: number) => void
+  // Callback khi reset tất cả (dùng để sync lên server)
+  onResetAll?: (ids: string[]) => void
 }
 
 export interface UseMixedLearningResult {
@@ -45,6 +49,7 @@ export interface UseMixedLearningResult {
   progressTotal: number // Tổng mốc tiến độ (logic hiện tại = ORIGINAL_DATA.length * 2).
   buttonRef: React.RefObject<HTMLButtonElement | null> // Ref nút tiếp tục để focus.
   ORIGINAL_DATA: Question[] // Dữ liệu gốc cập nhật dần theo statusMode.
+  resetData: () => void // Hàm reset toàn bộ tiến trình học (nếu cần).
 }
 
 // fetchQuestions: Trích ra một batch (mặc định 6 câu) theo round hiện tại.
@@ -72,7 +77,12 @@ function getRound(indexMulti: number, batchSize: number): number {
   return Math.floor(indexMulti / batchSize)
 }
 
-export function useMixedLearning({ initialData, batchSize = 6 }: UseMixedLearningOptions): UseMixedLearningResult {
+export function useMixedLearning({
+  initialData,
+  batchSize = initialData.length >= 6 ? 6 : initialData.length,
+  onStatusModeChange,
+  onResetAll
+}: UseMixedLearningOptions): UseMixedLearningResult {
   // ORIGINAL_DATA: trạng thái gốc của toàn bộ câu hỏi, được cập nhật statusMode nội bộ.
   const [ORIGINAL_DATA, setORIGINAL_DATA] = useState<Question[]>(initialData)
 
@@ -108,9 +118,13 @@ export function useMixedLearning({ initialData, batchSize = 6 }: UseMixedLearnin
   const [dataEssay, setDataEssay] = useState<Question[]>(
     fetchQuestions(ORIGINAL_DATA, round - 1, batchSize).filter((q) => q.statusMode === 1)
   )
+
+  const isdataCorrect = fetchQuestions(ORIGINAL_DATA, round, batchSize).filter((q) => q.statusMode !== 0)
   // dataCorrect: tập hợp các câu đã qua ít nhất một chế độ (statusMode!=0) để hiển thị ôn lại.
   const [dataCorrect, setDataCorrect] = useState<Question[]>(
-    fetchQuestions(ORIGINAL_DATA, round - 1, batchSize).filter((q) => q.statusMode !== 0)
+    isdataCorrect.length <= batchSize && round % 2 == 0
+      ? isdataCorrect
+      : fetchQuestions(ORIGINAL_DATA, round - 1, batchSize).filter((q) => q.statusMode !== 0)
   )
 
   // indexQuestion: chỉ số câu hiện tại trong mảng chế độ đang hiển thị.
@@ -170,6 +184,8 @@ export function useMixedLearning({ initialData, batchSize = 6 }: UseMixedLearnin
         setDataCorrect((prev) => [...prev, dataMulti[indexQuestion]])
         const current = dataMulti[indexQuestion]
         setORIGINAL_DATA((prev) => prev.map((q) => (q.id === current.id ? { ...q, statusMode: 1 } : q)))
+        // Gọi callback để sync statusMode lên server
+        onStatusModeChange?.(current.id, 1)
         const remaining = dataMulti.filter((_, i) => i !== indexQuestion)
         setDataMulti(remaining)
         setSelected(null)
@@ -187,7 +203,7 @@ export function useMixedLearning({ initialData, batchSize = 6 }: UseMixedLearnin
         setIsCorrect(null)
       }
     },
-    [dataMulti, indexQuestion]
+    [dataMulti, indexQuestion, onStatusModeChange]
   )
 
   // handleNextQuestionEssay: xử lý sau khi nhập đáp án ở Essay.
@@ -198,6 +214,8 @@ export function useMixedLearning({ initialData, batchSize = 6 }: UseMixedLearnin
       if (correct) {
         const current = dataEssay[indexQuestion]
         setORIGINAL_DATA((prev) => prev.map((q) => (q.id === current.id ? { ...q, statusMode: 2 } : q)))
+        // Gọi callback để sync statusMode lên server
+        onStatusModeChange?.(current.id, 2)
         setIndexEssay((v) => v + 1)
         setNumberQuestion((v) => v + 1)
         const remaining = dataEssay.filter((_, i) => i !== indexQuestion)
@@ -215,11 +233,36 @@ export function useMixedLearning({ initialData, batchSize = 6 }: UseMixedLearnin
         setValueInput('')
       }
     },
-    [dataEssay, indexQuestion]
+    [dataEssay, indexQuestion, onStatusModeChange]
   )
 
   // progressTotal: tổng mốc để thanh tiến độ (mỗi item coi như cần qua 2 bước: Multiple & Essay).
   const progressTotal = ORIGINAL_DATA.length * 2
+  // resetData: hàm reset toàn bộ tiến trình học (nếu cần).
+  const resetData = useCallback(() => {
+    // Lấy danh sách ID các câu hỏi có statusMode !== 0 để reset
+    const idsToReset = ORIGINAL_DATA.filter((q) => q.statusMode !== 0).map((q) => q.id)
+
+    const resetQuestions = ORIGINAL_DATA.map((q) => ({ ...q, statusMode: 0 }))
+    setORIGINAL_DATA(resetQuestions)
+    setIndexEssay(0)
+    setIndexMulti(0)
+    setNumberQuestion(0)
+    setStatus('Multiple')
+    setDataMulti(fetchQuestions(resetQuestions, 0, batchSize).filter((q) => q.statusMode === 0))
+    setDataEssay([])
+    setDataCorrect([])
+    setIndexQuestion(0)
+    setSelected(null)
+    setIsAnswered(false)
+    setIsCorrect(null)
+    setValueInput('')
+
+    // Gọi callback để sync reset lên server
+    if (idsToReset.length > 0) {
+      onResetAll?.(idsToReset)
+    }
+  }, [ORIGINAL_DATA, batchSize, onResetAll])
 
   return {
     status,
@@ -244,7 +287,8 @@ export function useMixedLearning({ initialData, batchSize = 6 }: UseMixedLearnin
     handleNextQuestionEssay,
     progressTotal,
     buttonRef,
-    ORIGINAL_DATA
+    ORIGINAL_DATA,
+    resetData
   }
 }
 

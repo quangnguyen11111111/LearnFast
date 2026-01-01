@@ -96,12 +96,15 @@ export interface UseTestExamResult {
 
 export function useTestExam({
   initialData,
-  defaultBatchSize,
   defaultModes
 }: UseTestExamOptions): UseTestExamResult {
-  const [batchSize, setBatchSize] = useState<number>(
-    defaultBatchSize || (initialData.length >= 8 ? 8 : initialData.length)
+  const [batchSize, setBatchSize] = useState<number>( (initialData.length >= 8 ? 8 : initialData.length)
   )
+  useEffect(() => {
+    setBatchSize(initialData.length >= 8 ? 8 : initialData.length)
+  }, [initialData])
+
+  // Original data (randomized subset based on batch size)
   const [ORIGINAL_DATA, setORIGINAL_DATA] = useState<Question[]>(getRandomItems(initialData, batchSize))
 
   // Mode toggles

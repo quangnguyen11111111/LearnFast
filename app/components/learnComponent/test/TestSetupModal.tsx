@@ -40,7 +40,7 @@ const TestSetupModal: React.FC<Props> = ({
 }) => {
   return (
     <Transition appear show={open} as={Fragment}>
-      <Dialog as='div' className='relative z-50' onClose={onClose}>
+      <Dialog as='div' className='relative z-50' onClose={() => { onStart(); onClose(); }}>
         <TransitionChild
           as={Fragment}
           enter='ease-out duration-200'
@@ -85,12 +85,25 @@ const TestSetupModal: React.FC<Props> = ({
                     type='number'
                     value={batchSize}
                     onChange={(e) => {
+                      // Cho phép nhập tự do, không validate ngay
+                      const value = e.target.value
+                      if (value === '') {
+                        setBatchSize(0) // Tạm thời cho phép 0 khi đang xóa
+                      } else {
+                        setBatchSize(Number(value))
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Validate chỉ khi mất focus (hoàn tất nhập)
                       const value = Number(e.target.value)
-                      if (value < 1) setBatchSize(1)
-                      else if (value > maxCount) setBatchSize(maxCount)
-                      else setBatchSize(value)
+                      if (isNaN(value) || value < 1) {
+                        setBatchSize(1)
+                      } else if (value > maxCount) {
+                        setBatchSize(maxCount)
+                      }
                     }}
                     min={1}
+                    max={maxCount}
                     className='w-20 px-3 py-3 font-semibold rounded-xl border-none bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-300'
                   />
                 </div>

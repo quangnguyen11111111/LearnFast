@@ -7,25 +7,122 @@ import imgEndLesson from '~/assets/EndLesson.png'
 import Button from '~/components/button/Button'
 import { useMixedLearning } from '~/features/mixedLearning/useMixedLearning'
 import type { Question } from '~/features/mixedLearning/types'
+import { useAppDispatch, useAppSelector } from '~/store/hook'
+import { useNavigate, useSearchParams } from 'react-router'
+import { useEffect, useMemo } from 'react'
+import { getFileDetailThunk } from '~/features/api/file/fileThunk'
+import Loading from '~/components/Loading'
+import useProgressSync from '~/features/sync/useProgressSync'
 
 // MultipleChoicePage (Refactor): sử dụng hook useMixedLearning để tập trung logic.
 // Hook quản lý: status, dữ liệu từng chế độ, option, tiến độ, chuyển câu.
 // UI chỉ render theo state và xử lý chuyển vòng khi ở ListTerm.
 const MultipleChoicePage = () => {
   const initialData: Question[] = [
-    { id: '1', source: 'Dog dog', target: 'Chó', status: 3, statusMode: 0 },
-    { id: '0', source: 'Sun', target: 'Mặt trời', status: 3, statusMode: 0 },
-    { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 0 },
-    { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 0 },
-    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 0 },
-    { id: '6', source: 'Fire', target: 'Lửa', status: 3, statusMode: 0 },
-    { id: '7', source: 'Tree', target: 'Cây', status: 3, statusMode: 0 },
-    { id: '8', source: 'Book', target: 'Sách', status: 3, statusMode: 0 },
-    { id: '9', source: 'Pen', target: 'Bút', status: 0, statusMode: 0 },
-    { id: '10', source: 'Car', target: 'Xe hơi', status: 0, statusMode: 0 },
-    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0, statusMode: 0 },
-    { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 0 }
+    { id: '1', source: 'Dog dog', target: 'Chó', status: 3, statusMode: 1 },
+    { id: '0', source: 'Sun', target: 'Mặt trời', status: 3, statusMode: 1 },
+    { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 1 },
+    { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 1 },
+    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 1 },
+   
   ]
+  const dispatch = useAppDispatch()
+  // Lấy thông tin user và trạng thái loading từ store
+  // loading = true khi đang refreshToken, cần đợi hoàn thành
+  const { user, loading: authLoading } = useAppSelector((state) => state.auth)
+  //lấy fileID từ URL
+  const [searchParams] = useSearchParams()
+  const fileID = searchParams.get('fileId')
+
+  // Kiểm tra xem có refreshToken không để quyết định có đợi auth hay không
+  const hasRefreshToken = !!localStorage.getItem('refreshToken')
+
+  // Lấy dữ liệu chi tiết file từ store
+  const { fileDetail, loadingDetail } = useAppSelector((state) => state.file)
+
+  useEffect(() => {
+    // Logic gọi API:
+    // - Nếu có refreshToken → đợi authLoading = false VÀ có user
+    // - Nếu không có refreshToken (guest) → gọi ngay không cần user
+    if (!fileID) return
+
+    if (hasRefreshToken) {
+      // Có refreshToken: đợi auth hoàn thành và có user mới gọi
+      if (!authLoading && user?.userID) {
+        dispatch(getFileDetailThunk({ fileID: fileID, userID: user.userID }))
+      }
+    } else {
+      // Không có refreshToken (guest): gọi ngay không cần userID
+      dispatch(getFileDetailThunk({ fileID: fileID }))
+    }
+  }, [fileID, dispatch, user?.userID, authLoading, hasRefreshToken])
+
+  // Chuyển đổi fileDetail thành format cho các component
+  const cardData = useMemo(() => {
+    if (!fileDetail || fileDetail.length === 0) return []
+    return fileDetail.map((item) => ({
+      id: item.detailID,
+      source: item.source,
+      target: item.target,
+      status: item.flashcardState,
+      statusMode: item.quizState
+    }))
+  }, [fileDetail])
+
+  // Loading spinner khi:
+  // 1. Có refreshToken và đang chờ auth (authLoading)
+  // 2. Đang tải file detail (loadingDetail)
+  // 3. Chưa có dữ liệu fileDetail
+  // Kiểm tra TRƯỚC khi gọi useMixedLearning để tránh hook chạy với mảng rỗng
+  const isWaitingAuth = hasRefreshToken && authLoading
+  if (isWaitingAuth || loadingDetail || !fileDetail || fileDetail.length === 0) {
+    return <Loading text='Đang tải dữ liệu...' />
+  }
+
+  // Chỉ gọi component chính khi đã có dữ liệu
+  return <MultipleChoiceContent cardData={cardData} fileID={fileID} userID={user?.userID || null} />
+}
+
+// Tách component chính ra để hook chỉ chạy khi có dữ liệu
+const MultipleChoiceContent = ({
+  cardData,
+  fileID,
+  userID
+}: {
+  cardData: Question[]
+  fileID: string | null
+  userID: string | null
+}) => {
+  const navigate = useNavigate()
+  console.log('kiểm tra dữ liệu nguwoid dufg đưa vào dòng 103 trang MultipleChoicepage: ', cardData);
+  
+  // Hook đồng bộ tiến độ học tập lên server
+  const { queueChange, queueBatchChanges, syncNow } = useProgressSync({
+    fileID,
+    userID,
+    syncInterval: 10000, // 10 giây
+    enabled: !!fileID && !!userID
+  })
+
+  // Callback khi statusMode thay đổi -> queue để sync
+  // statusMode trong multiple choice tương ứng với quizState ở database
+  const handleStatusModeChange = (questionId: string, newStatusMode: number) => {
+    queueChange({
+      detailID: questionId,
+      quizState: newStatusMode // Sử dụng quizState cho multiple choice
+    })
+  }
+
+  // Callback khi reset tất cả -> queue batch để sync
+  const handleResetAll = (ids: string[]) => {
+    const changes = ids.map((id) => ({
+      detailID: id,
+      quizState: 0 // Reset quizState về 0
+    }))
+    queueBatchChanges(changes)
+    // Sync ngay lập tức khi reset
+    syncNow()
+  }
 
   const {
     status,
@@ -50,16 +147,18 @@ const MultipleChoicePage = () => {
     handleNextQuestionEssay,
     progressTotal,
     buttonRef,
-    ORIGINAL_DATA
-  } = useMixedLearning({ initialData })
-
+    ORIGINAL_DATA,
+    resetData
+  } = useMixedLearning({
+    initialData: cardData,
+    onStatusModeChange: handleStatusModeChange,
+    onResetAll: handleResetAll
+  })  
   // Phục vụ nút tiếp tục ở ListTerm.
-
   const batchSize = 6
   const computeRound = (idx: number) => Math.floor(idx / batchSize)
   const round = computeRound(indexMulti)
   const fetchQuestionsLocal = (data: Question[], r: number) => data.slice(r * batchSize, r * batchSize + batchSize)
-
   return (
     <div className='px-25 max-md:px-10 pb-5 flex flex-col justify-start relative'>
       {status === 'Multiple' && (
@@ -202,13 +301,18 @@ const MultipleChoicePage = () => {
       {status === 'EndLesson' && (
         <div className='flex flex-col items-center justify-center'>
           <img src={imgEndLesson} alt='ảnh cúp hoàn thành' className='size-30 mt-15' />
-          <div className='mt-20'>Chúc mừng bạn đã hoàn thành học phần này</div>
-          <p>Hãy thử thêm một vòng nữa để bạn có thể tập luyện thêm học phần</p>
+          <div className='mt-20 text-2xl font-semibold '>Chúc mừng bạn đã hoàn thành học phần này</div>
+          <p className='mt-2 text-xl'>Hãy thử thêm một vòng nữa để bạn có thể tập luyện thêm học phần</p>
           <div className='grid grid-cols-2 max-md:grid-cols-1 gap-5 mt-10'>
-            <Button rounded='rounded-3xl' className='px-10 py-3 font-semibold' variant='secondary'>
+            <Button
+              rounded='rounded-3xl'
+              className='px-10 py-3 font-semibold'
+              variant='secondary'
+              onClick={() => navigate(`/learn-lesson/test?fileId=${fileID}`, { replace: true })}
+            >
               Làm bài kiểm tra
             </Button>
-            <Button rounded='rounded-3xl' className='px-10 py-3 font-semibold'>
+            <Button rounded='rounded-3xl' className='px-10 py-3 font-semibold' onClick={() => resetData()}>
               Tiếp tục ôn luyện
             </Button>
           </div>

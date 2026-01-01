@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Outlet, useNavigate, useLocation } from 'react-router'
 
 
@@ -18,8 +17,7 @@ const LibaryPage = () => {
       setActiveTab('folders')
     }
   }, [location.pathname, navigate])
-
-
+  
   const tabs = [
     { key: 'flashcards', label: 'Thẻ ghi nhớ',link: 'lesson' },
     { key: 'folders', label: 'Thư mục', link: 'course' },
@@ -49,8 +47,6 @@ const LibaryPage = () => {
             </button>
           ))}
         </div>
-
-
 
         {/* Course List */}
         <div className="space-y-8">

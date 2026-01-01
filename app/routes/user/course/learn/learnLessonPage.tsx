@@ -9,11 +9,12 @@ import MultipleChoise from '~/components/learnComponent/MultipleChoice'
 import { useAppDispatch, useAppSelector } from '~/store/hook'
 import { useNavigate, useSearchParams } from 'react-router'
 import { getFileDetailThunk } from '~/features/api/file/fileThunk'
+import { useFlashcards } from '~/features/flashcard/useFlashcards'
 const LearnLessonPage = () => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   // Xử lý chế độ người dùng
-  const user = useAppSelector((state) => state.auth.user)
+  const { user, loading } = useAppSelector((state) => state.auth)
   const isFreeAccessUsed = localStorage.getItem('guestFreeAccessUsed')
   const handleNavigateGuestFreeAccess = (link: string) => {
     if (!user && isFreeAccessUsed === 'false') {
@@ -25,19 +26,20 @@ const LearnLessonPage = () => {
     }
   }
 
-  // các chức năng
-  const features = [
-    { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: 'flash-card' },
-    { icon: BookOpenIcon, title: 'Học', links: 'multiple-choice' },
-    { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: 'test' },
-    { icon: NewspaperIcon, title: 'Blocks', links: 'blocks' },
-    { icon: NewspaperIcon, title: 'Blast', links: '' },
-    { icon: NewspaperIcon, title: 'Ghép thẻ', links: 'card-matching' }
-  ]
   //lấy fileID từ URL
   const [searchParams] = useSearchParams()
 
   const fileID = searchParams.get('fileId')
+
+  // các chức năng
+  const features = [
+    { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: `flash-card?fileId=${fileID}` },
+    { icon: BookOpenIcon, title: 'Học', links: `multiple-choice?fileId=${fileID}` },
+    { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: `test?fileId=${fileID}` },
+    { icon: NewspaperIcon, title: 'Blocks', links: `blocks?fileId=${fileID}` },
+    { icon: NewspaperIcon, title: 'Ghép thẻ', links: `card-matching?fileId=${fileID}` }
+  ]
+
   useEffect(() => {
     if (fileID) {
       // Gọi thunk để lấy chi tiết file
@@ -45,23 +47,31 @@ const LearnLessonPage = () => {
     }
   }, [fileID])
   // Lấy dữ liệu chi tiết file từ store
-  const { fileDetail, loadingDetail } = useAppSelector((state) => state.file)
+  const { fileDetail, loadingDetail, ownerInfo } = useAppSelector((state) => state.file)
 
   // Chuyển đổi fileDetail thành format cho các component
   const cardData = useMemo(() => {
-    if (!fileDetail) return []
-    return fileDetail.map((item) => ({
+    if (!fileDetail || fileDetail.length === 0) return []
+
+    const total = fileDetail.length
+
+    // Số câu cần lấy
+    const numberOfCards = total <= 4 ? total : Math.max(4, Math.floor(total * 0.2))
+
+    return fileDetail.slice(0, numberOfCards).map((item) => ({
       id: item.detailID,
       source: item.source,
       target: item.target,
-      status: item.quizState,
-      statusMode: item.flashcardState
+      status: item.flashcardState,
+      statusMode: item.quizState
     }))
   }, [fileDetail])
+
   const [indexMulti, setIndexMulti] = useState<number>(0)
   const [selected, setSelected] = useState<string | null>(null) // Trạng thái lựa chọn của người dùng
   const [isAnswered, setIsAnswered] = useState(false) // Trạng thái đã trả lời hay chưa
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null) // Trạng thái đúng sai
+  const [isMultipleChoiceCompleted, setIsMultipleChoiceCompleted] = useState(false) // Trạng thái hoàn thành trắc nghiệm
 
   // Hàm trỗn dữ liệu ngẫu nhiên cho trắc nghiệm
   const getRandomOptions = (correct: string, allTargets: string[]): string[] => {
@@ -75,8 +85,10 @@ const LearnLessonPage = () => {
     return options.sort(() => Math.random() - 0.5)
   }
   const handleNextQuestion = () => {
-    if (cardData.length === 0 || indexMulti === cardData.length - 1) {
-      alert('Bạn đã hoàn thành tất cả các câu hỏi!')
+    if (cardData.length === 0) return
+    if (indexMulti === cardData.length - 1) {
+      // Hoàn thành tất cả câu hỏi
+      setIsMultipleChoiceCompleted(true)
       return
     }
     setIndexMulti((prevIndex) => {
@@ -90,6 +102,8 @@ const LearnLessonPage = () => {
     return getRandomOptions(cardData[indexMulti].target, allTargets)
   }, [indexMulti, cardData, allTargets])
 
+  //
+  const { isNavigationPage, setIsNavigationPage } = useFlashcards({ initialData: cardData })
   return (
     <div className='mx-30 mb-10 max-md:mx-2'>
       <div className='flex justify-between mt-5 '>
@@ -134,7 +148,13 @@ const LearnLessonPage = () => {
             <span className='text-gray-500'>Đang tải dữ liệu...</span>
           </div>
         ) : cardData.length > 0 ? (
-          <Flashcard cards={cardData} />
+          <Flashcard
+            cards={cardData}
+            setIsNavigationPage={setIsNavigationPage}
+            isNavigationPage={isNavigationPage}
+            demo={true}
+            fileID={fileID!}
+          />
         ) : (
           <div className='flex justify-center items-center h-40'>
             <span className='text-gray-500'>Không có dữ liệu</span>
@@ -143,11 +163,13 @@ const LearnLessonPage = () => {
       </div>
       {/* tác giả */}
       <div className='border-t-2 border-gray-300 flex justify-start mt-5 '>
-        <div className='flex items-center'>
-          <img src={`${logo}`} alt='avatar' className='size-16 rounded-2xl' />
+        <div className='flex items-center gap-3 mt-5'>
+          <div className=''>
+            <img src={`${ownerInfo?.avatar}`} alt='avatar' className='size-10 rounded-full' />
+          </div>
           <div className=''>
             <span className='text-[12px] text-gray-400'>Tạo bởi</span>
-            <p className='font-semibold'>Người dùng 1</p>
+            <p className='font-semibold'>{ownerInfo?.name}</p>
           </div>
         </div>
       </div>
@@ -161,7 +183,9 @@ const LearnLessonPage = () => {
               <BookOpenIcon className='size-8 flex-shrink-0 text-blue-500' />
               <span className='font-semibold text-lg'>Học</span>
             </div>
-            <div className='text-xl'>1/7</div>
+            <div className='text-xl'>
+              {indexMulti + 1}/{cardData.length}
+            </div>
             <Button
               variant='secondary'
               className='px-3 py-2 transition-all duration-300 font-bold'
@@ -171,7 +195,7 @@ const LearnLessonPage = () => {
             </Button>
           </div>
           {/* content */}
-          {cardData.length > 0 && (
+          {cardData.length > 0 && !isMultipleChoiceCompleted && (
             <MultipleChoise
               ORIGINAL_DATA={cardData}
               handleNextQuestion={handleNextQuestion}
@@ -185,6 +209,21 @@ const LearnLessonPage = () => {
               setSelected={setSelected}
               showButtonNext={true}
             />
+          )}
+          {/* Giao diện hoàn thành trắc nghiệm */}
+          {isMultipleChoiceCompleted && (
+            <div className='bg-white rounded-b-2xl border border-t-0 border-gray-200 p-8 flex flex-col items-center justify-center'>
+              <div className='text-5xl mb-3'>📚</div>
+              <h2 className='text-xl font-bold text-indigo-700 mb-2'>Trải nghiệm thêm!</h2>
+              <p className='text-gray-600 mb-6 text-center'>Truy cập chế độ Học để luyện tập hiệu quả hơn</p>
+              <button
+                onClick={() => navigate(`multiple-choice?fileId=${fileID}`)}
+                className='flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg'
+              >
+                <BookOpenIcon className='w-5 h-5' />
+                Vào chế độ Học
+              </button>
+            </div>
           )}
         </div>
       </div>

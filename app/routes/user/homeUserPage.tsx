@@ -140,7 +140,7 @@ const HomeUserPage = () => {
         {/* items */}
         <div className='grid grid-cols-3 gap-5 mb-10 max-md:grid-cols-2 max-sm:grid-cols-1 '>
           {/* item */}
-          <ListItem>
+          <ListItem navigatevalue={'/learn-lesson'}>
             {' '}
             <img src={logo} alt='logo' className='size-10' />
             <div className='mt-7 flex flex-col gap-3'>

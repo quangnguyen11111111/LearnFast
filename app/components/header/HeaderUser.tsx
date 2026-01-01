@@ -36,7 +36,6 @@ const SearchInput = () => {
 export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  console.log(linkTo)
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false)
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState<boolean>(false)
   const [openModal, setOpenModal] = useState<boolean>(false)
@@ -45,7 +44,6 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
   const userDropdownRef = useRef<HTMLDivElement>(null)
   const userButtonRef = useRef<HTMLImageElement>(null)
   const {user,loading} = useAppSelector((state) => state.auth)
-  console.log('kiểm tra người dùng', user)
 
   const refreshToken = localStorage.getItem('refreshToken')
   useEffect(() => {
@@ -148,7 +146,6 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
           onClick={() => {
             setOpenModal(true)
             setIsDropdownOpen(false)
-            console.log('openModal')
           }}
         >
           <FolderIcon className='size-6 text-gray-600 stroke-[2] ' />

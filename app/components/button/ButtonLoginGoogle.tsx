@@ -15,7 +15,6 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({ children }) => {
   const handleLoginWithGoogle = async (credentialResponse: CredentialResponse) => {
     try {
       const token = credentialResponse.credential
-      console.log('kiểm tra token', token)
 
       if (!token) {
         throw new Error('Không lấy được credential từ Google')

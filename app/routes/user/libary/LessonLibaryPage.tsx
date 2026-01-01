@@ -131,11 +131,10 @@ const LessonLibaryPage = () => {
   }, [files, searchQuery])
 
   const handleLearnFile = (fileID: string) => {
-    console.log('Học file với ID:', fileID)
 
         navigate(`/learn-lesson?fileId=${fileID}`)
-
   }
+
   return (
     <div>
       {/* Filter and Search */}

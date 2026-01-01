@@ -1,6 +1,6 @@
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface MultipleChoiseProps {
   indexMulti: number
@@ -30,7 +30,20 @@ const MultipleChoise = ({
   showButtonNext
 }: MultipleChoiseProps) => {
   const [isSkip, setIsSkip] = useState(false)
+  const continueButtonRef = useRef<HTMLButtonElement>(null)
   const currentQuestion = ORIGINAL_DATA[indexMulti]
+
+  // Auto focus vào nút tiếp tục khi xuất hiện
+  useEffect(() => {
+    if (isAnswered && !isCorrect && showButtonNext) {
+      // Delay nhỏ để đợi animation hoàn thành
+      const timer = setTimeout(() => {
+        continueButtonRef.current?.focus()
+      }, 450)
+      return () => clearTimeout(timer)
+    }
+  }, [isAnswered, isCorrect, showButtonNext])
+
   if (!currentQuestion) return null
 
   const { source, target: correctAnswer } = currentQuestion
@@ -159,8 +172,9 @@ const MultipleChoise = ({
           >
             <p className='text-gray-500 font-semibold max-md:hidden'>Ấn nút tiếp tục để sang câu tiếp theo</p>
             <button
+              ref={continueButtonRef}
               onClick={handleContinue}
-              className='bg-blue-600 text-white font-semibold px-6 py-2 rounded-full shadow-lg hover:bg-blue-700 transition max-md:w-full'
+              className='bg-blue-600 text-white font-semibold px-6 py-2 rounded-full shadow-lg hover:bg-blue-700 transition max-md:w-full focus:outline-none focus:ring-2 focus:ring-blue-400'
             >
               Tiếp tục
             </button>

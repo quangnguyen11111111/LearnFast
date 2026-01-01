@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { getFileDetailThunk, getRecentFilesThunk, getSimilarFilesThunk, getTop6FilesThunk, type FileDetail, type IFile, type Pagination } from './fileThunk'
+import { getFileDetailThunk, getRecentFilesThunk, getSimilarFilesThunk, getTop6FilesThunk, type FileDetail, type IFile, type IOwnerInfo, type Pagination } from './fileThunk'
 interface FileState {
   filesRecent: IFile[] | null
   filesTop6: IFile[] | null
@@ -13,6 +13,7 @@ interface FileState {
   // _______ detail file _______
   fileDetail: FileDetail[] | null
   loadingDetail: boolean
+  ownerInfo: IOwnerInfo | null
 }
 
 // initialState: Trạng thái khởi tạo của slice
@@ -29,6 +30,7 @@ const initialState: FileState = {
   // _______ detail file _______
   fileDetail: null,
   loadingDetail: false,
+  ownerInfo: null
 }
 
 // authSlice: Slice quản lý logic auth + xử lý các thunk ở extraReducers
@@ -83,6 +85,7 @@ const fileSlice = createSlice({
         .addCase(getFileDetailThunk.fulfilled, (state, action) => {
             state.fileDetail = action.payload.data
             state.loadingDetail = false
+            state.ownerInfo = action.payload.ownerInfo
         })
   }
 })

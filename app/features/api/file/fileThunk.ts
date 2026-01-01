@@ -8,6 +8,10 @@ export interface Pagination {
   limit: number
   pageCount: number
 }
+export interface IOwnerInfo {
+  name: string
+  avatar: string
+}
 export interface IFile {
   fileID: string
   fileName: string
@@ -49,6 +53,7 @@ export interface IFileDetailResult {
   errCode: number
   message: string
   data: FileDetail[]
+  ownerInfo: IOwnerInfo
 }
 // getRecentFilesThunk: Thunk lấy danh sách file người dùng truy cập gần đây
 export const getRecentFilesThunk = createAsyncThunk<IFileResult, IFilePayload, { rejectValue: string }>(
@@ -56,7 +61,6 @@ export const getRecentFilesThunk = createAsyncThunk<IFileResult, IFilePayload, {
   async (data, { rejectWithValue }) => {
     try {
       const res = (await getRecentFilesApi(data)) as IFileResult
-      console.log('kiểm tra res file recently :', res)
 
       if (res && res.errCode === 0) {
         const { data: data, message, errCode, pagination, canNextPage } = res
@@ -75,7 +79,6 @@ export const getTop6FilesThunk = createAsyncThunk<IFileResult, { userID: string 
   async (data, { rejectWithValue }) => {
     try {
       const res = (await getTop6FilesApi(data.userID)) as IFileResult
-      console.log('kiểm tra res file recently :', res)
 
       if (res && res.errCode === 0) {
         const { data: data, message, errCode, pagination, canNextPage } = res
@@ -94,7 +97,6 @@ export const getSimilarFilesThunk = createAsyncThunk<IFileResult, { userID: stri
   async (data, { rejectWithValue }) => {
     try {
       const res = (await getSimilarFilesApi(data)) as IFileResult
-      console.log('kiểm tra res file recently :', res)
       if (res && res.errCode === 0) {
         const { data: data, message, errCode } = res
         return { data: data, message, errCode }
@@ -112,10 +114,10 @@ export const getFileDetailThunk = createAsyncThunk<IFileDetailResult, { fileID: 
   async (data, { rejectWithValue }) => {
     try {
       const res = (await getFileDetailApi(data.fileID, data.userID)) as IFileDetailResult
-      console.log('kiểm tra res file detail :', res)
+      console.log('kiểm tra res mã người dùng :', data.userID)
       if (res && res.errCode === 0) {
-        const { data: data, message, errCode } = res
-        return { data: data, message, errCode }
+        const { data: data, message, errCode,ownerInfo } = res
+        return { data: data, message, errCode ,ownerInfo}
       }
       return rejectWithValue(res.message)
     } catch (e: any) {

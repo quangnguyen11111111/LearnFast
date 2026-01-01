@@ -14,15 +14,6 @@ interface Props {
 const TestSummarySidebar: React.FC<Props> = ({ open, onClose, userAnswers }) => {
   return (
     <>
-      {!open && (
-        <button
-          className='fixed top-20 left-5 z-40 border-[1px] border-gray-200 bg-white p-2 rounded-3xl hover:bg-gray-100 transition-colors cursor-pointer'
-          onClick={onClose}
-        >
-          {/* Icon toggled outside by caller if needed */}
-          <span className='sr-only'>Open summary</span>
-        </button>
-      )}
       <div
         className={`fixed top-20 left-5 w-60 bg-white z-40 p-4 transform transition-transform duration-300 ${
           open ? 'translate-x-0' : '-translate-x-full'

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useMemo } from 'react'
 import Button from '~/components/button/Button'
 import imgBottomTest from '~/assets/imgBottomTest.svg'
 import IconButton from '~/components/button/ButtonIcon'
@@ -12,6 +12,10 @@ import MultipleChoiceQuestion from '~/components/learnComponent/test/MultipleCho
 import EssayQuestion from '~/components/learnComponent/test/EssayQuestion'
 import { useTestExam } from '~/features/test/useTestExam'
 import type { Question } from '~/features/test/types'
+import { useSearchParams } from 'react-router'
+import { useAppDispatch, useAppSelector } from '~/store/hook'
+import { getFileDetailThunk } from '~/features/api/file/fileThunk'
+import Loading from '~/components/Loading'
 // Types used in this module
 // Types moved to ~/features/test/types
 
@@ -35,6 +39,30 @@ const defaultData: Question[] = [
 // - Quản lý chia câu hỏi theo chế độ, theo dõi trả lời, tính trạng thái kết thúc
 // - Hỗ trợ thiết lập số lượng câu và loại hình trước khi bắt đầu
 const TestPage = () => {
+  const { user, loading: authLoading } = useAppSelector((state) => state.auth)
+  //lấy fileID từ URL
+  const [searchParams] = useSearchParams()
+  const fileID = searchParams.get('fileId')
+  const dispatch = useAppDispatch()
+  useEffect(() => {
+    if (fileID) {
+      // Gọi thunk để lấy chi tiết file
+      dispatch(getFileDetailThunk({ fileID: fileID, ...(user && { userID: user.userID }) }))
+    }
+  }, [fileID])
+  // Lấy dữ liệu chi tiết file từ store
+  const { fileDetail, loadingDetail, ownerInfo } = useAppSelector((state) => state.file)
+  const cardData = useMemo(() => {
+    if (!fileDetail || fileDetail.length === 0) return []
+    return fileDetail.map((item) => ({
+      id: item.detailID,
+      source: item.source,
+      target: item.target,
+      status: item.flashcardState,
+      statusMode: item.quizState
+    }))
+  }, [fileDetail])
+
   const {
     ORIGINAL_DATA,
     batchSize,
@@ -72,8 +100,11 @@ const TestPage = () => {
     answeredMultiple,
     answeredEssay,
     scrollToTop
-  } = useTestExam({ initialData: defaultData })
-
+  } = useTestExam({ initialData: cardData })
+  
+  if ( loadingDetail || cardData.length === 0) {
+    return <Loading text='Đang tải dữ liệu...' />
+  }
   let indexNumberNow = 0
   return (
     <div className='px-85 max-xl:px-55 max-lg:px-30 max-md:px-10 flex flex-col items-center gap-8 pb-10 relative'>
@@ -106,7 +137,7 @@ const TestPage = () => {
         }}
         batchSize={batchSize}
         setBatchSize={setBatchSize}
-        maxCount={defaultData.length}
+        maxCount={cardData.length}
         isTestTrueFalse={isTestTrueFalse}
         setIsTestTrueFalse={setIsTestTrueFalse}
         isTestMultiple={isTestMultiple}

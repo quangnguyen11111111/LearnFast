@@ -9,27 +9,29 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import Button from '../button/Button'
 import IconButton from '../button/ButtonIcon'
-import { useNavigate } from 'react-router'
+import { replace, useNavigate, useSearchParams } from 'react-router'
 interface FeatureProps {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
   title: string
   links: string
 }
 const HeaderLearn = () => {
+  const [searchParams] = useSearchParams()
+
+  const fileID = searchParams.get('fileId')
+
   // các chức năng
   const features: FeatureProps[] = [
     { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: 'flash-card' },
     { icon: BookOpenIcon, title: 'Học', links: 'multiple-choice' },
     { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: 'test' },
     { icon: NewspaperIcon, title: 'Blocks', links: 'blocks' },
-    { icon: NewspaperIcon, title: 'Blast', links: 'blast' },
     { icon: NewspaperIcon, title: 'Ghép thẻ', links: 'card-matching' }
   ]
   const localhost = document.location.pathname
   // Tìm chức năng hiện tại dựa trên đường dẫn
   const activeFeature = features.find((f) => localhost.toLowerCase().includes(f.links.toLowerCase()))
-  console.log('kiểm tra activeFeature',activeFeature);
-  
+
   // Tạo mảng chức năng không bao gồm chức năng hiện tại
   const featuresCopy = features.filter((f) => f.title !== activeFeature?.title)
 
@@ -80,7 +82,16 @@ const HeaderLearn = () => {
             key={index}
             className='flex items-center justify-start gap-5 cursor-pointer hover:bg-gray-200 px-3 py-2 mt-1'
             onClick={() => {
-              navigate(feature.links)
+              if (!fileID) return
+              navigate(
+                {
+                  pathname: feature.links,
+                  search: `?fileId=${fileID}`
+                },
+                {
+                  replace: true
+                }
+              )
               setIsDropDown(false)
             }}
           >
@@ -93,7 +104,7 @@ const HeaderLearn = () => {
       {/* Kết thúc danh mục lựa chọn */}
       <div
         className={`font-semibold text-center
-  max-md:col-span-2 max-md:row-start-2 ${activeFeature?.links === 'blocks'||activeFeature?.links === 'card-matching' ? 'max-lg:hidden' : ''}`}
+  max-md:col-span-2 max-md:row-start-2 ${activeFeature?.links === 'blocks' || activeFeature?.links === 'card-matching' ? 'max-lg:hidden' : ''}`}
       >
         Thư mục 1
       </div>
@@ -102,7 +113,7 @@ const HeaderLearn = () => {
         <IconButton
           icon={XMarkIcon}
           onClick={() => {
-            navigate('/learn-lesson', { replace: true })
+            navigate(-1)
           }}
           size={8}
           variant='secondary'

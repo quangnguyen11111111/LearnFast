@@ -54,7 +54,13 @@ const CardMatchingPage = () => {
   const handleSelect = (idx: number) => {
     // Nếu đã matched thì không cho chọn nữa
     if (matchedIds.has(cardPairs[idx].id)) return
-    if (selectedIndices.includes(idx)) return // đã chọn rồi
+
+    // Nếu đã chọn thẻ này rồi → bỏ chọn
+    if (selectedIndices.includes(idx)) {
+      setSelectedIndices(selectedIndices.filter((i) => i !== idx))
+      return
+    }
+
     const nextSelected = [...selectedIndices, idx].slice(-2) // chỉ giữ 2 lựa chọn
     setSelectedIndices(nextSelected)
 
