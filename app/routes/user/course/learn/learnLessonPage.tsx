@@ -165,7 +165,7 @@ const LearnLessonPage = () => {
       <div className='border-t-2 border-gray-300 flex justify-start mt-5 '>
         <div className='flex items-center gap-3 mt-5'>
           <div className=''>
-            <img src={`${ownerInfo?.avatar}`} alt='avatar' className='size-10 rounded-full' />
+            <img src={ownerInfo?.avatar || logo} alt='avatar' className='size-10 rounded-full' />
           </div>
           <div className=''>
             <span className='text-[12px] text-gray-400'>Tạo bởi</span>

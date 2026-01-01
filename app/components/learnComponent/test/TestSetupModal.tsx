@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, use, useEffect, useRef } from 'react'
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import IconButton from '~/components/button/ButtonIcon'
 import { ClipboardDocumentCheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
@@ -9,8 +9,8 @@ import Button from '~/components/button/Button'
 interface Props {
   open: boolean
   onClose: () => void
-  batchSize: number
-  setBatchSize: (n: number) => void
+  batchSize: number | string
+  setBatchSize: (n: number | string) => void
   maxCount: number
   isTestTrueFalse: boolean
   setIsTestTrueFalse: (v: boolean) => void
@@ -38,9 +38,18 @@ const TestSetupModal: React.FC<Props> = ({
   countEnabled,
   onStart
 }) => {
+  console.log('kiểm tra batchSize: ', batchSize)
+  const refButtonSetup = useRef<HTMLButtonElement>(null)
   return (
     <Transition appear show={open} as={Fragment}>
-      <Dialog as='div' className='relative z-50' onClose={() => { onStart(); onClose(); }}>
+      <Dialog
+        as='div'
+        className='relative z-50'
+        onClose={() => {
+          onStart()
+          onClose()
+        }}
+      >
         <TransitionChild
           as={Fragment}
           enter='ease-out duration-200'
@@ -72,7 +81,7 @@ const TestSetupModal: React.FC<Props> = ({
                 <div>
                   <p className='font-semibold text-lg'>Thư mục 1</p>
                   <h1 className='font-bold text-3xl'>Thiết lập bài kiểm tra</h1>
-                </div>
+                </div> 
                 <ClipboardDocumentCheckIcon className='size-13 text-blue-700' />
               </DialogTitle>
 
@@ -84,26 +93,37 @@ const TestSetupModal: React.FC<Props> = ({
                   <input
                     type='number'
                     value={batchSize}
-                    onChange={(e) => {
-                      // Cho phép nhập tự do, không validate ngay
-                      const value = e.target.value
-                      if (value === '') {
-                        setBatchSize(0) // Tạm thời cho phép 0 khi đang xóa
-                      } else {
-                        setBatchSize(Number(value))
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault() 
+                        refButtonSetup.current?.focus()
                       }
+                    }}
+                    onFocus={(e) => {
+                      e.target.select()
+                    }}
+                    onChange={(e) => {
+                      const raw = e.target.value
+
+                      if (raw === '') {
+                        setBatchSize('')
+                        return
+                      }
+
+                      let value = Number(raw)
+
+                      if (Number.isNaN(value)) return
+
+                      if (value < 1) value = 1
+                      if (value > maxCount) value = maxCount
+
+                      setBatchSize(value)
                     }}
                     onBlur={(e) => {
-                      // Validate chỉ khi mất focus (hoàn tất nhập)
-                      const value = Number(e.target.value)
-                      if (isNaN(value) || value < 1) {
+                      if (e.target.value === '') {
                         setBatchSize(1)
-                      } else if (value > maxCount) {
-                        setBatchSize(maxCount)
                       }
                     }}
-                    min={1}
-                    max={maxCount}
                     className='w-20 px-3 py-3 font-semibold rounded-xl border-none bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-300'
                   />
                 </div>
@@ -141,7 +161,12 @@ const TestSetupModal: React.FC<Props> = ({
               </div>
 
               <div className='mt-6 flex justify-end'>
-                <Button className='px-4 py-2 text-sm font-semibold' onClick={onStart} rounded='rounded-3xl'>
+                <Button
+                  ref={refButtonSetup}
+                  className='px-4 py-2 text-sm font-semibold'
+                  onClick={onStart}
+                  rounded='rounded-3xl'
+                >
                   Bắt đầu làm kiểm tra
                 </Button>
               </div>

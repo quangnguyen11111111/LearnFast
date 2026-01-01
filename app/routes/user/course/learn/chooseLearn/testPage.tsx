@@ -102,7 +102,7 @@ const TestPage = () => {
     scrollToTop
   } = useTestExam({ initialData: cardData })
   
-  if ( loadingDetail || cardData.length === 0) {
+  if ( loadingDetail || cardData.length === 0 || batchSize === 0) {
     return <Loading text='Đang tải dữ liệu...' />
   }
   let indexNumberNow = 0

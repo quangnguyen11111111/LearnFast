@@ -24,8 +24,8 @@ export interface DividedData {
 
 export interface UseTestExamResult {
   ORIGINAL_DATA: Question[]
-  batchSize: number
-  setBatchSize: (v: number) => void
+  batchSize: number | string
+  setBatchSize: (v: number | string) => void
 
   // Mode toggles
   isTestTrueFalse: boolean
@@ -98,14 +98,14 @@ export function useTestExam({
   initialData,
   defaultModes
 }: UseTestExamOptions): UseTestExamResult {
-  const [batchSize, setBatchSize] = useState<number>( (initialData.length >= 8 ? 8 : initialData.length)
+  const [batchSize, setBatchSize] = useState<number | string>( (initialData.length >= 8 ? 8 : initialData.length)
   )
   useEffect(() => {
     setBatchSize(initialData.length >= 8 ? 8 : initialData.length)
   }, [initialData])
 
   // Original data (randomized subset based on batch size)
-  const [ORIGINAL_DATA, setORIGINAL_DATA] = useState<Question[]>(getRandomItems(initialData, batchSize))
+  const [ORIGINAL_DATA, setORIGINAL_DATA] = useState<Question[]>(getRandomItems(initialData, Number(batchSize)))
 
   // Mode toggles
   const [isTestTrueFalse, setIsTestTrueFalse] = useState<boolean>(defaultModes?.trueFalse ?? true)
@@ -293,7 +293,7 @@ export function useTestExam({
     setIsOpenSummary(false)
     setUserAnswers([])
     setSelectedAnswers({})
-    setORIGINAL_DATA(getRandomItems(initialData, batchSize))
+    setORIGINAL_DATA(getRandomItems(initialData, Number(batchSize)))
   }, [initialData, batchSize, resetTimer, startTimer])
 
   const scrollToTop = () => {

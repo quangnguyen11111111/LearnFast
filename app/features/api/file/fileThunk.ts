@@ -114,7 +114,6 @@ export const getFileDetailThunk = createAsyncThunk<IFileDetailResult, { fileID: 
   async (data, { rejectWithValue }) => {
     try {
       const res = (await getFileDetailApi(data.fileID, data.userID)) as IFileDetailResult
-      console.log('kiểm tra res mã người dùng :', data.userID)
       if (res && res.errCode === 0) {
         const { data: data, message, errCode,ownerInfo } = res
         return { data: data, message, errCode ,ownerInfo}
