@@ -83,7 +83,7 @@ const HomeUserPage = () => {
           {top6Files &&
             top6Files.map((item, index) => {
               return (
-                <ListItem key={index} navigatevalue={'/learn-lesson'}>
+                <ListItem key={index} navigatevalue={`/learn-lesson?fileId=${item.fileID}`}>
                   {' '}
                   <div className='flex flex-col gap-5 items-start'>
                     <p className='text-lg font-semibold text-gray-800'>{item.fileName}</p>

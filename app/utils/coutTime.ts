@@ -7,6 +7,7 @@ interface TimerHook {
   resetTimer: () => void
   formatTime: () => string
   increaseTime: () => void
+  time: number
 }
 
 // useTimer: Hook đếm thời gian dạng mm:ss
@@ -57,5 +58,5 @@ export const useTimer = (): TimerHook => {
     return `${m}:${s}`
   }
 
-  return { startTimer, stopTimer, resetTimer, formatTime, increaseTime }
+  return { startTimer, stopTimer, resetTimer, formatTime, increaseTime, time }
 }

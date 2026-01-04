@@ -55,7 +55,7 @@ const HeaderLearn = () => {
   const navigate = useNavigate() // hàm điều hướng
   return (
     <div
-      className={`sticky top-0 left-0 bg-background
+      className={`${activeFeature?.links === 'card-matching' ? 'static' : 'sticky'}  top-0 left-0 bg-background
       md:flex md:justify-between
   grid grid-cols-[1fr_auto_1fr] items-center
   ${activeFeature?.links === 'blocks' ? 'max-lg:grid-cols-[1fr_auto]' : 'max-md:grid-cols-2 '}

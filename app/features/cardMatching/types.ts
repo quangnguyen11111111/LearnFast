@@ -5,3 +5,10 @@ export interface Question {
   status: number
   statusMode: number // 0: chưa học, 1: qua trắc nghiệm, 2: qua tự luận
 }
+export interface summaryItem {
+  rank: number
+  userID: string
+  ownerAvatar: string
+  ownerName: string
+  pointCardMatching: number
+}

@@ -1,6 +1,14 @@
 // hàm thunk để lấy danh sách file người dùng truy cập gần đây
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { getFileDetailApi, getRecentFilesApi, getSimilarFilesApi, getTop6FilesApi } from './fileAPI'
+import {
+  getFileDetailApi,
+  getRecentFilesApi,
+  getSimilarFilesApi,
+  getTop6FilesApi,
+  getTopUsersApi,
+  updateGameProgressApi
+} from './fileAPI'
+import type { summaryItem } from '~/features/cardMatching/types'
 
 export interface Pagination {
   total: number
@@ -17,7 +25,7 @@ export interface IFile {
   fileName: string
   totalWords: number
   creatorID: string
-  openedAt?: string 
+  openedAt?: string
   createdAt?: string // Format: "THÁNG 12 NĂM 2025"
   ownerName: string
   ownerAvatar?: string
@@ -31,7 +39,6 @@ interface IFilePayload {
   limit?: number
 }
 
-
 interface IFileResult {
   errCode: number
   message: string
@@ -41,13 +48,13 @@ interface IFileResult {
 }
 // chi tiết file
 export interface FileDetail {
-  detailID: string;
-  fileID: string;
-  source: string;
-  target: string;
-  creatorID: string;
-  flashcardState: 0 | 1  ;
-  quizState: 0 | 1 | 2 | 3 ;
+  detailID: string
+  fileID: string
+  source: string
+  target: string
+  creatorID: string
+  flashcardState: 0 | 1
+  quizState: 0 | 1 | 2 | 3
 }
 export interface IFileDetailResult {
   errCode: number
@@ -109,18 +116,63 @@ export const getSimilarFilesThunk = createAsyncThunk<IFileResult, { userID: stri
 )
 
 // getFileDetailThunk: Thunk lấy dữ liệu chi tiết file theo fileID và userID ( có thể không truyền userID)
-export const getFileDetailThunk = createAsyncThunk<IFileDetailResult, { fileID: string; userID?: string }, { rejectValue: string }>(
-  'file/getFileDetailThunk',
-  async (data, { rejectWithValue }) => {
-    try {
-      const res = (await getFileDetailApi(data.fileID, data.userID)) as IFileDetailResult
-      if (res && res.errCode === 0) {
-        const { data: data, message, errCode,ownerInfo } = res
-        return { data: data, message, errCode ,ownerInfo}
-      }
-      return rejectWithValue(res.message)
-    } catch (e: any) {
-      return rejectWithValue(e?.message || 'Unknown error')
+export const getFileDetailThunk = createAsyncThunk<
+  IFileDetailResult,
+  { fileID: string; userID?: string },
+  { rejectValue: string }
+>('file/getFileDetailThunk', async (data, { rejectWithValue }) => {
+  try {
+    const res = (await getFileDetailApi(data.fileID, data.userID)) as IFileDetailResult
+    if (res && res.errCode === 0) {
+      const { data: data, message, errCode, ownerInfo } = res
+      return { data: data, message, errCode, ownerInfo }
     }
+    return rejectWithValue(res.message)
+  } catch (e: any) {
+    return rejectWithValue(e?.message || 'Unknown error')
   }
-)
+})
+
+// cập nhật điểm của người dùng trong cardmatching và game block
+
+export const updateGameProgressThunk = createAsyncThunk<
+  { errCode: number; message: string },
+  { userID: string; fileID: string; point: number; mode: 'pointCardMatching' | 'pointBlockGame' },
+  { rejectValue: string }
+>('file/updateGameProgressThunk', async (data, { rejectWithValue }) => {
+  try {
+    const res = (await updateGameProgressApi({
+      userID: data.userID,
+      fileID: data.fileID,
+      point: data.point,
+      mode: data.mode
+    })) as { errCode: number; message: string }
+    if (res && res.errCode === 0) {
+      const { message, errCode } = res
+      return { message, errCode }
+    }
+    return rejectWithValue(res.message)
+  } catch (e: any) {
+    return rejectWithValue(e?.message || 'Unknown error')
+  }
+})
+
+// lấy top rank người học nhanh nhất trong file
+export const getTopUsersThunk = createAsyncThunk<
+  summaryItem[],
+  { fileID: string; userID: string },
+  { rejectValue: string }
+>('file/getTopUsersThunk', async (data, { rejectWithValue }) => {
+  try {
+    const res = (await getTopUsersApi(data.fileID, data.userID)) as any
+
+    if (res && res.errCode === 0) {
+      // Dữ liệu nằm trong res.data.topUsers
+      return res.data.topUsers || []
+    }
+    return rejectWithValue(res?.message || 'Lỗi không xác định')
+  } catch (e: any) {
+    console.error('getTopUsersThunk error:', e)
+    return rejectWithValue(e?.message || 'Unknown error')
+  }
+})

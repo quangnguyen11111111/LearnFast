@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import Button from '../button/Button'
 import { useEffect, useRef, useState } from 'react'
+import { useSound } from '~/hookSound/useSound'
 interface EssayProps {
   indexMulti: number
   ORIGINAL_DATA: { id: string; source: string; target: string }[]
@@ -25,22 +26,31 @@ const Essay = ({
   const [isIdontKnow, setIsIdontKnow] = useState<boolean>(false)
   // State để theo dõi người dùng chọn "hiển thị gợi ý"
   const [isShowHint, setIsShowHint] = useState<boolean>(false)
+  // State để ngăn chặn click liên tục vào nút trả lời
+  const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const refInput = useRef<HTMLInputElement>(null)
+  const { playSuccessSound } = useSound()
   // Hàm chuyển tiếp
   const handleNextQuestion = () => {
+    if (isProcessing) return // Ngăn chặn click khi đang xử lý
+    setIsProcessing(true)
+
     const normalizedInput = valueInput.trim().toLowerCase()
     const normalizedAnswer = correctAnswer.source.trim().toLowerCase()
     const correct = normalizedInput === normalizedAnswer
     if (correct) {
+      playSuccessSound()
       setIsCorrect(true)
       setTimeout(() => {
         setValueInput('')
         setIsShowHint(false)
+        setIsProcessing(false)
         handleNextQuestionEssay(true)
       }, 1000)
     } else {
       setIsCorrect(false)
       setIsShowHint(false)
+      setIsProcessing(false)
     }
   }
   useEffect(() => {
@@ -49,6 +59,11 @@ const Essay = ({
     }, 350)
     return () => clearTimeout(timer)
   }, [indexMulti, isCorrect])
+
+  // Reset isProcessing khi chuyển sang câu hỏi tiếp theo
+  useEffect(() => {
+    setIsProcessing(false)
+  }, [indexMulti])
   // Hàm hiển thị theo trạng thái câu trả lời
   const renderFeedBack = () => {
     if (isCorrect === false) {
@@ -219,8 +234,8 @@ const Essay = ({
                     Bạn không biết?
                   </button>
                   <button
-                    disabled={!valueInput}
-                    className={`  text-sm px-4 py-3 rounded-3xl font-semibold ${valueInput === '' ? ' bg-gray-100 text-gray-300 cursor-not-allowed' : 'cursor-pointer bg-blue-600 text-white hover:bg-blue-700'} `}
+                    disabled={!valueInput || isProcessing}
+                    className={`  text-sm px-4 py-3 rounded-3xl font-semibold ${valueInput === '' || isProcessing ? ' bg-gray-100 text-gray-300 cursor-not-allowed' : 'cursor-pointer bg-blue-600 text-white hover:bg-blue-700'} `}
                     onClick={() => {
                       handleNextQuestion()
                     }}

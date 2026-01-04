@@ -1,126 +1,146 @@
-import { use, useMemo, useState } from 'react'
 import SetUpGame from '~/components/learnComponent/SetUpGame'
-import type { Question } from '~/features/cardMatching/types'
+import type { Question, summaryItem } from '~/features/cardMatching/types'
 import useCardMatching from '~/features/cardMatching/useCardMatching'
-import { useTimer } from '~/utils/coutTime'
-import { getRandomItems, shuffleArray } from '~/utils/testUtils'
 import imgCardMatching from '~/assets/match_hero.png'
+import item from '~/assets/logo.png'
+import imgSumary from '~/assets/permafetti.e8a628fc.svg'
+import Button from '~/components/button/Button'
+import { useEffect, useMemo } from 'react'
+import { useSearchParams } from 'react-router'
+import { useAppDispatch, useAppSelector } from '~/store/hook'
+import { getFileDetailThunk } from '~/features/api/file/fileThunk'
+import Loading from '~/components/Loading'
 
 const CardMatchingPage = () => {
-  const initialData: Question[] = [
-    {
-      id: '1',
-      source: 'Dog dog hkjfhkjsdhf hskfhsakfjh ahsjkfhjk dffffffffffffff ffffffffffffff  ',
-      target: 'Chó',
-      status: 3,
-      statusMode: 0
-    },
-    {
-      id: '0',
-      source:
-        'Sun lorem ipsum dolor sit amet consectetur adipiscing elit lorem ipsum dolor sit amet consectetur adipiscing elitlorem ipsum dolor sit amet consectetur adipiscing elitlorem ipsum dolor sit amet consectetur adipiscing elitlorem ipsum dolor sit amet consectetur adipiscing elitlorem ipsum dolor sit amet consectetur adipiscing elitlorem ipsum dolor sit amet consectetur adipiscing elitlorem ipsum dolor sit amet consectetur adipiscing elit ',
-      target: 'Mặt trời',
-      status: 3,
-      statusMode: 0
-    },
-    { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 0 },
-    { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 0 },
-    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 0 },
-    { id: '6', source: 'Fire', target: 'Lửa', status: 3, statusMode: 0 },
-    { id: '7', source: 'Tree', target: 'Cây', status: 3, statusMode: 0 },
-    { id: '8', source: 'Book', target: 'Sách', status: 3, statusMode: 0 },
-    { id: '9', source: 'Pen', target: 'Bút', status: 0, statusMode: 0 },
-    { id: '10', source: 'Car', target: 'Xe hơi', status: 0, statusMode: 0 },
-    { id: '11', source: 'Cloud', target: 'Đám mây', status: 0, statusMode: 0 },
-    { id: '12', source: 'River', target: 'Dòng sông', status: 0, statusMode: 0 }
-  ]
-  const {} = useCardMatching(initialData)
-  const dataRandom = useMemo(() => getRandomItems(initialData, 6), [])
-  // Hàm tách dữ liệu thành mảng gồm các object riêng biệt: { id, source } và { id, target }
-  const getCardPairs = (data: Question[]) => {
-    const pairs: Array<{ id: string; data?: string }> = []
-    data.forEach((item: Question) => {
-      pairs.push({ id: item.id, data: item.source })
-      pairs.push({ id: item.id, data: item.target })
-    })
-    return pairs
-  }
-  // Biến lưu trữ các thẻ đã được xáo trộn ( source và target )
-  const cardPairs = useMemo(() => shuffleArray(getCardPairs(dataRandom)), [dataRandom])
-  const [selectedIndices, setSelectedIndices] = useState<number[]>([])
-  const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set()) // thẻ đã ghép đúng
-  const [shakeIndices, setShakeIndices] = useState<number[]>([])
-
-  const handleSelect = (idx: number) => {
-    // Nếu đã matched thì không cho chọn nữa
-    if (matchedIds.has(cardPairs[idx].id)) return
-
-    // Nếu đã chọn thẻ này rồi → bỏ chọn
-    if (selectedIndices.includes(idx)) {
-      setSelectedIndices(selectedIndices.filter((i) => i !== idx))
-      return
+  //lấy fileID từ URL
+  const [searchParams] = useSearchParams()
+  const fileID = searchParams.get('fileId')
+  const dispatch = useAppDispatch()
+  const { user } = useAppSelector((state) => state.auth)
+  const userID = user?.userID
+  useEffect(() => {
+    if (fileID) {
+      // Gọi thunk để lấy chi tiết file
+      dispatch(getFileDetailThunk({ fileID: fileID }))
     }
+  }, [fileID])
 
-    const nextSelected = [...selectedIndices, idx].slice(-2) // chỉ giữ 2 lựa chọn
-    setSelectedIndices(nextSelected)
+  // Lấy dữ liệu chi tiết file từ store
+  const { fileDetail, loadingDetail, loadingTopUsers, topUsers, loadingUpdateTopUsers } = useAppSelector(
+    (state) => state.file
+  )
 
-    // Khi đủ 2 thẻ → kiểm tra logic
-    if (nextSelected.length === 2) {
-      const [first, second] = nextSelected
-      const isMatch = cardPairs[first].id === cardPairs[second].id
+  // Chuẩn bị dữ liệu cho trò chơi ghép thẻ
+  const cardData = useMemo(() => {
+    if (!fileDetail || fileDetail.length === 0) return []
+    return fileDetail.map((item) => ({
+      id: item.detailID,
+      source: item.source,
+      target: item.target,
+      status: item.flashcardState,
+      statusMode: item.quizState
+    }))
+  }, [fileDetail])
 
-      if (isMatch) {
-        // đúng → lưu id đã match
-        setTimeout(() => {
-          setMatchedIds((prev) => new Set([...prev, cardPairs[first].id]))
-        }, 100)
-        // xóa selected sau một chút để animation đẹp hơn
-        setSelectedIndices([])
-      } else {
-        // sai → tạo shake
-        setShakeIndices([first, second])
-        increaseTime() // tăng thời gian phạt
-        // xóa selected sau animation
-        setTimeout(() => {
-          setShakeIndices([])
-          setSelectedIndices([])
-        }, 600)
-      }
-    }
+  const {
+    cardPairs,
+    selectedIndices,
+    matchedIds,
+    shakeIndices,
+    isSetUpGame,
+    timeSubmit,
+    handleSelect,
+    handleSetUp,
+    time,
+    isSummaryOpen,
+    resetGame
+  } = useCardMatching(cardData, 6, userID, fileID ? fileID : undefined, 'pointCardMatching')
+  if (loadingDetail || cardData.length === 0 || loadingTopUsers || loadingUpdateTopUsers) {
+    return <Loading text='Đang tải dữ liệu...' />
   }
 
-  const { startTimer, stopTimer, resetTimer, formatTime, increaseTime } = useTimer()
-  const [isSetUpGame, setIsSetUpGame] = useState<boolean>(true)
-  const handleSetUp = () => {
-    startTimer()
-    setTimeout(() => {
-      setIsSetUpGame(false)
-    }, 500)
-  }
-  const timeSubmit = formatTime()
   return (
-    <div className='max-h-screen h-[calc(100vh-75px)] w-full flex items-center justify-center bg-gray-50 relative'>
-      {isSetUpGame && (
-        <SetUpGame
-          handleStartGame={handleSetUp}
-          img={imgCardMatching}
-          title='Card Matching Game'
-          content='Ghép tất cả các thuật ngữ với định nghĩa của chúng càng nhanh càng tốt. Tránh ghép sai vì sẽ mất thêm thời gian!'
-        />
-      )}
-      {!isSetUpGame && (
-        <div className='w-full h-full grid grid-cols-3 gap-3 p-2 ' style={{ maxWidth: '1200px', minHeight: '70vh' }}>
-          {/* Bộ đếm thời gian */}
-          <div className='absolute -top-5 left-1/2 translate-x-4/5 z-50 max-lg:-translate-x-1/2 max-lg:-top-10 text-gray-500 '>
-            {' '}
-            {timeSubmit}
+    <>
+      {isSummaryOpen ? (
+        <div className='flex flex-col items-center  bg-gray-100 min-h-[calc(100vh-75px)] max-lg:px-5'>
+          <div className='w-full max-w-3xl mt-5 flex flex-col items-star gap-5 '>
+            <div className='flex items-center gap-6 justify-between  '>
+              <h1 className='font-bold text-4xl text-gray-800 max-w-[410px] max-md:text-3xl max-md:max-w-[300px] max-sm:text-2xl'>
+                Bạn thật cừ! Liệu bạn có thể ghép nhanh hơn nữa
+              </h1>
+              <img src={imgSumary} alt='Summary' className='size-35 max-sm:size-30' />
+            </div>
+            <p className=' text-gray-600 text-lg font-semibold max-md:text-base'>
+              Hãy thử đánh bại kỷ lục <span className='text-gray-700 font-bold  '>{time} giây</span> của bản thân.
+            </p>
+            <div className='max-sm:static max-sm:bg-gray-100 max-sm:flex-col fixed left-0 bottom-0 bg-white w-full flex justify-center p-3 gap-4'>
+              <Button
+                onClick={() => resetGame()}
+                className='px-6 py-3 font-semibold text-[1rem] max-sm:order-2'
+                rounded='rounded-4xl'
+                variant='secondary'
+              >
+                Quay lại học phần
+              </Button>
+              <Button
+                onClick={() => resetGame()}
+                className='px-6 py-3 font-semibold text-[1rem] max-sm:order-1'
+                rounded='rounded-4xl'
+              >
+                Chơi lại
+              </Button>
+            </div>
+            <div className=''>
+              <p className='font-bold text-gray-600 text-lg'>Top 10</p>
+              <div className=''>
+                {Array.isArray(topUsers) && topUsers.length > 0 ? (
+                  topUsers.map((user, index) => (
+                    <div
+                      key={user.rank || index}
+                      className='flex justify-between items-center bg-white px-5 py-3 rounded-lg mt-3 mb-2'
+                    >
+                      <div className='flex items-center gap-4'>
+                        <p className={`text-sm font-semibold`}>{user.rank || index + 1}</p>
+                        <img src={user.ownerAvatar || item} alt='' className='size-10 rounded-full' />
+                        <p className='text-sm font-semibold max-w-50 truncate'>{user.ownerName || 'Người dùng'}</p>
+                      </div>
+                      <p className='text-sm font-semibold'>{user.pointCardMatching || 0} giây</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className='text-center py-8 text-gray-500'>Chưa có dữ liệu bảng xếp hạng</div>
+                )}
+              </div>
+            </div>
           </div>
-          {cardPairs.map((card, idx) => {
-            return (
-              <button
-                key={idx}
-                onClick={() => handleSelect(idx)}
-                className={`  flex items-center justify-center h-[calc((100vh-9rem)/4)] w-full
+        </div>
+      ) : (
+        <div className='max-h-screen h-[calc(100vh-75px)] w-full flex items-center justify-center bg-gray-50 relative'>
+          {isSetUpGame && (
+            <SetUpGame
+              handleStartGame={handleSetUp}
+              img={imgCardMatching}
+              title='Card Matching Game'
+              content='Ghép tất cả các thuật ngữ với định nghĩa của chúng càng nhanh càng tốt. Tránh ghép sai vì sẽ mất thêm thời gian!'
+            />
+          )}
+          {!isSetUpGame && (
+            <div
+              className='w-full h-full grid grid-cols-3 gap-3 p-2 '
+              style={{ maxWidth: '1200px', minHeight: '70vh' }}
+            >
+              {/* Bộ đếm thời gian */}
+              <div className='absolute -top-5 left-1/2 translate-x-4/5 z-50 max-lg:-translate-x-1/2 max-lg:-top-10 text-gray-500 '>
+                {' '}
+                {timeSubmit}
+                {time}
+              </div>
+              {cardPairs.map((card, idx) => {
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleSelect(idx)}
+                    className={`  flex items-center justify-center h-[calc((100vh-9rem)/4)] w-full
                           border rounded-xl shadow text-center text-base font-medium
                           transition  cursor-pointer
 
@@ -128,16 +148,18 @@ const CardMatchingPage = () => {
                           ${selectedIndices.includes(idx) ? 'border-blue-500 bg-blue-100' : 'border-gray-300 bg-white'}
 
                           ${shakeIndices.includes(idx) ? 'shake border-red-500 bg-red-100' : ''}`}
-              >
-                <span className=' w-full px-4 line-clamp-3' title={card.data}>
-                  {card.data}
-                </span>
-              </button>
-            )
-          })}
+                  >
+                    <span className=' w-full px-4 line-clamp-3' title={card.data}>
+                      {card.data}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </>
   )
 }
 export default CardMatchingPage

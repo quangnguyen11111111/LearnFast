@@ -100,7 +100,6 @@ const FlashCardPage = () => {
     onResetAll: handleResetAll
   })
 
-
   // Loading spinner khi:
   // 1. Có refreshToken và đang chờ auth (authLoading)
   // 2. Đang tải file detail (loadingDetail)
@@ -113,20 +112,22 @@ const FlashCardPage = () => {
   return (
     <>
       <div className='px-25 overflow-hidden'>
-        <div className={`flex justify-between items-center ${onProgress ? '' : 'hidden'}`}>
-          <div className='flex items-center gap-2'>
-            <p className='border border-red-400 rounded-2xl px-4 font-bold py-1 bg-red-200 text-red-600'>
-              {unknownCount}
-            </p>
-            <span className='text-sm font-semibold text-red-600'>Chưa biết</span>
-          </div>
-          <div className='flex items-center gap-2'>
-            <span className='text-sm font-bold text-green-600 '>Đã biết</span>
-            <p className='border border-green-400 rounded-2xl px-4 font-bold py-1 bg-green-200 text-green-600'>
-              {knownCount}
-            </p>
-          </div>
-        </div>
+        {!isNavigationPage && (
+          <div className={`flex justify-between items-center ${onProgress ? '' : 'hidden'}`}>
+            <div className='flex items-center gap-2'>
+              <p className='border border-red-400 rounded-2xl px-4 font-bold py-1 bg-red-200 text-red-600'>
+                {unknownCount}
+              </p>
+              <span className='text-sm font-semibold text-red-600'>Chưa biết</span>
+            </div>
+            <div className='flex items-center gap-2'>
+              <span className='text-sm font-bold text-green-600 '>Đã biết</span>
+              <p className='border border-green-400 rounded-2xl px-4 font-bold py-1 bg-green-200 text-green-600'>
+                {knownCount}
+              </p>
+            </div>
+          </div>  
+        )}
 
         <Flashcard
           cards={cards}

@@ -1,6 +1,7 @@
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState, useRef, useEffect } from 'react'
+import { useSound } from '~/hookSound/useSound'
 
 interface MultipleChoiseProps {
   indexMulti: number
@@ -32,6 +33,7 @@ const MultipleChoise = ({
   const [isSkip, setIsSkip] = useState(false)
   const continueButtonRef = useRef<HTMLButtonElement>(null)
   const currentQuestion = ORIGINAL_DATA[indexMulti]
+  const { playSuccessSound } = useSound()
 
   // Auto focus vào nút tiếp tục khi xuất hiện
   useEffect(() => {
@@ -68,6 +70,8 @@ const MultipleChoise = ({
     setIsCorrect(correct)
 
     if (correct) {
+      // Phát âm thanh thành công
+      playSuccessSound()
       setTimeout(() => {
         resetState()
         handleNextQuestion(true)
