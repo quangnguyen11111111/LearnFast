@@ -9,14 +9,21 @@ import {
   hasAnyValidPlacement
 } from './utils'
 import { type BlockInstance, type BoardState, type ClearState, type DragState, type MoveSummary } from './types'
-import { QUESTIONS, type Question } from './questions'
+import { type Question } from './questions'
 
-export function useBlocksGame() {
+export function useBlocksGame({
+  QUESTIONS,
+  initialBestScore = 0
+}: {
+  QUESTIONS: Question[]
+  initialBestScore?: number
+}) {
+  const [isSetUpGame, setIsSetUpGame] = useState<boolean>(true)
   const [board, setBoard] = useState<BoardState>(() => createEmptyBoard())
   const [blocks, setBlocks] = useState<BlockInstance[]>(() => generateBlockSet())
   const [dragState, setDragState] = useState<DragState | null>(null)
   const [score, setScore] = useState(0)
-  const [bestScore, setBestScore] = useState(0)
+  const [bestScore, setBestScore] = useState(initialBestScore)
   const [gameOver, setGameOver] = useState(false)
   const [clearedLines, setClearedLines] = useState<ClearState>({ rows: [], cols: [] })
   const [moveSummary, setMoveSummary] = useState<MoveSummary | null>(null)
@@ -39,6 +46,19 @@ export function useBlocksGame() {
   const boardStateRef = useRef(board)
   const blocksStateRef = useRef(blocks)
   const boardMetricsRef = useRef(boardMetrics)
+  const questionsRef = useRef(QUESTIONS)
+
+  // Cập nhật questionsRef khi QUESTIONS thay đổi
+  useEffect(() => {
+    questionsRef.current = QUESTIONS
+  }, [QUESTIONS])
+
+  // Cập nhật bestScore khi initialBestScore thay đổi (khi lấy được từ API)
+  useEffect(() => {
+    if (initialBestScore > 0) {
+      setBestScore(initialBestScore)
+    }
+  }, [initialBestScore])
 
   useEffect(() => {
     boardStateRef.current = board
@@ -129,6 +149,17 @@ export function useBlocksGame() {
     return () => window.removeEventListener('resize', updateBoardMetrics)
   }, [updateBoardMetrics])
 
+  // Cập nhật boardMetrics khi board được mount (sau khi tắt setup screen)
+  useLayoutEffect(() => {
+    if (!isSetUpGame && boardRef.current) {
+      // Delay nhỏ để đảm bảo DOM đã render xong
+      const timer = setTimeout(() => {
+        updateBoardMetrics()
+      }, 50)
+      return () => clearTimeout(timer)
+    }
+  }, [isSetUpGame, updateBoardMetrics])
+
   const finalizeDrop = useCallback((drag: DragState, clientX: number, clientY: number) => {
     if (!boardRef.current) return
     const activeBlocks = blocksStateRef.current
@@ -172,11 +203,14 @@ export function useBlocksGame() {
     // If all 3 blocks are used, enter question mode instead of generating new blocks immediately
     if (allUsed) {
       setBlocks(updatedBlocks)
-      // Pick a random question
-      const random = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)]
-      setCurrentQuestion(random)
-      setWrongAttempts(0)
-      setQuestionMode(true)
+      // Pick a random question from current questions data
+      const questions = questionsRef.current
+      if (questions && questions.length > 0) {
+        const random = questions[Math.floor(Math.random() * questions.length)]
+        setCurrentQuestion(random)
+        setWrongAttempts(0)
+        setQuestionMode(true)
+      }
       // Do not evaluate game over yet; new blocks will be generated after answering correctly
     } else {
       setBlocks(updatedBlocks)
@@ -269,10 +303,13 @@ export function useBlocksGame() {
 
   // Question helpers
   const changeQuestion = useCallback(() => {
-    const random = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)]
-    setCurrentQuestion(random)
-    setWrongAttempts(0)
-    setAnswerState('idle')
+    const questions = questionsRef.current
+    if (questions && questions.length > 0) {
+      const random = questions[Math.floor(Math.random() * questions.length)]
+      setCurrentQuestion(random)
+      setWrongAttempts(0)
+      setAnswerState('idle')
+    }
   }, [])
 
   const submitAnswer = (value: string) => {
@@ -310,11 +347,14 @@ export function useBlocksGame() {
   }
 
   return {
+    isSetUpGame,
+    setIsSetUpGame,
     board,
     blocks,
     dragState,
     score,
     bestScore,
+    setBestScore,
     gameOver,
     clearedLines,
     moveSummary,

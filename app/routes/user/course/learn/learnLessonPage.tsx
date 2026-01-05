@@ -1,5 +1,5 @@
-import { Square2StackIcon, BookOpenIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/20/solid'
-import { BookmarkIcon, FolderPlusIcon, NewspaperIcon } from '@heroicons/react/24/outline'
+import { Square2StackIcon, BookOpenIcon, ClipboardDocumentCheckIcon,SquaresPlusIcon } from '@heroicons/react/20/solid'
+import { BookmarkIcon, FolderPlusIcon, NewspaperIcon,  } from '@heroicons/react/24/outline'
 import ListItem from '~/components/Listitem'
 import Flashcard from '~/components/learnComponent/Flashcard'
 import logo from '~/assets/logo.png'
@@ -36,7 +36,7 @@ const LearnLessonPage = () => {
     { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: `flash-card?fileId=${fileID}` },
     { icon: BookOpenIcon, title: 'Học', links: `multiple-choice?fileId=${fileID}` },
     { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: `test?fileId=${fileID}` },
-    { icon: NewspaperIcon, title: 'Blocks', links: `blocks?fileId=${fileID}` },
+    { icon: SquaresPlusIcon, title: 'Blocks', links: `blocks?fileId=${fileID}` },
     { icon: NewspaperIcon, title: 'Ghép thẻ', links: `card-matching?fileId=${fileID}` }
   ]
 
@@ -116,7 +116,7 @@ const LearnLessonPage = () => {
           <span>Lưu</span>
         </div>
       </div>
-      <div className='font-bold text-2xl mt-5'>Bộ thẻ 1</div>
+      <div className='font-bold text-2xl mt-5'>{ownerInfo?.fileName}</div>
       <div className='grid grid-cols-3 max-md:grid-cols-2 gap-x-2 max-md:text-sm'>
         {/* Các chức năng học */}
         {features &&

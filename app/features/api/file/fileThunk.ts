@@ -6,7 +6,8 @@ import {
   getSimilarFilesApi,
   getTop6FilesApi,
   getTopUsersApi,
-  updateGameProgressApi
+  updateGameProgressApi,
+  getBlockGamePointsApi
 } from './fileAPI'
 import type { summaryItem } from '~/features/cardMatching/types'
 
@@ -19,6 +20,7 @@ export interface Pagination {
 export interface IOwnerInfo {
   name: string
   avatar: string
+  fileName: string
 }
 export interface IFile {
   fileID: string
@@ -173,6 +175,31 @@ export const getTopUsersThunk = createAsyncThunk<
     return rejectWithValue(res?.message || 'Lỗi không xác định')
   } catch (e: any) {
     console.error('getTopUsersThunk error:', e)
+    return rejectWithValue(e?.message || 'Unknown error')
+  }
+})
+
+// lấy điểm tốt nhất của người dùng trong block game
+export interface IBlockGamePointsResult {
+  errCode: number
+  message: string
+  data: {
+    pointBlockGame: number
+  } | null
+}
+export const getBlockGamePointsThunk = createAsyncThunk<
+  IBlockGamePointsResult,
+  { userID: string; fileID: string },
+  { rejectValue: string }
+>('file/getBlockGamePointsThunk', async (data, { rejectWithValue }) => {
+  try {
+    const res = (await getBlockGamePointsApi(data.userID, data.fileID)) as IBlockGamePointsResult
+    if (res && res.errCode === 0) {
+      return res
+    }
+    return rejectWithValue(res?.message || 'Lỗi không xác định')
+  } catch (e: any) {
+    console.error('getBlockGamePointsThunk error:', e)
     return rejectWithValue(e?.message || 'Unknown error')
   }
 })

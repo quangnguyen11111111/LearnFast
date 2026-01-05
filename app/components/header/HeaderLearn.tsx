@@ -4,12 +4,14 @@ import {
   ClipboardDocumentCheckIcon,
   NewspaperIcon,
   Square2StackIcon,
+  SquaresPlusIcon,
   XMarkIcon
 } from '@heroicons/react/24/solid'
 import { useEffect, useRef, useState } from 'react'
 import Button from '../button/Button'
 import IconButton from '../button/ButtonIcon'
 import { replace, useNavigate, useSearchParams } from 'react-router'
+import { useAppSelector } from '~/store/hook'
 interface FeatureProps {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
   title: string
@@ -19,13 +21,14 @@ const HeaderLearn = () => {
   const [searchParams] = useSearchParams()
 
   const fileID = searchParams.get('fileId')
+  const { ownerInfo } = useAppSelector((state) => state.file)
 
   // các chức năng
   const features: FeatureProps[] = [
     { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: 'flash-card' },
     { icon: BookOpenIcon, title: 'Học', links: 'multiple-choice' },
     { icon: ClipboardDocumentCheckIcon, title: 'Kiểm tra', links: 'test' },
-    { icon: NewspaperIcon, title: 'Blocks', links: 'blocks' },
+    { icon: SquaresPlusIcon, title: 'Blocks', links: 'blocks' },
     { icon: NewspaperIcon, title: 'Ghép thẻ', links: 'card-matching' }
   ]
   const localhost = document.location.pathname
@@ -106,7 +109,7 @@ const HeaderLearn = () => {
         className={`font-semibold text-center
   max-md:col-span-2 max-md:row-start-2 ${activeFeature?.links === 'blocks' || activeFeature?.links === 'card-matching' ? 'max-lg:hidden' : ''}`}
       >
-        Thư mục 1
+        {ownerInfo?.fileName || 'Thư mục 1'}
       </div>
       {/* Button thoát */}
       <div className='justify-self-end'>

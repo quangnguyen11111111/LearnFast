@@ -23,6 +23,10 @@ export const updateGameProgressApi = (data: {
   mode: 'pointCardMatching' | 'pointBlockGame'
 }) => axiosClient.put('/api/files/updatePoints', data)
 
+// lấy điểm tốt nhất của người dùng trong block game
+export const getBlockGamePointsApi = (userID: string, fileID: string) =>
+  axiosClient.get(`/api/files/blockGame/points?userID=${userID}&fileID=${fileID}`)
+
 // lấy top rank người học nhanh nhất trong file
 export const getTopUsersApi = (fileID: string, userID: string) =>
   axiosClient.get(`/api/files/leaderboard?fileID=${fileID}&userID=${userID}`)

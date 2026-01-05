@@ -1,19 +1,75 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { use, useEffect, useMemo, useRef, useState } from 'react'
 import { useBlocksGame } from '../../../../../features/blocksGame/useBlocksGame'
 import { BlockPreview } from '../../../../../components/learnComponent/blocksGame/BlockPreview'
 import { BlockGhost } from '../../../../../components/learnComponent/blocksGame/BlockGhost'
 import { ScoreCard } from '~/components/learnComponent/blocksGame/ScoreCard'
+import SetUpGame from '~/components/learnComponent/SetUpGame'
+import { TrophyIcon, SquaresPlusIcon } from '@heroicons/react/24/solid'
+import { useNavigate, useSearchParams } from 'react-router'
+import { useAppDispatch, useAppSelector } from '~/store/hook'
+import { getFileDetailThunk, getBlockGamePointsThunk, updateGameProgressThunk } from '~/features/api/file/fileThunk'
+import Loading from '~/components/Loading'
 
 // BlocksGamePage: Trang chính chơi mini-game đặt block + chế độ hỏi đáp sau mỗi lượt dùng hết block.
 // - Sử dụng hook useBlocksGame để quản lý toàn bộ logic (bảng, kéo thả, điểm, question mode).
 // - Quản lý state answer cho phần hỏi đáp, auto focus input & nút đổi câu khi cần.
 export default function BlocksGamePage() {
+  //lấy fileID từ URL
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const fileID = searchParams.get('fileId')
+  const dispatch = useAppDispatch()
+
+  // Lấy thông tin user từ store
+  const { user } = useAppSelector((state) => state.auth)
+
+  // State lưu điểm tốt nhất từ API
+  const [apiBestScore, setApiBestScore] = useState<number>(0)
+
+  useEffect(() => {
+    if (fileID) {
+      // Gọi thunk để lấy chi tiết file
+      dispatch(getFileDetailThunk({ fileID: fileID }))
+    }
+  }, [fileID])
+
+  // Lấy điểm tốt nhất của người dùng khi vào trang
+  useEffect(() => {
+    if (fileID && user?.userID) {
+      dispatch(getBlockGamePointsThunk({ userID: user.userID, fileID }))
+        .unwrap()
+        .then((res) => {
+          if (res.data?.pointBlockGame) {
+            setApiBestScore(res.data.pointBlockGame)
+          }
+        })
+        .catch((err) => {
+          console.error('Lỗi khi lấy điểm block game:', err)
+        })
+    }
+  }, [fileID, user?.userID])
+
+  // Lấy dữ liệu chi tiết file từ store
+  const { fileDetail, loadingDetail, loadingUpdateTopUsers } = useAppSelector((state) => state.file)
+
+  // Chuẩn bị dữ liệu cho trò chơi ghép thẻ
+  const cardData = useMemo(() => {
+    if (!fileDetail || fileDetail.length === 0) return []
+    return fileDetail.map((item) => ({
+      id: item.detailID,
+      source: item.source,
+      target: item.target
+    }))
+  }, [fileDetail])
   const {
+    isSetUpGame,
+    setIsSetUpGame,
     board,
     blocks,
     dragState,
     score,
     bestScore,
+    setBestScore,
     gameOver,
     poolCellSize,
     startDragging,
@@ -31,7 +87,32 @@ export default function BlocksGamePage() {
     answerState,
     changeQuestion,
     submitAnswer
-  } = useBlocksGame()
+  } = useBlocksGame({ QUESTIONS: cardData, initialBestScore: apiBestScore })
+
+  // Cập nhật điểm tốt nhất lên server khi điểm hiện tại vượt qua điểm tốt nhất
+  useEffect(() => {
+    if (score > apiBestScore && fileID && user?.userID) {
+      // Cập nhật điểm mới lên server
+      dispatch(
+        updateGameProgressThunk({
+          userID: user.userID,
+          fileID,
+          point: score,
+          mode: 'pointBlockGame'
+        })
+      )
+        .unwrap()
+        .then(() => {
+          // Cập nhật state apiBestScore để tránh gọi API liên tục
+          setApiBestScore(score)
+        })
+        .catch((err) => {
+          console.error('Lỗi khi cập nhật điểm:', err)
+        })
+    }
+  }, [score, apiBestScore, fileID, user?.userID])
+
+  // State quản lý input câu trả lời
   const [answer, setAnswer] = useState<string>('')
   // useEffect: Reset input khi trả lời đúng (delay) hoặc sai (xóa ngay)
   useEffect(() => {
@@ -69,26 +150,30 @@ export default function BlocksGamePage() {
     }
   }, [answerState])
 
+  if (isSetUpGame) {
+    return (
+      <div className='max-h-screen h-[calc(100vh-75px)] pt-10 bg-slate-50 px-4 text-slate-900'>
+        <SetUpGame
+          handleStartGame={() => setIsSetUpGame(false)}
+          img={SquaresPlusIcon}
+          isBlocksGame={true}
+          instruct={true}
+          title='Block Game'
+          content='Trả lời đúng các câu hỏi để kiếm được các khối hình. Lấp đầy lưới trò chơi và kiếm điểm bằng cách hoàn thành các đường dọc và ngang'
+        />
+      </div>
+    )
+  }
+  if (loadingDetail || cardData.length === 0) {
+    return <Loading text='Đang tải dữ liệu...' />
+  }
   return (
     <div className='max-h-screen h-[calc(100vh-75px)] pt-10 bg-slate-50 px-4 text-slate-900'>
       <div className='mx-auto flex max-w-6xl flex-col gap-10'>
-        {/* <header className='flex flex-col gap-6 rounded-3xl bg-white/80 p-6 shadow-md backdrop-blur lg:flex-row lg:items-center lg:justify-between'>
-          <div className='flex flex-wrap items-center gap-4'>
-            <ScoreCard label='Score' value={score} accent='bg-emerald-500' />
-            <ScoreCard label='Best' value={bestScore} accent='bg-amber-500' />
-            <button
-              onClick={resetGame}
-              className='rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-400 hover:text-emerald-500'
-            >
-              New Game
-            </button>
-          </div>
-        </header> */}
-
         <div className='flex flex-col gap-10 lg:flex-row'>
-          <aside className='flex w-full flex-col items-center gap-6 rounded-3xl p-6 backdrop-blur lg:w-[280px]'>
+          <aside className='flex w-full flex-col items-center gap-6 max-lg:gap-0 rounded-3xl p-6 backdrop-blur lg:w-[280px]'>
             {!questionMode && (
-              <div className='flex w-full flex-col items-center gap-6'>
+              <div className='flex w-full lg:flex-col max-lg:justify-center items-center gap-6'>
                 {blocks.map((block) => (
                   <BlockPreview
                     key={block.id}
@@ -174,43 +259,59 @@ export default function BlocksGamePage() {
             )}
           </aside>
 
-          <main className='relative flex-1'>
-            <div
-              ref={boardRef}
-              className={boardContainerClasses}
-              style={{ gap: `${BOARD_GAP_PX}px`, width: 'min(90vw, 520px)' }}
-            >
-              {board.map((row, rowIndex) =>
-                row.map((cell, colIndex) => {
-                  const key = `${rowIndex}-${colIndex}`
-                  const highlighted = highlightMap.has(key)
-                  return (
-                    <div
-                      key={key}
-                      data-cell={key}
-                      className={`relative flex aspect-square w-full items-center justify-center rounded-xl border border-white/10 transition-all ${
-                        cell ? '' : 'bg-white/90'
-                      } ${highlighted ? 'ring-2 ring-amber-400' : ''}`}
-                      style={{
-                        backgroundColor: cell ?? undefined
-                      }}
-                    />
-                  )
-                })
-              )}
+          <main className='relative flex-1 flex flex-col items-center'>
+            <div className='rounded-3xl p-4' style={{ width: 'min(90vw, 520px)' }}>
+              <div className='flex justify-between mb-4 px-1'>
+                <div className='text-xl font-bold text-slate-800'>{score}</div>
+                <div className='flex items-center gap-1 text-xl font-bold text-yellow-500'>
+                  <TrophyIcon className='size-6' />
+                  <span>{bestScore}</span>
+                </div>
+              </div>
+              <div ref={boardRef} className={boardContainerClasses} style={{ gap: `${BOARD_GAP_PX}px` }}>
+                {board.map((row, rowIndex) =>
+                  row.map((cell, colIndex) => {
+                    const key = `${rowIndex}-${colIndex}`
+                    const highlighted = highlightMap.has(key)
+                    return (
+                      <div
+                        key={key}
+                        data-cell={key}
+                        className={`relative flex aspect-square w-full items-center justify-center rounded-xl border border-white/10 transition-all ${
+                          cell ? '' : 'bg-white/90'
+                        } ${highlighted ? 'ring-2 ring-amber-400' : ''}`}
+                        style={{
+                          backgroundColor: cell ?? undefined
+                        }}
+                      />
+                    )
+                  })
+                )}
+              </div>
             </div>
 
             {gameOver && (
               <div className='absolute inset-0 flex items-center justify-center rounded-3xl bg-white/80 backdrop-blur'>
                 <div className='w-full max-w-sm rounded-3xl bg-white px-8 py-10 text-center shadow-2xl'>
-                  <h3 className='text-2xl font-semibold text-slate-900'>Game Over</h3>
-                  <p className='mt-2 text-sm text-slate-600'>You scored {score} points.</p>
-                  <button
-                    onClick={resetGame}
-                    className='mt-6 inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-2 text-sm font-semibold text-white transition hover:bg-emerald-400'
-                  >
-                    Play Again
-                  </button>
+                  <h3 className='text-2xl font-semibold text-slate-900'>Bạn không còn nước đi nào!</h3>
+                  <p className='mt-2 text-sm text-slate-600'>Điểm số {score}</p>
+                  <p className='mt-2 text-sm text-slate-600'>Điểm kỉ lục {bestScore}</p>
+                  <div className='flex justify-center gap-4'>
+                    <button
+                      onClick={resetGame}
+                      className='mt-6 inline-flex items-center justify-center rounded-full bg-gray-200 px-6 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300'
+                    >
+                      Chơi lại
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate(-1)
+                      }}
+                      className='mt-6 inline-flex items-center justify-center rounded-full bg-blue-500 px-6 py-2 text-sm font-semibold text-white transition hover:bg-blue-600'
+                    >
+                      Thử các chế độ khác
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -227,5 +328,5 @@ export default function BlocksGamePage() {
   )
 }
 
-  // Tiêu đề trang
-  export const meta = () => [{ title: 'Blocks Game - LearnFast' }]
+// Tiêu đề trang
+export const meta = () => [{ title: 'Blocks Game - LearnFast' }]
