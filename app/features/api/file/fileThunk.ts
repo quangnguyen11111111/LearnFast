@@ -3,6 +3,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import {
   getFileDetailApi,
   getRecentFilesApi,
+  getUserFilesApi,
   getSimilarFilesApi,
   getTop6FilesApi,
   getTopUsersApi,
@@ -70,6 +71,24 @@ export const getRecentFilesThunk = createAsyncThunk<IFileResult, IFilePayload, {
   async (data, { rejectWithValue }) => {
     try {
       const res = (await getRecentFilesApi(data)) as IFileResult
+
+      if (res && res.errCode === 0) {
+        const { data: data, message, errCode, pagination, canNextPage } = res
+        return { data: data, message, errCode, pagination, canNextPage }
+      }
+      return rejectWithValue(res.message)
+    } catch (e: any) {
+      return rejectWithValue(e?.message || 'Unknown error')
+    }
+  }
+)
+
+// getUserFilesThunk: Thunk lấy tất cả các file mà người dùng đã tạo
+export const getUserFilesThunk = createAsyncThunk<IFileResult, IFilePayload, { rejectValue: string }>(
+  'file/getUserFilesThunk',
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = (await getUserFilesApi(data)) as IFileResult
 
       if (res && res.errCode === 0) {
         const { data: data, message, errCode, pagination, canNextPage } = res

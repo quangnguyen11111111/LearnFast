@@ -1,84 +1,22 @@
 import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { useAppDispatch, useAppSelector } from '~/store/hook'
-import { getFileDetailThunk, getRecentFilesThunk, type IFile } from '~/features/api/file/fileThunk'
-import { useNavigate } from 'react-router'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
+import { useUserFiles } from '~/features/library/useUserFiles'
+
+type FilterType = 'recent' | 'created'
 
 const LessonLibaryPage = () => {
-  const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  // Lấy user từ Redux store
-  const user = useAppSelector((state) => state.auth.user)
+  const [searchParams] = useSearchParams()
+  const initialFilter: FilterType = searchParams.get('view') === 'created' ? 'created' : 'recent'
 
-  // State lưu trữ dữ liệu files
-  const [files, setFiles] = useState<IFile[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
+  const { files, groupedFiles, isLoading, hasMore, filterType, searchQuery, setFilterType, setSearchQuery, loadMore } =
+    useUserFiles(initialFilter)
 
-  // Ref cho observer
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
-  const isLoadingRef = useRef(false)
 
-  // Hàm fetch dữ liệu
-  const fetchFiles = useCallback(
-    async (page: number, isInitial: boolean = false) => {
-      if (!user?.userID || isLoadingRef.current) return
-
-      isLoadingRef.current = true
-      setIsLoading(true)
-
-      try {
-        const result = await dispatch(
-          getRecentFilesThunk({
-            userID: user.userID,
-            page,
-            limit: 12
-          })
-        ).unwrap()
-
-        if (result.errCode === 0) {
-          const newFiles = result.data
-
-          if (isInitial) {
-            setFiles(newFiles)
-          } else {
-            setFiles((prev) => [...prev, ...newFiles])
-          }
-
-          setHasMore(result.canNextPage ?? false)
-          setCurrentPage(page)
-        }
-      } catch (error) {
-        console.error('Error fetching files:', error)
-      } finally {
-        setIsLoading(false)
-        isLoadingRef.current = false
-      }
-    },
-    [dispatch, user?.userID]
-  )
-
-  // Fetch dữ liệu lần đầu khi component mount
-  useEffect(() => {
-    if (user?.userID) {
-      setFiles([])
-      setCurrentPage(1)
-      setHasMore(true)
-      fetchFiles(1, true)
-    }
-  }, [user?.userID])
-
-  // Hàm load thêm dữ liệu
-  const loadMore = useCallback(() => {
-    if (!isLoadingRef.current && hasMore) {
-      fetchFiles(currentPage + 1)
-    }
-  }, [fetchFiles, currentPage, hasMore])
-
-  // Thiết lập Intersection Observer để load thêm khi scroll đến cuối
   useEffect(() => {
     if (observerRef.current) {
       observerRef.current.disconnect()
@@ -87,7 +25,7 @@ const LessonLibaryPage = () => {
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const firstEntry = entries[0]
-        if (firstEntry.isIntersecting && hasMore && !isLoadingRef.current) {
+        if (firstEntry.isIntersecting && hasMore) {
           loadMore()
         }
       },
@@ -105,44 +43,51 @@ const LessonLibaryPage = () => {
     }
   }, [loadMore, hasMore])
 
-  // Nhóm files theo tháng (createdAt)
-  const groupedFiles = useMemo(() => {
-    // Filter theo search query
-    const filteredFiles = searchQuery
-      ? files.filter(
-          (file) =>
-            file.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            file.ownerName?.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      : files
-
-    return filteredFiles.reduce(
-      (acc, file) => {
-        // API đã trả về format sẵn "THÁNG 12 NĂM 2025"
-        const month = file.createdAt || file.openedAt || 'KHÔNG XÁC ĐỊNH'
-        if (!acc[month]) {
-          acc[month] = []
-        }
-        acc[month].push(file)
-        return acc
-      },
-      {} as Record<string, IFile[]>
-    )
-  }, [files, searchQuery])
-
   const handleLearnFile = (fileID: string) => {
-
-        navigate(`/learn-lesson?fileId=${fileID}`)
+    navigate(`/learn-lesson?fileId=${fileID}`)
   }
 
   return (
     <div>
       {/* Filter and Search */}
       <div className='flex gap-4 mb-8'>
-        <button className='flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition'>
-          Gần đây
-          <ChevronDownIcon className='size-4' />
-        </button>
+        {/* Filter Dropdown */}
+        <div className='relative'>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className='flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition'
+          >
+            {filterType === 'recent' ? 'Gần đây' : 'Đã tạo'}
+            <ChevronDownIcon className={`size-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {isDropdownOpen && (
+            <div className='absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px]'>
+              <button
+                onClick={() => {
+                  setFilterType('recent')
+                  setIsDropdownOpen(false)
+                }}
+                className={`w-full px-4 py-2 text-left hover:bg-gray-50 transition ${
+                  filterType === 'recent' ? 'text-primary font-semibold' : 'text-gray-700'
+                }`}
+              >
+                Gần đây
+              </button>
+              <button
+                onClick={() => {
+                  setFilterType('created')
+                  setIsDropdownOpen(false)
+                }}
+                className={`w-full px-4 py-2 text-left hover:bg-gray-50 transition ${
+                  filterType === 'created' ? 'text-primary font-semibold' : 'text-gray-700'
+                }`}
+              >
+                Đã tạo
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className='flex-1 max-w-xl'>
           <div className='relative'>
@@ -184,7 +129,9 @@ const LessonLibaryPage = () => {
           <div className='space-y-3'>
             {items.map((file) => (
               <div
-                onClick={()=>{handleLearnFile(file.fileID)}}
+                onClick={() => {
+                  handleLearnFile(file.fileID)
+                }}
                 key={file.fileID}
                 className='bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer'
               >

@@ -43,7 +43,7 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const userDropdownRef = useRef<HTMLDivElement>(null)
   const userButtonRef = useRef<HTMLImageElement>(null)
-  const {user,loading} = useAppSelector((state) => state.auth)
+  const { user, loading } = useAppSelector((state) => state.auth)
 
   const refreshToken = localStorage.getItem('refreshToken')
   useEffect(() => {
@@ -139,7 +139,7 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
       {/* khung giao diện thêm thư mục và hoch phần */}
       <div
         ref={dropdownRef}
-        className={` absolute top-20 min-w-50 px-5 right-[6rem] z-1000 p-4 rounded-md shadow-lg bg-white ${isDropdownOpen ? '' : 'hidden'}`}
+        className={` fixed top-20 min-w-50 px-5 right-[6rem] z-1000 p-4 rounded-md shadow-lg bg-white ${isDropdownOpen ? '' : 'hidden'}`}
       >
         <div
           className='flex items-center gap-2 hover:bg-gray-100 cursor-pointer p-2'
@@ -165,7 +165,7 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
       {/* khung giao diện dropdown người dùng */}
       <div
         ref={userDropdownRef}
-        className={`absolute top-20 right-5 w-64 z-50 bg-white rounded-lg shadow-lg border border-gray-200 ${
+        className={`fixed top-20 right-5 w-64 z-50 bg-white rounded-lg shadow-lg border border-gray-200 ${
           isUserDropdownOpen ? '' : 'hidden'
         }`}
       >
@@ -174,8 +174,8 @@ export default function HeaderUser({ display, shadow, linkTo }: HeaderProps) {
           <div className='flex items-center gap-3'>
             <img src={user?.avatar || logo} alt='avatar' className='size-12 rounded-full' />
             <div className='flex-1 min-w-0'>
-              <p className='font-semibold text-gray-800 truncate'>{user&&user.username}</p>
-              <p className='text-sm text-gray-500 truncate'>{user&&user.email}</p>
+              <p className='font-semibold text-gray-800 truncate'>{user && user.username}</p>
+              <p className='text-sm text-gray-500 truncate'>{user && user.email}</p>
             </div>
           </div>
         </div>

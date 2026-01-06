@@ -1,8 +1,66 @@
 import axiosClient from '../../../services/axiosClient'
 
+// Interface cho việc tạo file mới
+export interface CreateFilePayload {
+  fileName: string
+  creatorID: string
+  visibility?: 'public' | 'private'
+  sourceLang?: string
+  targetLang?: string
+  arrFileDetail: Array<{
+    source: string
+    target: string
+  }>
+}
+
+export interface CreateFileResponse {
+  errCode: number
+  message: string
+  data?: {
+    fileID: string
+    fileName: string
+    creatorID: string
+    visibility: string
+    sourceLang: string
+    targetLang: string
+    totalWords: number
+  }
+}
+
+// Tạo file mới
+export const createFileApi = (data: CreateFilePayload): Promise<CreateFileResponse> =>
+  axiosClient.post('/api/files', data)
+
+// Interface cho AI generate flashcards
+export interface AIGenerateFlashcardsPayload {
+  topic: string
+  count: number
+  sourceLang: string
+  targetLang: string
+  userID: string
+}
+
+export interface AIGenerateFlashcardsResponse {
+  errCode: number
+  message: string
+  data?: Array<{
+    index: number
+    source: string
+    target: string
+  }>
+}
+
+// Tạo flashcards bằng AI
+export const aiGenerateFlashcardsApi = (data: AIGenerateFlashcardsPayload): Promise<AIGenerateFlashcardsResponse> =>
+  axiosClient.post('/api/ai/generateFlashcards', data)
+
 // lấy danh sách file người dùng truy cập gần đây
 export const getRecentFilesApi = (data: { userID: string; page?: number; limit?: number }) =>
   axiosClient.get(`/api/files/recently?userID=${data.userID}&page=${data.page || 1}&limit=${data.limit || 12}`)
+
+// lấy tất cả các file mà người dùng đã tạo
+export const getUserFilesApi = (data: { userID: string; page?: number; limit?: number }) =>
+  axiosClient.get(`/api/files/user?userID=${data.userID}&page=${data.page || 1}&limit=${data.limit || 12}`)
 
 // lấy top 6 file được truy cập nhiều nhất
 export const getTop6FilesApi = (userID: string) => axiosClient.get(`/api/files/top?userID=${userID}`)
