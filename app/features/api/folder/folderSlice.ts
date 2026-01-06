@@ -4,6 +4,9 @@ import {
   getUserFoldersThunk,
   updateFolderNameThunk,
   createFolderThunk,
+  addFileToFolderThunk,
+  removeFileFromFolderThunk,
+  deleteFolderThunk,
   type IFolder,
   type FolderPagination,
   type IFolderFile
@@ -91,6 +94,35 @@ const folderSlice = createSlice({
           state.folders = [newFolder, ...state.folders]
         } else {
           state.folders = [newFolder]
+        }
+      })
+
+      // add file to folder
+      .addCase(addFileToFolderThunk.fulfilled, (state, action) => {
+        const newFiles = action.payload.data
+        // Thêm file mới vào đầu danh sách folderFiles
+        if (state.folderFiles && newFiles.length > 0) {
+          state.folderFiles = [...newFiles, ...state.folderFiles]
+        } else if (newFiles.length > 0) {
+          state.folderFiles = newFiles
+        }
+      })
+
+      // remove file from folder
+      .addCase(removeFileFromFolderThunk.fulfilled, (state, action) => {
+        const { fileID } = action.payload.data
+        // Xóa file khỏi danh sách folderFiles
+        if (state.folderFiles) {
+          state.folderFiles = state.folderFiles.filter((f) => f.fileID !== fileID)
+        }
+      })
+
+      // delete folder
+      .addCase(deleteFolderThunk.fulfilled, (state, action) => {
+        const { folderID } = action.payload.data
+        // Xóa thư mục khỏi danh sách folders
+        if (state.folders) {
+          state.folders = state.folders.filter((f) => f.folderID !== folderID)
         }
       })
   }

@@ -111,3 +111,6 @@ const CourseLibaryPage = () => {
 }
 
 export default CourseLibaryPage
+
+// // tiêu đề gia diẹnn: Thư viện - Thẻ ghi nhớ
+export const meta = () => [{ title: 'Thư viện - Thư mục' }]

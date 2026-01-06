@@ -60,14 +60,23 @@ function fetchQuestions(data: Question[], round: number, batchSize: number): Que
   return data.slice(start, end)
 }
 
-// getRandomOptions: Sinh mảng lựa chọn cho trắc nghiệm gồm 1 đáp án đúng + 3 đáp án nhiễu.
-// Logic đơn giản: push đến khi đủ 4 rồi shuffle.
+// getRandomOptions: Sinh mảng lựa chọn cho trắc nghiệm gồm 1 đáp án đúng + tối đa 3 đáp án nhiễu.
+// Đã sửa để tránh vòng lặp vô hạn khi dữ liệu ít hơn 4 phần tử.
 function getRandomOptions(correct: string, allTargets: string[]): string[] {
   const options = [correct]
-  while (options.length < 4) {
-    const random = allTargets[Math.floor(Math.random() * allTargets.length)]
-    if (!options.includes(random)) options.push(random)
+  // Lọc ra các target duy nhất khác với đáp án đúng
+  const uniqueTargets = [...new Set(allTargets)].filter((t) => t !== correct)
+
+  // Số lượng options tối đa có thể tạo (tối đa 4, bao gồm đáp án đúng)
+  const maxOptions = Math.min(4, uniqueTargets.length + 1)
+
+  // Thêm các options ngẫu nhiên cho đến khi đủ số lượng
+  while (options.length < maxOptions && uniqueTargets.length > 0) {
+    const randomIndex = Math.floor(Math.random() * uniqueTargets.length)
+    options.push(uniqueTargets[randomIndex])
+    uniqueTargets.splice(randomIndex, 1) // Xóa để tránh trùng lặp
   }
+
   return options.sort(() => Math.random() - 0.5)
 }
 

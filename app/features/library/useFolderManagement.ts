@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
-import { useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { useAppDispatch, useAppSelector } from '~/store/hook'
-import { updateFolderNameThunk } from '../api/folder/folderThunk'
+import { updateFolderNameThunk, deleteFolderThunk } from '../api/folder/folderThunk'
 
 interface UseFolderManagementParams {
   folderID?: string
@@ -34,6 +34,8 @@ export const useFolderManagement = ({ folderID }: UseFolderManagementParams) => 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
+  // State cho xóa thư mục
+  const [isDeleting, setIsDeleting] = useState(false)
 
   /**
    * Lấy tên thư mục từ nhiều nguồn:
@@ -87,6 +89,35 @@ export const useFolderManagement = ({ folderID }: UseFolderManagementParams) => 
     }
   }
 
+  /**
+   * Hàm xóa thư mục
+   * - Gọi API xóa
+   * - Redux tự động xóa khỏi danh sách
+   * - Navigate về trang thư mục người dùng
+   */
+  const deleteFolder = useCallback(async (): Promise<{ success: boolean; message: string }> => {
+    if (!folderID || !user?.userID) {
+      return { success: false, message: 'Thiếu thông tin thư mục hoặc người dùng' }
+    }
+
+    setIsDeleting(true)
+    try {
+      await dispatch(
+        deleteFolderThunk({
+          folderID,
+          userID: user.userID
+        })
+      ).unwrap()
+      return { success: true, message: 'Xóa thư mục thành công' }
+    } catch (error) {
+      console.error('Error deleting folder:', error)
+      const message = typeof error === 'string' ? error : 'Không thể xóa thư mục'
+      return { success: false, message }
+    } finally {
+      setIsDeleting(false)
+    }
+  }, [folderID, user?.userID, dispatch])
+
   return {
     folderName, // Tên thư mục hiện tại
     isEditModalOpen, // Trạng thái modal
@@ -95,6 +126,8 @@ export const useFolderManagement = ({ folderID }: UseFolderManagementParams) => 
     setNewFolderName, // Hàm cập nhật input
     isUpdating, // Đang update hay không
     handleUpdateFolderName, // Hàm xử lý update
-    openEditModal // Hàm mở modal với tên hiện tại
+    openEditModal, // Hàm mở modal với tên hiện tại
+    deleteFolder, // Hàm xóa thư mục
+    isDeleting // Đang xóa hay không
   }
 }

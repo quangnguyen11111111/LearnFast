@@ -4,10 +4,16 @@ import {
   getUserFoldersApi,
   updateFolderNameApi,
   createFolderApi,
+  addFileToFolderApi,
+  removeFileFromFolderApi,
+  deleteFolderApi,
   type GetFolderFilesPayload,
   type GetUserFoldersPayload,
   type UpdateFolderNamePayload,
-  type CreateFolderPayload
+  type CreateFolderPayload,
+  type AddFileToFolderPayload,
+  type RemoveFileFromFolderPayload,
+  type DeleteFolderPayload
 } from './folderAPI'
 
 export interface FolderPagination {
@@ -115,6 +121,79 @@ export const createFolderThunk = createAsyncThunk<CreateFolderResult, CreateFold
   async (payload, { rejectWithValue }) => {
     try {
       const res = (await createFolderApi(payload)) as CreateFolderResult
+      if (res && res.errCode === 0) {
+        return res
+      }
+      return rejectWithValue(res.message)
+    } catch (e: any) {
+      return rejectWithValue(e?.message || 'Unknown error')
+    }
+  }
+)
+
+// Thêm file vào thư mục
+export interface AddFileToFolderResult {
+  errCode: number
+  message: string
+  data: IFolderFile[]
+}
+
+export const addFileToFolderThunk = createAsyncThunk<
+  AddFileToFolderResult,
+  AddFileToFolderPayload,
+  { rejectValue: string }
+>('folder/addFileToFolderThunk', async (payload, { rejectWithValue }) => {
+  try {
+    const res = (await addFileToFolderApi(payload)) as AddFileToFolderResult
+    if (res && res.errCode === 0) {
+      return res
+    }
+    return rejectWithValue(res.message)
+  } catch (e: any) {
+    return rejectWithValue(e?.message || 'Unknown error')
+  }
+})
+
+// Xóa file khỏi thư mục
+export interface RemoveFileFromFolderResult {
+  errCode: number
+  message: string
+  data: {
+    folderID: string
+    fileID: string
+  }
+}
+
+export const removeFileFromFolderThunk = createAsyncThunk<
+  RemoveFileFromFolderResult,
+  RemoveFileFromFolderPayload,
+  { rejectValue: string }
+>('folder/removeFileFromFolderThunk', async (payload, { rejectWithValue }) => {
+  try {
+    const res = (await removeFileFromFolderApi(payload)) as RemoveFileFromFolderResult
+    if (res && res.errCode === 0) {
+      return res
+    }
+    return rejectWithValue(res.message)
+  } catch (e: any) {
+    return rejectWithValue(e?.message || 'Unknown error')
+  }
+})
+
+// Xóa thư mục
+export interface DeleteFolderResult {
+  errCode: number
+  message: string
+  data: {
+    folderID: string
+  }
+}
+
+export const deleteFolderThunk = createAsyncThunk<DeleteFolderResult, DeleteFolderPayload, { rejectValue: string }>(
+  'folder/deleteFolderThunk',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = (await deleteFolderApi(payload)) as DeleteFolderResult
       if (res && res.errCode === 0) {
         return res
       }

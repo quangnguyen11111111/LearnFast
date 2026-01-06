@@ -3,9 +3,10 @@ import type { AxiosRequestConfig } from 'axios'
 
 // axiosClient: Instance cấu hình sẵn baseURL + header JSON
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_URL ||'http://localhost:8000',
   headers: { 'Content-Type': 'application/json' }
 })
+axios.defaults.withCredentials = true
 
 // Interceptor request: Gắn Authorization Bearer token nếu có trong localStorage
 axiosClient.interceptors.request.use((config) => {

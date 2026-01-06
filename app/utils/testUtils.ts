@@ -16,15 +16,22 @@ export function getRandomItems(arr: Question[], x: number): Question[] {
   return shuffled.slice(0, x)
 }
 
-// getRandomOptions: Tạo danh sách 4 lựa chọn (1 đúng + 3 sai) cho câu trắc nghiệm
+// getRandomOptions: Tạo danh sách lựa chọn (1 đúng + tối đa 3 sai) cho câu trắc nghiệm
 export const getRandomOptions = (correct: string, allSources: string[]): string[] => {
   const options = [correct]
-  while (options.length < 4) {
-    const random = allSources[Math.floor(Math.random() * allSources.length)]
-    if (!options.includes(random)) {
-      options.push(random)
-    }
+  // Lọc ra các source duy nhất khác với đáp án đúng
+  const uniqueSources = [...new Set(allSources)].filter((s) => s !== correct)
+
+  // Số lượng options tối đa có thể tạo (tối đa 4, bao gồm đáp án đúng)
+  const maxOptions = Math.min(4, uniqueSources.length + 1)
+
+  // Thêm các options ngẫu nhiên cho đến khi đủ số lượng
+  while (options.length < maxOptions && uniqueSources.length > 0) {
+    const randomIndex = Math.floor(Math.random() * uniqueSources.length)
+    options.push(uniqueSources[randomIndex])
+    uniqueSources.splice(randomIndex, 1) // Xóa để tránh trùng lặp
   }
+
   return options.sort(() => Math.random() - 0.5)
 }
 
