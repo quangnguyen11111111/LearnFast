@@ -27,6 +27,7 @@ interface FileState {
   fileDetail: FileDetail[] | null
   loadingDetail: boolean
   ownerInfo: IOwnerInfo | null
+  errorDetail: { errCode: number; message: string } | null
   topUsers: summaryItem[] | null
   loadingTopUsers: boolean
   loadingUpdateTopUsers: boolean
@@ -47,6 +48,7 @@ const initialState: FileState = {
   fileDetail: null,
   loadingDetail: false,
   ownerInfo: null,
+  errorDetail: null,
   topUsers: null,
   loadingTopUsers: false,
   loadingUpdateTopUsers: false
@@ -97,14 +99,17 @@ const fileSlice = createSlice({
       // _______ chi tiết file _______
       .addCase(getFileDetailThunk.pending, (state) => {
         state.loadingDetail = true
+        state.errorDetail = null
       })
-      .addCase(getFileDetailThunk.rejected, (state) => {
+      .addCase(getFileDetailThunk.rejected, (state, action) => {
         state.loadingDetail = false
+        state.errorDetail = action.payload || { errCode: 500, message: 'Unknown error' }
       })
       .addCase(getFileDetailThunk.fulfilled, (state, action) => {
         state.fileDetail = action.payload.data
         state.loadingDetail = false
         state.ownerInfo = action.payload.ownerInfo
+        state.errorDetail = null
       })
       // cập nhật điểm của người dùng trong cardmatching và game block
       .addCase(updateGameProgressThunk.pending, (state) => {

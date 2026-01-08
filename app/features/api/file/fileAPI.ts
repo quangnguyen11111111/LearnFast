@@ -31,6 +31,54 @@ export interface CreateFileResponse {
 export const createFileApi = (data: CreateFilePayload): Promise<CreateFileResponse> =>
   axiosClient.post('/api/files', data)
 
+// Interface cho cập nhật file
+export interface UpdateFilePayload {
+  fileID: string
+  creatorID: string
+  fileName?: string
+  visibility?: 'public' | 'private'
+  arrFileDetail: Array<{
+    source: string
+    target: string
+  }>
+}
+
+export interface UpdateFileResponse {
+  errCode: number
+  message: string
+  data?: {
+    fileID: string
+    fileName: string
+    visibility: string
+    totalWords: number
+    createdAt: string
+    detail: Array<{
+      detailID: string
+      source: string
+      target: string
+    }>
+  }
+}
+
+// Cập nhật file
+export const updateFileApi = (data: UpdateFilePayload): Promise<UpdateFileResponse> =>
+  axiosClient.put('/api/files', data)
+
+// Interface cho xóa file
+export interface DeleteFilePayload {
+  fileID: string
+  creatorID: string
+}
+
+export interface DeleteFileResponse {
+  errCode: number
+  message: string
+}
+
+// Xóa file
+export const deleteFileApi = (data: DeleteFilePayload): Promise<DeleteFileResponse> =>
+  axiosClient.delete('/api/files', { data })
+
 // Interface cho AI generate flashcards
 export interface AIGenerateFlashcardsPayload {
   topic: string
@@ -88,3 +136,54 @@ export const getBlockGamePointsApi = (userID: string, fileID: string) =>
 // lấy top rank người học nhanh nhất trong file
 export const getTopUsersApi = (fileID: string, userID: string) =>
   axiosClient.get(`/api/files/leaderboard?fileID=${fileID}&userID=${userID}`)
+
+// Tìm kiếm file theo tên có phân trang
+export interface SearchFilesParams {
+  query: string
+  page?: number
+  limit?: number
+}
+
+export interface SearchFileItem {
+  fileID: string
+  fileName: string
+  visibility: string
+  createdAt: string
+  totalWords: number
+  creatorID: string
+  ownerName: string | null
+  ownerAvatar: string | null
+}
+
+export interface SearchFilesResponse {
+  errCode: number
+  message: string
+  data: SearchFileItem[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    pageCount: number
+  }
+}
+
+export const searchFilesApi = (params: SearchFilesParams): Promise<SearchFilesResponse> => {
+  return axiosClient.get('/api/files/search', {
+    params: {
+      query: params.query || '',
+      page: params.page ?? 1,
+      limit: params.limit ?? 12
+    }
+  })
+}
+
+// Interface cho xóa file
+export interface DeleteFilePayload {
+  fileID: string
+  creatorID: string
+}
+
+export interface DeleteFileResponse {
+  errCode: number
+  message: string
+}

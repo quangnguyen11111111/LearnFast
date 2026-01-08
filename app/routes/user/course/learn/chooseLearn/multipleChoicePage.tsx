@@ -23,8 +23,7 @@ const MultipleChoicePage = () => {
     { id: '0', source: 'Sun', target: 'Mặt trời', status: 3, statusMode: 1 },
     { id: '3', source: 'Water', target: 'Nước', status: 3, statusMode: 1 },
     { id: '4', source: 'Cat', target: 'Mèo', status: 3, statusMode: 1 },
-    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 1 },
-   
+    { id: '5', source: 'Moon', target: 'Mặt trăng', status: 3, statusMode: 1 }
   ]
   const dispatch = useAppDispatch()
   // Lấy thông tin user và trạng thái loading từ store
@@ -94,8 +93,8 @@ const MultipleChoiceContent = ({
   userID: string | null
 }) => {
   const navigate = useNavigate()
-  console.log('kiểm tra dữ liệu nguwoid dufg đưa vào dòng 103 trang MultipleChoicepage: ', cardData);
-  
+  console.log('kiểm tra dữ liệu nguwoid dufg đưa vào dòng 103 trang MultipleChoicepage: ', cardData)
+
   // Hook đồng bộ tiến độ học tập lên server
   const { queueChange, queueBatchChanges, syncNow } = useProgressSync({
     fileID,
@@ -153,7 +152,16 @@ const MultipleChoiceContent = ({
     initialData: cardData,
     onStatusModeChange: handleStatusModeChange,
     onResetAll: handleResetAll
-  })  
+  })
+  // Lắng nghe nút "Học lại" từ header để khởi động lại từ đầu
+  useEffect(() => {
+    if (!cardData || cardData.length === 0) return
+    const handler = () => {
+      resetData()
+    }
+    window.addEventListener('learn-restart', handler)
+    return () => window.removeEventListener('learn-restart', handler)
+  }, [cardData, resetData])
   // Phục vụ nút tiếp tục ở ListTerm.
   const batchSize = 6
   const computeRound = (idx: number) => Math.floor(idx / batchSize)

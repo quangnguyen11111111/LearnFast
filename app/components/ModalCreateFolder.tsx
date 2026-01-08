@@ -38,7 +38,7 @@ export default function ModalCreateFolder({ isOpen, setIsOpen }: ModalCreateFold
 
   return (
     <Transition show={isOpen} as={Fragment}>
-      <Dialog as='div' className='relative z-50' onClose={() => setIsOpen(false)}>
+      <Dialog as='div' className='relative z-100' onClose={() => setIsOpen(false)}>
         {/* Nền mờ */}
         <TransitionChild
           as={Fragment}
@@ -68,12 +68,12 @@ export default function ModalCreateFolder({ isOpen, setIsOpen }: ModalCreateFold
                 {/* Icon folder – viền dày hơn */}
                 <FolderIcon className='h-12 w-12 stroke-[2.5] text-gray-700' />
 
-                <DialogTitle className='text-lg font-semibold text-gray-800'>Name your folder</DialogTitle>
+                <DialogTitle className='text-lg font-semibold text-gray-800'>Tên thư mục</DialogTitle>
 
                 <input
                   ref={inputRef}
                   type='text'
-                  placeholder='Enter folder name'
+                  placeholder='Nhập tên thư mục'
                   value={folderName}
                   onChange={(e) => setFolderName(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -87,14 +87,14 @@ export default function ModalCreateFolder({ isOpen, setIsOpen }: ModalCreateFold
                     onClick={() => setIsOpen(false)}
                     disabled={isCreating}
                   >
-                    Cancel
+                    Hủy
                   </button>
                   <button
                     className='px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
                     onClick={handleCreateFolder}
                     disabled={isCreating || !folderName.trim()}
                   >
-                    {isCreating ? 'Creating...' : 'Create'}
+                    {isCreating ? 'Đang tạo...' : 'Tạo '}
                   </button>
                 </div>
               </div>

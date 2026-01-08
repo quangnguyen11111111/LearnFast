@@ -4,6 +4,7 @@ export interface GetUserFoldersPayload {
   userID: string
   page?: number
   limit?: number
+  fileID?: string // optional: allow backend to mark folders containing this file
 }
 
 export interface GetFolderFilesPayload {
@@ -28,7 +29,8 @@ export interface CreateFolderPayload {
 export const getUserFoldersApi = (data: GetUserFoldersPayload) => {
   const page = data.page || 1
   const limit = data.limit || 12
-  return axiosClient.get(`/api/folders/user?userID=${data.userID}&page=${page}&limit=${limit}`)
+  const fileParam = data.fileID ? `&fileID=${data.fileID}` : ''
+  return axiosClient.get(`/api/folders/user?userID=${data.userID}&page=${page}&limit=${limit}${fileParam}`)
 }
 // Lấy danh sách file trong một thư mục
 export const getFolderFilesApi = (data: GetFolderFilesPayload) => {

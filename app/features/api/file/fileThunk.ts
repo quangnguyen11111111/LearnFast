@@ -1,4 +1,3 @@
-// hàm thunk để lấy danh sách file người dùng truy cập gần đây
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import {
   getFileDetailApi,
@@ -8,7 +7,16 @@ import {
   getTop6FilesApi,
   getTopUsersApi,
   updateGameProgressApi,
-  getBlockGamePointsApi
+  getBlockGamePointsApi,
+  updateFileApi,
+  type UpdateFilePayload,
+  type UpdateFileResponse,
+  deleteFileApi,
+  type DeleteFilePayload,
+  type DeleteFileResponse,
+  searchFilesApi,
+  type SearchFilesParams,
+  type SearchFilesResponse
 } from './fileAPI'
 import type { summaryItem } from '~/features/cardMatching/types'
 
@@ -22,6 +30,8 @@ export interface IOwnerInfo {
   name: string
   avatar: string
   fileName: string
+  creatorID: string
+  visibility?: 'public' | 'private'
 }
 export interface IFile {
   fileID: string
@@ -140,7 +150,7 @@ export const getSimilarFilesThunk = createAsyncThunk<IFileResult, { userID: stri
 export const getFileDetailThunk = createAsyncThunk<
   IFileDetailResult,
   { fileID: string; userID?: string },
-  { rejectValue: string }
+  { rejectValue: { errCode: number; message: string } }
 >('file/getFileDetailThunk', async (data, { rejectWithValue }) => {
   try {
     const res = (await getFileDetailApi(data.fileID, data.userID)) as IFileDetailResult
@@ -148,9 +158,9 @@ export const getFileDetailThunk = createAsyncThunk<
       const { data: data, message, errCode, ownerInfo } = res
       return { data: data, message, errCode, ownerInfo }
     }
-    return rejectWithValue(res.message)
+    return rejectWithValue({ errCode: res.errCode, message: res.message })
   } catch (e: any) {
-    return rejectWithValue(e?.message || 'Unknown error')
+    return rejectWithValue({ errCode: 500, message: e?.message || 'Unknown error' })
   }
 })
 
@@ -222,3 +232,52 @@ export const getBlockGamePointsThunk = createAsyncThunk<
     return rejectWithValue(e?.message || 'Unknown error')
   }
 })
+// Cập nhật file
+export const updateFileThunk = createAsyncThunk<UpdateFileResponse, UpdateFilePayload, { rejectValue: string }>(
+  'file/updateFileThunk',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = (await updateFileApi(payload)) as UpdateFileResponse
+      if (res && res.errCode === 0) {
+        return res
+      }
+      return rejectWithValue(res?.message || 'Lỗi không xác định')
+    } catch (e: any) {
+      console.error('updateFileThunk error:', e)
+      return rejectWithValue(e?.message || 'Unknown error')
+    }
+  }
+)
+
+// Xóa file
+export const deleteFileThunk = createAsyncThunk<DeleteFileResponse, DeleteFilePayload, { rejectValue: string }>(
+  'file/deleteFileThunk',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = (await deleteFileApi(payload)) as DeleteFileResponse
+      if (res && res.errCode === 0) {
+        return res
+      }
+      return rejectWithValue(res?.message || 'Lỗi không xác định')
+    } catch (e: any) {
+      console.error('deleteFileThunk error:', e)
+      return rejectWithValue(e?.message || 'Unknown error')
+    }
+  }
+)
+
+// Tìm kiếm file công khai theo tên
+export const searchFilesThunk = createAsyncThunk<SearchFilesResponse, SearchFilesParams, { rejectValue: string }>(
+  'file/searchFilesThunk',
+  async (params, { rejectWithValue }) => {
+    try {
+      const res = (await searchFilesApi(params)) as SearchFilesResponse
+      if (res && res.errCode === 0) {
+        return res
+      }
+      return rejectWithValue(res?.message || 'Lỗi không xác định')
+    } catch (e: any) {
+      return rejectWithValue(e?.message || 'Unknown error')
+    }
+  }
+)

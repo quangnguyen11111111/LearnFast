@@ -23,6 +23,7 @@ export interface CreateLessonState {
   globalTargetLang: string
   visibility: 'public' | 'private'
   lessonItems: LessonItem[]
+  isRemove: boolean
 }
 
 export interface CreateLessonActions {
@@ -37,6 +38,7 @@ export interface CreateLessonActions {
   handleDeleteItem: (index: number) => void
   handleAIGenerate: (data: AIGenerateData) => Promise<void>
   handleCreateLesson: (shouldNavigateToLearn?: boolean) => Promise<void>
+  setIsRemove: (isRemove: boolean) => void
 }
 
 export type UseCreateLessonReturn = CreateLessonState & CreateLessonActions

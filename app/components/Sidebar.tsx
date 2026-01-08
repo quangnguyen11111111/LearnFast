@@ -124,7 +124,8 @@ const Sidebar = ({ children }: SideBarProps) => {
             folders.map((item) => (
               <div
                 key={item.folderID}
-                onClick={() => navigate(`/course/${item.folderID}`,{replace:true})}
+                onClick={() => {navigate(`/course/${item.folderID}`,{replace:true})
+              }}
                 className={`flex flex-row items-center gap-2 whitespace-nowrap hover:bg-gray-300 rounded-md p-2 ${
                   toggleValue ? '' : 'w-fit'
                 }
@@ -132,7 +133,7 @@ const Sidebar = ({ children }: SideBarProps) => {
                 `}
               >
                 <FolderMinusIcon className='size-6 flex-shrink-0  font-semibold' />
-                <p className={`${!toggleValue && 'hidden'}   font-semibold text-sm`}>{item.folderName}</p>
+                <p className={`${!toggleValue && 'hidden'}   font-semibold text-sm max-w-50 truncate`}>{item.folderName}</p>
               </div>
             ))}
 

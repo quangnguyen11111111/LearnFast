@@ -7,8 +7,9 @@ interface FlashcardProps {
   cards: { id: string; source: string; target: string; status: number }[]
   height?: string
   onProgress?: boolean // chế độ theo dõi tiến độ
-  knownStatus?: number // số thẻ đã biết
-  unknownStatus?: number // số thẻ chưa biết
+  knownStatus?: number // số thẻ đã biết (từ cards đang hiển thị)
+  unknownStatus?: number // số thẻ chưa biết (từ cards đang hiển thị)
+  focusStatus?: number // số thẻ đang học tập trung (status = 3)
   markKnown?: (value: string) => void // hàm đánh dấu đã biết
   markUnknown?: (value: string) => void // hàm đánh dấu chưa biết
   setIsNavigationPage?: (value: boolean) => void // đặt trạng thái chuyển trang
@@ -16,6 +17,9 @@ interface FlashcardProps {
   demo?: boolean
   fileID?: string
   resetStatuses?: () => void
+  startFocusMode?: () => void // bật chế độ học tập trung
+  resetFocusMode?: () => void // reset chế độ học tập trung
+  toggleProgress?: () => void // hàm bật/tắt theo dõi tiến độ
 }
 
 const Flashcard = ({
@@ -24,20 +28,29 @@ const Flashcard = ({
   onProgress = false,
   knownStatus = 0,
   unknownStatus = 0,
+  focusStatus = 0,
   markKnown,
   markUnknown,
   setIsNavigationPage,
   isNavigationPage,
   demo,
   fileID,
-  resetStatuses
+  resetStatuses,
+  startFocusMode,
+  resetFocusMode,
+  toggleProgress
 }: FlashcardProps) => {
   const navigate = useNavigate()
-  const [index, setIndex] = useState(onProgress ? knownStatus + unknownStatus : 0) //chỉ số thẻ
+  const [index, setIndex] = useState(0) //chỉ số thẻ
+  const [hasToggledProgress, setHasToggledProgress] = useState(false) // theo dõi lần đầu bật theo dõi
+
   useEffect(() => {
-    // Reset index khi chuyển chế độ theo dõi
-    setIndex(onProgress ? knownStatus + unknownStatus : 0)
-  }, [onProgress,])
+    // Chỉ reset index khi bật theo dõi lần đầu tiên
+    if (onProgress && !hasToggledProgress) {
+      setIndex(knownStatus + unknownStatus)
+      setHasToggledProgress(true)
+    }
+  }, [onProgress, hasToggledProgress, knownStatus, unknownStatus])
   const [isFlipped, setIsFlipped] = useState(false) //trạng thái lật thẻ
   const [direction, setDirection] = useState(0) //hướng chuyển động
   const [feedback, setFeedback] = useState<null | 'known' | 'unknown'>(null) // trạng thái phản hồi
@@ -107,8 +120,18 @@ const Flashcard = ({
   }
 
   // Hàm học lại từ đầu
-  const handleRestart = () => {
+  const handleRestartAll = () => {
+    resetFocusMode?.()
     resetStatuses?.()
+    setIndex(0)
+    setIsNavigationPage?.(false)
+    setIsFlipped(false)
+    setFeedback(null)
+  }
+
+  // Hàm bật chế độ học tập trung
+  const handleStartFocusMode = () => {
+    startFocusMode?.()
     setIndex(0)
     setIsNavigationPage?.(false)
     setIsFlipped(false)
@@ -117,13 +140,12 @@ const Flashcard = ({
 
   // Hàm chuyển sang chế độ Multiple Choice
   const handleGoToMultipleChoice = () => {
-
-    navigate(`/learn-lesson/multiple-choice?fileId=${fileID}`,{replace:true})
+    navigate(`/learn-lesson/multiple-choice?fileId=${fileID}`, { replace: true })
   }
 
   // Hàm chuyển đến trang Flashcard đầy đủ (cho demo mode)
   const handleGoToFlashcard = () => {
-    navigate(`flash-card?fileId=${fileID}`,{replace:true})
+    navigate(`flash-card?fileId=${fileID}`, { replace: true })
   }
 
   // Màn hình hoàn thành (nằm trong container, không fullscreen)
@@ -132,7 +154,9 @@ const Flashcard = ({
     if (demo) {
       return (
         <div className='flex flex-col items-center mt-8'>
-          <div className={`relative w-full ${height} rounded-2xl flex flex-col items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-100`}>
+          <div
+            className={`relative w-full ${height} rounded-2xl flex flex-col items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-100`}
+          >
             <div className='text-5xl mb-3'>📚</div>
             <h2 className='text-xl font-bold text-indigo-700 mb-2'>Trải nghiệm thêm!</h2>
             <p className='text-gray-600 mb-6 text-center'>Truy cập chế độ Thẻ ghi nhớ để học tập hiệu quả hơn</p>
@@ -190,15 +214,24 @@ const Flashcard = ({
             </div>
           )}
 
-          {/* Hai nút điều hướng */}
+          {/* Các nút điều hướng */}
           <div className='flex gap-4 flex-wrap justify-center'>
             <button
-              onClick={handleRestart}
+              onClick={handleRestartAll}
               className='flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg'
             >
               <ArrowPathIcon className='w-5 h-5' />
-              Học lại
+              Học từ đầu
             </button>
+            {unknownStatus > 0 && (
+              <button
+                onClick={handleStartFocusMode}
+                className='flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg'
+              >
+                <AcademicCapIcon className='w-5 h-5' />
+                Học tập trung ({unknownStatus})
+              </button>
+            )}
             <button
               onClick={handleGoToMultipleChoice}
               className='flex items-center gap-2 px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg'
@@ -274,7 +307,27 @@ const Flashcard = ({
       </div>
 
       {/* Nút điều hướng */}
-      <div className='flex justify-center gap-6 mt-6 items-center'>
+      <div className='flex justify-center gap-6 mt-6 items-center relative w-full'>
+        {/* Toggle theo dõi tiến độ - chỉ hiển thị trên desktop */}
+        {toggleProgress && !demo && (
+          <div className='hidden md:flex items-center gap-3 absolute left-0'>
+            <span className='text-blue-600 font-medium'>Theo dõi tiến độ</span>
+            <button
+              onClick={toggleProgress}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${
+                onProgress ? 'bg-blue-500' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-md ${
+                  onProgress ? 'translate-x-6' : ''
+                }`}
+              ></span>
+            </button>
+          </div>
+        )}
+
+        {/* Nút điều hướng - luôn ở giữa */}
         <button
           onClick={() => (onProgress ? handleNext(false) : handlePrev())}
           className='px-4 py-2 bg-indigo-100 hover:bg-indigo-200 rounded-lg font-medium transition'

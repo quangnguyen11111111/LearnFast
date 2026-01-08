@@ -1,20 +1,34 @@
 import { Square2StackIcon, BookOpenIcon, ClipboardDocumentCheckIcon, SquaresPlusIcon } from '@heroicons/react/20/solid'
-import { BookmarkIcon, FolderPlusIcon, NewspaperIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowDownCircleIcon,
+  ArrowPathIcon,
+  BookmarkIcon,
+  FolderPlusIcon,
+  NewspaperIcon,
+  TrashIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/outline'
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import ListItem from '~/components/Listitem'
 import Flashcard from '~/components/learnComponent/Flashcard'
 import logo from '~/assets/logo.png'
 import Button from '~/components/button/Button'
-import { use, useEffect, useMemo, useState } from 'react'
+import { use, useEffect, useMemo, useState, Fragment } from 'react'
 import MultipleChoise from '~/components/learnComponent/MultipleChoice'
 import { useAppDispatch, useAppSelector } from '~/store/hook'
 import { useNavigate, useSearchParams } from 'react-router'
 import { getFileDetailThunk } from '~/features/api/file/fileThunk'
 import { useFlashcards } from '~/features/flashcard/useFlashcards'
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
+import ModalSaveToFolder from '~/components/ModalSaveToFolder'
+import { useFileInFolders } from '~/features/library/useFileInFolders'
+import { toast } from 'react-toastify'
+import { deleteFileThunk } from '~/features/api/file/fileThunk'
 const LearnLessonPage = () => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   // Xử lý chế độ người dùng
-  const { user, loading } = useAppSelector((state) => state.auth)
+  const { user, loadingRefresh, loading } = useAppSelector((state) => state.auth)
   const isFreeAccessUsed = localStorage.getItem('guestFreeAccessUsed')
   const handleNavigateGuestFreeAccess = (link: string) => {
     if (!user && isFreeAccessUsed === 'false') {
@@ -31,6 +45,9 @@ const LearnLessonPage = () => {
 
   const fileID = searchParams.get('fileId')
 
+  // Lấy dữ liệu chi tiết file từ store
+  const { fileDetail, loadingDetail, ownerInfo, errorDetail } = useAppSelector((state) => state.file)
+
   // các chức năng
   const features = [
     { icon: Square2StackIcon, title: 'Thẻ ghi nhớ', links: `flash-card?fileId=${fileID}` },
@@ -39,15 +56,30 @@ const LearnLessonPage = () => {
     { icon: SquaresPlusIcon, title: 'Blocks', links: `blocks?fileId=${fileID}` },
     { icon: NewspaperIcon, title: 'Ghép thẻ', links: `card-matching?fileId=${fileID}` }
   ]
-
+  const refet = localStorage.getItem('refreshToken')
   useEffect(() => {
-    if (fileID) {
+    // Chờ auth finish loading rồi mới gọi thunk (đảm bảo user data đã được load từ refresh token)
+    if (refet && fileID && !loading && !loadingRefresh && user) {
       // Gọi thunk để lấy chi tiết file
-      dispatch(getFileDetailThunk({ fileID: fileID, ...(user && { userID: user.userID }) }))
+      dispatch(getFileDetailThunk({ fileID: fileID, userID: user.userID }))
     }
-  }, [fileID])
-  // Lấy dữ liệu chi tiết file từ store
-  const { fileDetail, loadingDetail, ownerInfo } = useAppSelector((state) => state.file)
+    if (!refet && fileID && !loading && !loadingRefresh) {
+      // Gọi thunk để lấy chi tiết file
+      dispatch(getFileDetailThunk({ fileID: fileID }))
+    }
+  }, [fileID, loading, loadingRefresh, dispatch, user])
+  // Xử lý lỗi khi truy cập file
+  useEffect(() => {
+    if (errorDetail) {
+      // errCode 3 = Bạn không có quyền truy cập file này
+      if (errorDetail.errCode === 3) {
+        toast.error(errorDetail.message || 'Bạn không có quyền truy cập file này')
+        navigate('/latest', { replace: true }) // Quay lại trang trước
+      } else {
+        toast.error(errorDetail.message || 'Lỗi khi tải file')
+      }
+    }
+  }, [errorDetail, navigate])
 
   // Chuyển đổi fileDetail thành format cho các component
   const cardData = useMemo(() => {
@@ -109,21 +141,179 @@ const LearnLessonPage = () => {
     return getRandomOptions(cardData[indexMulti].target, allTargets)
   }, [indexMulti, cardData, allTargets])
 
+  const [isEllipsisMenuOpen, setIsEllipsisMenuOpen] = useState(false)
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+
+  // Hook check file đã lưu vào những thư mục nào
+  const {
+    hasFileSaved,
+    folderHasFile,
+    isLoading: isCheckingFolders
+  } = useFileInFolders(fileID || undefined, !!fileID && !!user)
+
+  // Handler xóa file
+  const handleDeleteFile = () => {
+    if (!user?.userID || !fileID || isDeleting) return
+    setDeleteConfirmOpen(true)
+    setIsEllipsisMenuOpen(false)
+  }
+
+  // Handler xác nhận xóa file
+  const handleConfirmDelete = async () => {
+    if (!user?.userID || !fileID) return
+
+    setIsDeleting(true)
+    try {
+      await dispatch(
+        deleteFileThunk({
+          fileID,
+          creatorID: user.userID
+        })
+      ).unwrap()
+
+      toast.success('Đã xóa bài học thành công')
+      navigate('/latest', { replace: true })
+    } catch (error: any) {
+      toast.error(error || 'Không thể xóa bài học. Vui lòng thử lại!')
+      setDeleteConfirmOpen(false)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   //
   const { isNavigationPage, setIsNavigationPage } = useFlashcards({ initialData: cardData })
   return (
     <div className='mx-30 mb-10 max-md:mx-2'>
       <div className='flex justify-between mt-5 '>
-        <div className='flex gap-2'>
-          <FolderPlusIcon className='size-6 flex-shrink-0 text-gray-500 font-semibold' />
-          <span>Thư mục 1</span>
-        </div>
-        <div className='flex gap-2'>
-          <BookmarkIcon className='size-6 flex-shrink-0 text-gray-500 font-semibold' />
-          <span>Lưu</span>
+        <div className='font-bold text-2xl'>{ownerInfo?.fileName}</div>
+        <div className='relative flex items-center gap-6'>
+          <div
+            className={`flex gap-2 cursor-pointer transition-colors ${
+              hasFileSaved ? 'text-blue-600 font-semibold' : 'text-gray-500 hover:text-blue-500'
+            }`}
+            onClick={() => {
+              if (user) {
+                setIsSaveModalOpen(true)
+              } else {
+                toast.error('Vui lòng đăng nhập để lưu file vào thư mục')
+              }
+            }}
+          >
+            <BookmarkIcon className='size-6 flex-shrink-0 font-semibold' />
+            <span>Lưu </span>
+          </div>
+          {ownerInfo?.creatorID === user?.userID && (
+            <div
+              className=' hover:bg-gray-200 rounded-full p-1 cursor-pointer'
+              onClick={() => {
+                setIsEllipsisMenuOpen(!isEllipsisMenuOpen)
+              }}
+            >
+              <EllipsisHorizontalIcon className='size-6 flex-shrink-0 text-gray-500 font-semibold cursor-pointer' />
+            </div>
+          )}
+          {/* giao diện hiển thi lựa chọn xóa cập nhật */}
+          <div
+            className={`${isEllipsisMenuOpen ? 'block' : 'hidden'} z-50 absolute top-8 right-0 py-1 w-39 bg-white border border-gray-300 rounded-lg flex flex-col`}
+          >
+            <p
+              className='hover:bg-gray-300 p-2 cursor-pointer'
+              onClick={() => {
+                navigate(`/edit-lesson?fileId=${fileID}`, { replace: true })
+                setIsEllipsisMenuOpen(false)
+              }}
+            >
+              <ArrowPathIcon className='size-5 mx-3 flex-shrink-0 text-gray-500 font-semibold inline-block mr-3' /> Cập
+              nhật
+            </p>
+            <p className='hover:bg-gray-300 p-2 cursor-pointer' onClick={handleDeleteFile}>
+              <TrashIcon className='size-5 mx-3 flex-shrink-0 text-gray-500 font-semibold inline-block mr-3' /> Xóa
+            </p>
+          </div>
         </div>
       </div>
-      <div className='font-bold text-2xl mt-5'>{ownerInfo?.fileName}</div>
+
+      {/* Modal Lưu vào thư mục */}
+      {user && fileID && ownerInfo?.fileName && (
+        <ModalSaveToFolder
+          isOpen={isSaveModalOpen}
+          setIsOpen={setIsSaveModalOpen}
+          fileID={fileID}
+          fileName={ownerInfo.fileName}
+        />
+      )}
+
+      {/* Dialog xác nhận xóa bài học */}
+      <Transition show={deleteConfirmOpen} as={Fragment}>
+        <Dialog as='div' className='relative z-100' onClose={() => !isDeleting && setDeleteConfirmOpen(false)}>
+          <TransitionChild
+            as={Fragment}
+            enter='ease-out duration-300'
+            enterFrom='opacity-0'
+            enterTo='opacity-100'
+            leave='ease-in duration-200'
+            leaveFrom='opacity-100'
+            leaveTo='opacity-0'
+          >
+            <div className='fixed inset-0 bg-black/40' />
+          </TransitionChild>
+
+          <div className='fixed inset-0 flex items-center justify-center p-4'>
+            <TransitionChild
+              as={Fragment}
+              enter='ease-out duration-300'
+              enterFrom='opacity-0 scale-95'
+              enterTo='opacity-100 scale-100'
+              leave='ease-in duration-200'
+              leaveFrom='opacity-100 scale-100'
+              leaveTo='opacity-0 scale-95'
+            >
+              <DialogPanel className='w-full max-w-md rounded-2xl bg-white p-6 shadow-xl'>
+                <div className='flex flex-col gap-4'>
+                  <div className='flex items-start gap-3'>
+                    <div className='flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100'>
+                      <ExclamationTriangleIcon className='h-6 w-6 text-red-600' />
+                    </div>
+                    <div>
+                      <DialogTitle className='text-lg font-semibold text-gray-900'>Xóa bài học?</DialogTitle>
+                      <p className='mt-2 text-sm text-gray-600'>
+                        Bạn có chắc chắn muốn xóa bài học <span className='font-semibold'>"{ownerInfo?.fileName}"</span>
+                        ?
+                      </p>
+                      <div className='mt-3 space-y-1'>
+                        <p className='text-sm text-red-700 font-medium'>❌ Dữ liệu sẽ bị xóa VĨNH VIỄN</p>
+                        <p className='text-sm text-red-700 font-medium'>❌ Không thể khôi phục</p>
+                        <p className='text-sm text-red-700 font-medium'>❌ Tất cả tiến trình học tập sẽ biến mất</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className='flex justify-end gap-3 pt-2'>
+                    <button
+                      className='px-4 py-2 rounded-xl text-gray-700 hover:bg-gray-100 font-medium'
+                      onClick={() => setDeleteConfirmOpen(false)}
+                      disabled={isDeleting}
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      className='px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium'
+                      onClick={handleConfirmDelete}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'Đang xóa...' : 'Xóa'}
+                    </button>
+                  </div>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </Dialog>
+      </Transition>
+
       <div className='grid grid-cols-3 max-md:grid-cols-2 gap-x-2 max-md:text-sm'>
         {/* Các chức năng học */}
         {features &&

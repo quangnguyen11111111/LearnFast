@@ -28,6 +28,7 @@ export interface IFolder {
   folderName: string
   userID: string
   totalTerms?: number
+  hasFile?: boolean // optional flag when requesting with fileID
 }
 
 export interface IFolderFile {

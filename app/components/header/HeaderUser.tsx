@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useLocation } from 'react-router'
 import logo from '../../assets/logo.png'
 import {
   BackspaceIcon,
@@ -22,13 +22,53 @@ interface HeaderProps {
   linkTo?: string
 }
 const SearchInput = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [value, setValue] = useState('')
+
+  // Sync input với URL query khi navigate (back/forward)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const q = params.get('q') || ''
+    // Chỉ set value khi đang ở trang search
+    if (location.pathname === '/search') {
+      setValue(q)
+    } else {
+      setValue('')
+    }
+  }, [location])
+
+  const submitSearch = () => {
+    const q = value.trim()
+    if (q.length === 0) {
+      return
+    } else {
+      navigate(`/search?q=${encodeURIComponent(q)}&page=1`, { replace: false } )
+    }
+  }
+
   return (
-    <div className='flex items-center gap-2 py-2 px-3 rounded-md focus-within:outline-2 focus-within:outline-blue-400 focus-within:bg-white  bg-gray-100'>
-      <MagnifyingGlassIcon className='size-5 text-gray-500' />
+    <div className='flex items-center gap-2 py-2 px-3 rounded-md focus-within:outline-2 focus-within:outline-blue-400 focus-within:bg-white bg-gray-100'>
+      <button
+        type='button'
+        className='p-1 rounded hover:bg-gray-200 transition-colors'
+        onClick={submitSearch}
+        aria-label='Tìm kiếm'
+      >
+        <MagnifyingGlassIcon className='size-5 text-gray-500' />
+      </button>
       <input
         type='text'
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.currentTarget.blur()
+            submitSearch()
+          }
+        }}
         className='flex-1 bg-transparent outline-none placeholder-gray-400 placeholder:font-semibold'
-        placeholder='Tìm thẻ ghi nhớ'
+        placeholder='Tìm học phần'
       />
     </div>
   )

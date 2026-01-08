@@ -11,9 +11,11 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'react-toastify'
+import { toggle } from '~/features/actionPage/toggleSlice'
 import { useFolderFiles } from '~/features/library/useFolderFiles'
 import { useFolderManagement } from '~/features/library/useFolderManagement'
 import { useUserFiles } from '~/features/library/useUserFiles'
+import { useAppDispatch, useAppSelector } from '~/store/hook'
 
 const CoursePage = () => {
   const { folderId } = useParams()
@@ -28,7 +30,8 @@ const CoursePage = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false) // Dialog xác nhận xóa thư mục
   const modalLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const modalObserverRef = useRef<IntersectionObserver | null>(null)
-
+  const toggleValue = useAppSelector((state) => state.toggle.actionUserPage)
+  const dispatch = useAppDispatch()
   // Quản lý files trong thư mục
   const {
     files,
@@ -113,7 +116,7 @@ const CoursePage = () => {
       <div className='max-w-7xl mx-auto'>
         <div className='flex gap-3 items-center'>
           <FolderIcon className='size-10 text-gray-500 mb-4' />
-          <h1 className='text-4xl font-bold text-gray-900 mb-2'>{folderName}</h1>
+          <h1 className='text-4xl font-bold text-gray-900 mb-2 line-clamp-2 '>{folderName}</h1>
           <button
             onClick={openEditModal}
             className='text-sm font-semibold text-gray-500 hover:text-gray-700 h-fit cursor-pointer'
@@ -170,7 +173,13 @@ const CoursePage = () => {
                   >
                     <div
                       className='flex gap-1 items-center flex-1 cursor-pointer'
-                      onClick={() => navigate(`/learn-lesson?fileId=${item.fileID}`)}
+                      onClick={() => {
+                        navigate(`/learn-lesson?fileId=${item.fileID}`)
+
+                        if (toggleValue) {
+                          dispatch(toggle())
+                        }
+                      }}
                     >
                       <DocumentIcon className='size-7 text-blue-500 ' />
                       <div className=''>
@@ -218,7 +227,7 @@ const CoursePage = () => {
           transition={{ duration: 0.5, ease: 'easeOut' }}
           className='fixed bottom-0 left-0 w-full flex justify-center z-10'
         >
-          <div className='flex items-center justify-center bg-white px-8 py-3 w-[90%] max-w-2xl'>
+          <div className='flex items-center justify-center bg-transparent px-8 py-3 w-[90%] max-w-2xl'>
             <button
               className='bg-blue-600 text-white font-semibold px-8 py-3 max-md:w-full rounded-full shadow-md hover:bg-blue-700 transition'
               onClick={() => {

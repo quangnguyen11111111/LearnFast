@@ -5,7 +5,8 @@ import {
   NewspaperIcon,
   Square2StackIcon,
   SquaresPlusIcon,
-  XMarkIcon
+  XMarkIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/solid'
 import { useEffect, useRef, useState } from 'react'
 import Button from '../button/Button'
@@ -111,8 +112,19 @@ const HeaderLearn = () => {
       >
         {ownerInfo?.fileName || 'Thư mục 1'}
       </div>
-      {/* Button thoát */}
-      <div className='justify-self-end'>
+      {/* Restart (chỉ ở Flashcard & MultipleChoice) + Thoát */}
+      <div className='justify-self-end flex items-center gap-2'>
+        {(activeFeature?.links === 'flash-card' || activeFeature?.links === 'multiple-choice') && (
+          <button
+            title='Học lại'
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('learn-restart'))
+            }}
+            className='p-2 rounded-full text-gray-700 hover:bg-gray-300 transition cursor-pointer'
+          >
+            <ArrowPathIcon className='size-8' />
+          </button>
+        )}
         <IconButton
           icon={XMarkIcon}
           onClick={() => {

@@ -12,6 +12,7 @@ type AuthState = {
     avatar?: string
   }
   loading: boolean
+  loadingRefresh?: boolean
   error?: string
   accessToken: string | null
   errCode?: number
@@ -132,7 +133,8 @@ export const registerLocalAccount = createAsyncThunk<LoginResult, RegisterPayloa
 const initialState: AuthState = {
   user: null,
   loading: false,
-  accessToken: null
+  accessToken: null,
+  loadingRefresh: false
 }
 
 // authSlice: Slice quản lý logic auth + xử lý các thunk ở extraReducers
@@ -176,14 +178,14 @@ const authSlice = createSlice({
         state.message = action.payload.message
       })
       .addCase(refreshToken.pending, (state) => {
-        state.loading = true
+        state.loadingRefresh = true
       })
       .addCase(refreshToken.rejected, (state) => {
-        state.loading = false
+        state.loadingRefresh = false
       })
       .addCase(refreshToken.fulfilled, (state, action) => {
         state.user = action.payload.data
-        state.loading = false
+        state.loadingRefresh = false
         state.errCode = action.payload.errCode
       })
       .addCase(registerLocalAccount.pending, (state) => {

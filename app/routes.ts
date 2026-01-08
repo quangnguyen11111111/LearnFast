@@ -6,6 +6,7 @@ export default [
   // layout người dùng đã đăng nhập
   route('', 'layouts/UserLayout.tsx', [
     route('/latest', 'routes/user/homeUserPage.tsx'),
+    route('search', 'routes/user/search/searchPage.tsx'),
     route('learn-lesson', 'routes/user/course/learn/learnLessonPage.tsx'),
     route('libary', 'routes/user/libary/libaryPage.tsx', [
       route('lesson', 'routes/user/libary/LessonLibaryPage.tsx'),
@@ -15,7 +16,10 @@ export default [
     route('settings', 'routes/user/settings/settingsPage.tsx')
   ]),
   // layout người đăng kí khi tạo bài học( thu mục, học phần)
-  route('', 'layouts/CreateLayout.tsx', [route('create-lesson', 'routes/user/course/create/createLessonPage.tsx')]),
+  route('', 'layouts/CreateLayout.tsx', [
+    route('create-lesson', 'routes/user/course/create/createLessonPage.tsx'),
+    route('edit-lesson', 'routes/user/course/edit/editLessonPage.tsx')
+  ]),
   // layout người đăng nh
   route('learn-lesson', 'layouts/LearnLayout.tsx', [
     route('flash-card', 'routes/user/course/learn/chooseLearn/flashCardPage.tsx'),

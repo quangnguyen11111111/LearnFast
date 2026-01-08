@@ -82,23 +82,52 @@ const FlashCardPage = () => {
     syncNow()
   }
 
+  // Callback khi bắt đầu chế độ học tập trung -> cập nhật status 2 -> 3 trên server
+  const handleStartFocusMode = (ids: string[]) => {
+    const changes = ids.map((id) => ({
+      detailID: id,
+      flashcardState: 3
+    }))
+    queueBatchChanges(changes)
+    // Sync ngay lập tức khi chuyển sang chế độ tập trung
+    syncNow()
+  }
+
   // Sử dụng hook useFlashcards để quản lý trạng thái flashcards
   const {
     cards,
     onProgress,
     knownCount,
     unknownCount,
+    focusCount,
+    sessionKey,
     toggleProgress,
     markKnown,
     markUnknown,
     resetStatuses,
+    startFocusMode,
+    resetFocusMode,
     isNavigationPage,
     setIsNavigationPage
   } = useFlashcards({
     initialData: cardData,
     onStatusChange: handleStatusChange,
-    onResetAll: handleResetAll
+    onResetAll: handleResetAll,
+    onStartFocusMode: handleStartFocusMode
   })
+
+  // Lắng nghe nút "Học lại" từ header để khởi động lại từ đầu
+  useEffect(() => {
+    if (cards.length === 0) return
+    const handler = () => {
+      resetFocusMode()
+      resetStatuses()
+      // Thoát giao diện tổng kết nếu đang ở đó
+      setIsNavigationPage(false)
+    }
+    window.addEventListener('learn-restart', handler)
+    return () => window.removeEventListener('learn-restart', handler)
+  }, [cards.length, resetFocusMode, resetStatuses])
 
   // Loading spinner khi:
   // 1. Có refreshToken và đang chờ auth (authLoading)
@@ -111,7 +140,7 @@ const FlashCardPage = () => {
 
   return (
     <>
-      <div className='px-25 overflow-hidden'>
+      <div className='px-25 overflow-hidden max-md:px-10'>
         {!isNavigationPage && (
           <div className={`flex justify-between items-center ${onProgress ? '' : 'hidden'}`}>
             <div className='flex items-center gap-2'>
@@ -126,37 +155,44 @@ const FlashCardPage = () => {
                 {knownCount}
               </p>
             </div>
-          </div>  
+          </div>
         )}
 
         <Flashcard
+          key={`flash-${sessionKey}`}
           cards={cards}
-          height='h-118'
+          height='h-[60vh] max-h-[500px] min-h-[300px]'
           onProgress={onProgress}
           knownStatus={knownCount}
           unknownStatus={unknownCount}
+          focusStatus={focusCount}
           markKnown={markKnown}
           markUnknown={markUnknown}
           resetStatuses={resetStatuses}
+          startFocusMode={startFocusMode}
+          resetFocusMode={resetFocusMode}
           isNavigationPage={isNavigationPage}
           setIsNavigationPage={setIsNavigationPage}
           fileID={fileID!}
+          toggleProgress={toggleProgress}
         />
         {!isNavigationPage && (
-          <div className='flex items-center gap-2'>
-            Theo dõi tiến độ
-            <button
-              onClick={toggleProgress}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${
-                onProgress ? 'bg-blue-500' : 'bg-gray-300'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-md ${
-                  onProgress ? 'translate-x-6' : ''
+          <div className='md:hidden flex justify-center mt-4'>
+            <div className='flex items-center gap-3'>
+              <span className='text-blue-600 font-medium'>Theo dõi tiến độ</span>
+              <button
+                onClick={toggleProgress}
+                className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${
+                  onProgress ? 'bg-blue-500' : 'bg-gray-300'
                 }`}
-              ></span>
-            </button>
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-md ${
+                    onProgress ? 'translate-x-6' : ''
+                  }`}
+                ></span>
+              </button>
+            </div>
           </div>
         )}
       </div>{' '}

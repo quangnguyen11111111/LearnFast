@@ -26,6 +26,7 @@ export const useCreateLesson = (): UseCreateLessonReturn => {
   const [description, setDescription] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isAIGenerating, setIsAIGenerating] = useState(false)
+  const [isRemove, setIsRemove] = useState(false)
 
   // AI Modal state
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
@@ -174,6 +175,7 @@ export const useCreateLesson = (): UseCreateLessonReturn => {
     }
   }
 
+
   return {
     // State
     title,
@@ -185,6 +187,7 @@ export const useCreateLesson = (): UseCreateLessonReturn => {
     globalTargetLang,
     visibility,
     lessonItems,
+    isRemove,
     // Actions
     setTitle,
     setDescription,
@@ -196,6 +199,7 @@ export const useCreateLesson = (): UseCreateLessonReturn => {
     handleAddItem,
     handleDeleteItem,
     handleAIGenerate,
-    handleCreateLesson
+    handleCreateLesson,
+    setIsRemove
   }
 }

@@ -1,4 +1,4 @@
-import { Cog8ToothIcon, TrashIcon, SparklesIcon, GlobeAltIcon, LockClosedIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { Cog8ToothIcon, TrashIcon, SparklesIcon, GlobeAltIcon, LockClosedIcon, ChevronDownIcon, FolderIcon } from '@heroicons/react/24/outline'
 import { AnimatePresence, motion } from 'framer-motion'
 import Button from '~/components/button/Button'
 import IconButton from '~/components/button/ButtonIcon'
@@ -7,11 +7,14 @@ import { useCreateLesson } from '~/features/createLesson'
 import Input from '~/components/input/Input'
 import TextArea from '~/components/input/TextArea'
 import trueFalseScrollY from '~/utils/trueFalseScrollY'
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
+import { Fragment } from 'react/jsx-runtime'
+import { useNavigate } from 'react-router'
 
 /* ------------------ CreateLessonPage ------------------ */
 const CreateLessonPage = () => {
   const isScrolled = trueFalseScrollY(50)
-
+  const navigate = useNavigate()
   const {
     // State
     title,
@@ -23,6 +26,7 @@ const CreateLessonPage = () => {
     globalTargetLang,
     visibility,
     lessonItems,
+    isRemove,
     // Actions
     setTitle,
     setDescription,
@@ -34,7 +38,8 @@ const CreateLessonPage = () => {
     handleAddItem,
     handleDeleteItem,
     handleAIGenerate,
-    handleCreateLesson
+    handleCreateLesson,
+    setIsRemove
   } = useCreateLesson()
 
   return (
@@ -136,11 +141,69 @@ const CreateLessonPage = () => {
             </div>
           </div>
           <div className='flex gap-3'>
-            <IconButton icon={Cog8ToothIcon} onClick={() => {}} />
-            <IconButton icon={TrashIcon} onClick={() => {}} />
+            <IconButton icon={TrashIcon} onClick={() => {setIsRemove(true)}} />
           </div>
         </div>
+              {/* Dialog xác nhận xóa thư mục */}
+      <Transition show={isRemove} as={Fragment}>
+        <Dialog as='div' className='relative z-100' onClose={() => setIsRemove(false)}>
+          <TransitionChild
+            as={Fragment}
+            enter='ease-out duration-300'
+            enterFrom='opacity-0'
+            enterTo='opacity-100'
+            leave='ease-in duration-200'
+            leaveFrom='opacity-100'
+            leaveTo='opacity-0'
+          >
+            <div className='fixed inset-0 bg-black/40' />
+          </TransitionChild>
 
+          <div className='fixed inset-0 flex items-center justify-center p-4'>
+            <TransitionChild
+              as={Fragment}
+              enter='ease-out duration-300'
+              enterFrom='opacity-0 scale-95'
+              enterTo='opacity-100 scale-100'
+              leave='ease-in duration-200'
+              leaveFrom='opacity-100 scale-100'
+              leaveTo='opacity-0 scale-95'
+            >
+              <DialogPanel className='w-full max-w-md rounded-2xl bg-white p-6 shadow-xl'>
+                <div className='flex flex-col gap-4'>
+                  <div className='flex items-start gap-3'>
+                    <div className='flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100'>
+                      <FolderIcon className='h-6 w-6 text-red-600' />
+                    </div>
+                    <div>
+                      <DialogTitle className='text-lg font-semibold text-gray-900'>Hủy học phần?</DialogTitle>
+                      <p className='mt-2 text-sm text-gray-600'>
+                        Bạn có chắc chắn muốn hủy học phần? Tất cả
+                        dữ liệu trong học phần sẽ bị xóa vĩnh viễn.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className='flex justify-end gap-3 pt-2'>
+                    <button
+                      className='px-4 py-2 rounded-xl text-gray-700 hover:bg-gray-100 font-medium'
+                      onClick={() => setIsRemove(false)}
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      className='px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 font-medium'
+                      onClick={()=>{navigate(-1)}}
+                    >
+                      Chấp nhận
+                    </button>
+                  </div>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </Dialog>
+      </Transition>
         {/* Language selectors for all items */}
         <LanguageSelector
           sourceLang={globalSourceLang}
